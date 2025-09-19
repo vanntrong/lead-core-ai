@@ -1,0 +1,56 @@
+[
+  {
+    "name": "Basic Plan",
+    "tier": "basic",
+    "priceMonthly": 9700,
+      "features": [
+        "Connect 1 SaaS data source",
+        "Automated lead scraping & enrichment",
+        "Email verification included",
+        "Up to 100 qualified leads/month",
+        "Basic support"
+      ],
+    "limits": {
+      "sources": 1,
+      "leads_per_month": 100,
+      "export_enabled": false,
+      "zapier_export": false
+    }
+  },
+  {
+    "name": "Pro Plan",
+    "tier": "pro",
+    "priceMonthly": 29700,
+    "features": [
+      "Unlimited data sources",
+      "Advanced lead enrichment",
+      "Export to CSV",
+      "Advanced filters & segmentation",
+      "Up to 500 qualified leads/month"
+    ],
+    "limits": {
+      "sources": "unlimited",
+      "leads_per_month": 500,
+      "export_enabled": true,
+      "zapier_export": false
+    }
+  },
+  {
+    "name": "Unlimited Plan",
+    "tier": "unlimited",
+    "priceMonthly": 49700,
+    "features": [
+      "Unlimited data sources",
+      "Advanced lead enrichment",
+      "Unlimited leads per month",
+      "Zapier & webhook integration",
+      "Advanced support"
+    ],
+    "limits": {
+      "sources": "unlimited",
+      "leads_per_month": "unlimited",
+      "export_enabled": true,
+      "zapier_export": true
+    }
+    }
+]

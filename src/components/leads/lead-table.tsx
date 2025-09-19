@@ -1,0 +1,326 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Lead } from "@/types/lead";
+import {
+  Calendar,
+  Eye,
+  Link,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  Mail
+} from "lucide-react";
+import React from "react";
+import { useRouter } from "next/navigation";
+import { Badge } from "../ui/badge";
+import { HighlightText } from "../ui/highlight-text";
+import { leadScoringService } from "@/services/lead-scoring.service";
+
+interface LeadTableProps {
+  leads: Lead[];
+  searchTerms?: string;
+  showSummary?: boolean;
+}
+
+
+const leadSourceConfig: Record<string, { label: string; badge: string }> = {
+  shopify: {
+    label: "Shopify",
+    badge: "bg-green-100 text-green-800 border-green-200", // Shopify: green
+  },
+  etsy: {
+    label: "Etsy",
+    badge: "bg-orange-100 text-orange-800 border-orange-200", // Etsy: orange
+  },
+  g2: {
+    label: "G2",
+    badge: "bg-red-100 text-red-800 border-red-200", // G2: red
+  },
+  woocommerce: {
+    label: "WooCommerce",
+    badge: "bg-indigo-100 text-indigo-800 border-indigo-200", // WooCommerce: indigo
+  },
+};
+
+// Status badge config
+const statusConfig: Record<string, { label: string; color: string; dot: string }> = {
+  pending: {
+    label: "Pending",
+    color: "bg-gray-50 text-gray-800 border-gray-100",
+    dot: "bg-gray-300",
+  },
+  scraped: {
+    label: "Scraped",
+    color: "bg-indigo-50 text-indigo-800 border-indigo-100",
+    dot: "bg-indigo-400",
+  },
+  enriching: {
+    label: "Enriching",
+    color: "bg-blue-50 text-blue-800 border-blue-100",
+    dot: "bg-blue-400",
+  },
+  enriched: {
+    label: "Enriched",
+    color: "bg-purple-50 text-purple-800 border-purple-100",
+    dot: "bg-purple-400",
+  },
+  error: {
+    label: "Error",
+    color: "bg-red-50 text-red-800 border-red-100",
+    dot: "bg-red-400",
+  },
+};
+
+export function LeadTable({
+  leads,
+  searchTerms,
+  showSummary = true,
+}: LeadTableProps) {
+  const highlightTerms = searchTerms ? [searchTerms] : [];
+
+  // Calculate summary statistics for business insights
+  const summaryStats = React.useMemo(() => {
+    const total = leads.length;
+    const pending = leads.filter((l) => l.status === "pending").length;
+    const scraped = leads.filter((l) => l.status === "scraped").length;
+    const enriched = leads.filter((l) => l.status === "enriched").length;
+    const verifiedEmail = leads.filter((l) => l.verify_email_status === "verified").length;
+
+    return {
+      total,
+      pending,
+      scraped,
+      enriched,
+      verifiedEmail
+    };
+  }, [leads]);
+
+  return (
+    <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+      <Table>
+        <TableHeader>
+          <TableRow className="border-gray-200 border-b-2 bg-gray-50/80 hover:bg-gray-50/80">
+            <TableHead className="h-12 px-4 font-semibold text-gray-900 text-sm text-center">
+              Source
+            </TableHead>
+            <TableHead className="h-12 px-4 font-semibold text-gray-900 text-sm">
+              Web URL / Title
+            </TableHead>
+            <TableHead className="h-12 px-4 font-semibold text-gray-900 text-sm text-center">
+              Status
+            </TableHead>
+            <TableHead className="h-12 px-4 font-semibold text-gray-900 text-sm text-center">
+              Verify Email status
+            </TableHead>
+            <TableHead className="h-12 px-4 font-semibold text-gray-900 text-sm text-center">
+              Created At
+            </TableHead>
+            <TableHead className="h-12 w-[120px] px-4 font-semibold text-gray-900 text-sm text-center">
+              Actions
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {leads.map((lead) => (
+            <LeadRow
+              highlightTerms={highlightTerms}
+              key={lead.id}
+              lead={lead}
+            />
+          ))}
+        </TableBody>
+      </Table>
+
+      {/* Business Summary Footer */}
+      {showSummary && leads.length > 0 && (
+        <div className="border-gray-200 border-t bg-gray-50/50 px-6 py-4">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center space-x-6 text-gray-600">
+              <span className="font-medium">
+                {summaryStats.total} Total Leads
+              </span>
+              <span className="flex items-center space-x-1">
+                <div className="mr-1 h-2 w-2 rounded-full bg-indigo-500" />
+                {summaryStats.scraped} Scraped
+              </span>
+              <span className="flex items-center space-x-1">
+                <div className="mr-1 h-2 w-2 rounded-full bg-purple-500" />
+                {summaryStats.enriched} Enriched
+              </span>
+              <span className="flex items-center space-x-1">
+                <div className="mr-1 h-2 w-2 rounded-full bg-green-500" />
+                {summaryStats.verifiedEmail} Verified Email
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const LeadRow = ({
+  lead,
+  highlightTerms,
+}: {
+  lead: Lead;
+  highlightTerms: string[];
+}) => {
+  const sourceInfo = leadSourceConfig[lead.source];
+
+  const statusInfo = statusConfig[lead.status] || {
+    label: lead.status || "N/A",
+    color: "bg-gray-100 text-gray-800 border-gray-200",
+    dot: "bg-gray-400",
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const router = useRouter();
+
+  const totalScore = leadScoringService.scoreLead(lead);
+
+  return (
+    <TableRow
+      className="group cursor-pointer transition-colors hover:bg-indigo-50/50"
+      key={lead.id}
+      aria-label={`Lead ${lead.url}`}
+    >
+      {/* Source */}
+      <TableCell className="py-3 text-center align-middle">
+        <Badge className={sourceInfo.badge + "gap-1 px-2 py-1 font-semibold border rounded"}>
+          {sourceInfo.label}
+        </Badge>
+      </TableCell>
+
+      {/* Web URL / Title */}
+      <TableCell className="py-3 pl-4 align-middle max-w-[270px]">
+        <div className="font-medium max-w-[270px] text-gray-900 text-sm">
+          <div className="flex items-center gap-1">
+            <a
+              href={lead.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center"
+              title={lead.url}
+              aria-label="Open link"
+            >
+              <Link className="h-3 w-3" aria-hidden="true" />
+            </a>
+            <div className="truncate max-w-[270px] gap-1">
+              <HighlightText
+                highlightClassName="bg-yellow-200 text-yellow-900 px-1 rounded"
+                highlightTerms={highlightTerms}
+                text={lead.url}
+              />
+            </div>
+          </div>
+          <div className="truncate max-w-[200px] text-gray-500 text-xs mt-1">
+            <span>{lead.scrap_info?.title || "N/A"}</span>
+          </div>
+        </div>
+      </TableCell>
+
+      {/* Status */}
+      <TableCell className="py-3 text-center align-middle">
+        <div className="flex flex-col items-center">
+          <Badge className={statusInfo.color + " inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold border rounded mb-1"}>
+            <div className={`mr-1.5 h-2 w-2 rounded-full ${statusInfo.dot}`} />
+            {statusInfo.label}
+          </Badge>
+          {totalScore > 0 && (
+            <span className="text-sm font-medium text-gray-500 gap-1 mt-0.5">
+              Score: {totalScore}
+            </span>
+          )}
+        </div>
+      </TableCell>
+
+      {/* Verify Email Status */}
+      <TableCell className="py-3 align-middle">
+        <div className="flex flex-col items-center">
+          <div className="flex items-center justify-center gap-2">
+            {(() => {
+              if (lead.verify_email_status === "verified") {
+                return (
+                  <>
+                    <CheckCircle2 className="h-4 w-4 text-green-500" aria-label="Verified" />
+                    <span className="text-sm font-medium text-green-700">Verified</span>
+                  </>
+                );
+              } else if (lead.verify_email_status === "pending") {
+                return (
+                  <>
+                    <Clock className="h-4 w-4 text-gray-400" aria-label="Pending" />
+                    <span className="text-sm font-medium text-gray-600">Pending</span>
+                  </>
+                );
+              } else if (lead.verify_email_status === "failed") {
+                return (
+                  <>
+                    <XCircle className="h-4 w-4 text-red-500" aria-label="Failed" />
+                    <span className="text-sm font-medium text-red-700">Failed</span>
+                  </>
+                );
+              } else if (lead.verify_email_status === "invalid") {
+                return (
+                  <>
+                    <XCircle className="h-4 w-4 text-orange-500" aria-label="Invalid" />
+                    <span className="text-sm font-medium text-orange-700">Invalid</span>
+                  </>
+                );
+              } else {
+                return (
+                  <span className="text-sm font-medium text-gray-400">N/A</span>
+                );
+              }
+            })()}
+          </div>
+          <span className="text-sm font-medium text-gray-500 gap-1 mt-1 flex items-center">
+            <Mail className="h-4 w-4 mr-1 text-gray-400" aria-label="Email" />
+            {lead.scrap_info?.emails && lead.scrap_info?.emails?.length > 0 ? lead.scrap_info.emails[0] : "Not found"}
+          </span>
+        </div>
+      </TableCell>
+
+      {/* Created At */}
+      <TableCell className="py-3 text-center align-middle">
+        <div className="flex items-center justify-center gap-1 text-sm text-gray-500">
+          <Calendar className="h-4 w-4 text-gray-400" aria-hidden="true" />
+          <time dateTime={lead.created_at}>{formatDate(lead.created_at)}</time>
+        </div>
+      </TableCell>
+
+      {/* Quick Actions */}
+      <TableCell className="py-3 text-center align-middle">
+        <div className="flex items-center justify-center space-x-1">
+          <Button
+            className="h-7 w-7 p-0 hover:bg-indigo-100 hover:text-indigo-700 focus:ring-2 focus:ring-indigo-500/20"
+            size="sm"
+            title="View Details"
+            variant="ghost"
+            aria-label="View Lead Details"
+            type="button"
+            onClick={() => router.push(`/dashboard/leads/${lead.id}`)}
+          >
+            <Eye className="h-4 w-4" aria-hidden="true" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+};
