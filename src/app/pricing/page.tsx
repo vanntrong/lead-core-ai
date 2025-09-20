@@ -156,7 +156,7 @@ export default async function PricingPage() {
                   </ul>
 
                   <Link
-                    href={`/checkout?plan=${plan.tier}`}
+                    href={user ? `/checkout?plan=${plan.tier}` : "/login"}
                     className={`w-full py-3 px-5 rounded-xl font-semibold text-base transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 ${getButtonStyles(isPopular, isEnterprise)} block text-center no-underline`}
                   >
                     <span className="flex items-center justify-center gap-2">

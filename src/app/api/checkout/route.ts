@@ -1,22 +1,21 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { getStripePlans, stripe } from "@/lib/stripe";
-import { createAdminClient } from "@/lib/supabase/admin";
+import pricingPlans from '@/config/pricing-plans.json';
+import { saasSource } from '@/constants/saas-source';
+import { stripe } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
 	try {
-		const { planId } = await req.json();
+		const { planId, sources, referral } = await req.json();
 
-		// Load dynamic plans from database
-		const stripePlans = await getStripePlans();
-
-		if (!(planId && stripePlans[planId as keyof typeof stripePlans])) {
+		// Check if planId matches any priceId in pricing-plans.json
+		const matchedPlan = pricingPlans.find(plan => plan.priceId === planId);
+		if (!matchedPlan) {
 			return NextResponse.json({ error: "Invalid plan ID" }, { status: 400 });
 		}
 
 		// Get current user
 		const supabase = await createClient();
-		const adminSupabase = createAdminClient();
 		const {
 			data: { user },
 		} = await supabase.auth.getUser();
@@ -25,111 +24,74 @@ export async function POST(req: NextRequest) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		// Get user's company and profile
-		const { data: userData } = await supabase
-			.from("users_view")
-			.select("company_id, email, first_name, last_name")
-			.eq("id", user.id)
-			.single();
-
-		if (!userData?.company_id) {
-			return NextResponse.json(
-				{ error: "No company associated with user" },
-				{ status: 400 }
-			);
-		}
-
-		// Get company info
-		const { data: company } = await supabase
-			.from("companies")
-			.select("id, name, email, stripe_customer_id")
-			.eq("id", userData.company_id)
-			.single();
-
-		if (!company) {
-			return NextResponse.json({ error: "Company not found" }, { status: 400 });
-		}
-
 		// Check if company already has an active subscription
 		const { data: existingSubscription } = await supabase
 			.from("subscriptions")
 			.select("*")
-			.eq("company_id", company.id)
-			.order("created_at", { ascending: false })
-			.limit(1)
+			.eq("user_id", user.id)
+			.eq("status", "active")
 			.single();
 
-		if (["trialing", "active"].includes(existingSubscription?.status)) {
+		if (existingSubscription && existingSubscription.plan_tier === matchedPlan.tier) {
 			return NextResponse.json(
-				{ error: "Company already has an active subscription" },
+				{ error: "You are already subscribed to this plan" },
 				{ status: 400 }
 			);
 		}
 
-		// Get plan from database
-		const { data: plan } = await supabase
-			.from("plans")
+		const { data: existingCustomer } = await supabase
+			.from("stripe_customers")
 			.select("*")
-			.eq("tier", planId)
+			.eq("user_id", user.id)
+			.eq("status", "active")
 			.single();
 
-		if (!plan) {
-			return NextResponse.json(
-				{ error: "Plan not found in database" },
-				{ status: 400 }
-			);
+		let customerId: string = "";
+
+		if (existingCustomer) {
+			customerId = existingCustomer.stripe_customer_id;
 		}
 
-		const planConfig = stripePlans[planId as keyof typeof stripePlans];
-
-		// Create or get Stripe customer
-		let customerId: string;
-
-		if (company.stripe_customer_id) {
-			customerId = company.stripe_customer_id;
-		} else {
-			// Create new Stripe customer
+		if (!existingCustomer) {
+			// Create or get Stripe customer
 			const customer = await stripe.customers.create({
-				email: userData.email,
-				name: `${userData.first_name} ${userData.last_name}`,
+				email: user.email,
+				name: `${user.user_metadata.first_name} ${user.user_metadata.last_name}`,
 				metadata: {
-					company_id: company.id,
-					company_name: company.name,
 					user_id: user.id,
+					referral: referral,
+					app: "leadcoreai",
 				},
 			});
-
-			await adminSupabase
-				.from("companies")
-				.update({ stripe_customer_id: customer.id })
-				.eq("id", company.id);
-
 			customerId = customer.id;
 		}
 
-		// Create Stripe checkout session with trial if user haven't trial before
-		const isTrialedBefore = !!existingSubscription;
+		const planLimits = {
+			sources: matchedPlan?.limits?.sources === "unlimited" ? Object.keys(saasSource) : sources,
+			leads_per_month: matchedPlan?.limits?.leads_per_month,
+			export_enabled: matchedPlan?.limits?.export_enabled,
+			zapier_export: matchedPlan?.limits?.zapier_export
+		};
 
 		const session = await stripe.checkout.sessions.create({
 			customer: customerId,
 			payment_method_types: ["card"],
 			line_items: [
 				{
-					price: planConfig.priceId,
+					price: planId,
 					quantity: 1,
 				},
 			],
 			mode: "subscription",
 			subscription_data: {
-				...(isTrialedBefore ? {} : { trial_period_days: 7 }),
 				metadata: {
-					company_id: company.id,
-					plan_id: plan.id,
 					user_id: user.id,
+					plan_limits: JSON.stringify(planLimits),
 				},
 			},
+			...(referral ? { client_reference_id: referral } : {}),
 			success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
-			cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
+			cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout?plan=${matchedPlan.tier}`,
 		});
 
 		return NextResponse.json({ url: session.url });

@@ -1,7 +1,7 @@
-import { ArrowLeft, Globe, Lock } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import Footer from "@/components/footer";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Globe } from "lucide-react";
+import Link from "next/link";
 
 export default function PrivacyPolicyPage() {
   return (

@@ -1,5 +1,6 @@
 "use client";
 import Footer from "@/components/footer";
+import RewardfulScript from "@/components/rewardfull-script";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import pricingPlans from "@/config/pricing-plans.json";
@@ -7,6 +8,7 @@ import { ArrowLeft, Check, Crown, Globe, Shield, Star, Zap } from "lucide-react"
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const SOURCES = [
   { value: "woocommerce", label: "WooCommerce" },
@@ -21,6 +23,8 @@ export default function CheckoutPage() {
   const planParam = searchParams.get("plan")?.toLowerCase() || "";
   const plan = pricingPlans.find(p => p.tier === planParam);
   const [source, setSource] = useState("");
+  const [referral, setReferral] = useState(null)
+  const [loading, setLoading] = useState(false);
 
   const getPlanIcon = (tier: string) => {
     switch (tier) {
@@ -32,11 +36,59 @@ export default function CheckoutPage() {
   };
 
   useEffect(() => {
+    const checkRewardful = () => {
+      if (window.Rewardful && typeof window.Rewardful === 'function') {
+        window.rewardful('ready', () => {
+          setReferral(window.Rewardful.referral)
+          console.log('Rewardful.referral', window.Rewardful.referral);
+        });
+      } else {
+        setTimeout(checkRewardful, 100);
+      }
+    };
+    checkRewardful();
+  }, []);
+
+  useEffect(() => {
     if (!planParam || !plan) {
       // Redirect to pricing page if plan is missing or invalid
       router.replace("/pricing");
     }
   }, [planParam, plan, router]);
+
+  let buttonText = "Proceed to Payment";
+  if (loading) {
+    buttonText = "Processing...";
+  } else if (planParam === "basic" && !source) {
+    buttonText = "Select a data source to continue";
+  }
+
+  const handleCheckout = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          planId: plan?.priceId,
+          sources: source ? [source] : [],
+          referral,
+        }),
+      });
+      const data = await res.json();
+      console.log(data);
+      if (data.url) {
+        window.location.href = data.url; // Redirect to Stripe or payment page
+      } else {
+        // Handle error
+        toast.error("Checkout failed");
+      }
+    } catch (err) {
+      console.error("Checkout error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!planParam || !plan) {
     return (
@@ -56,6 +108,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      <RewardfulScript />
       {/* Navigation */}
       <nav className="sticky top-0 z-50 border-gray-100 border-b bg-white/95 backdrop-blur-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -199,9 +252,12 @@ export default function CheckoutPage() {
             {/* Checkout Button */}
             <Button
               className="w-full h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold text-lg transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-              disabled={planParam === "basic" && !source}
+              disabled={planParam === "basic" && !source || loading}
+              onClick={handleCheckout}
             >
-              {planParam === "basic" && !source ? "Select a data source to continue" : "Proceed to Payment"}
+              {loading
+                ? "Processing..."
+                : buttonText}
             </Button>
 
             <p className="text-xs text-gray-500 text-center mt-4">

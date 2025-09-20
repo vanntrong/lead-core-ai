@@ -33,7 +33,7 @@ export interface VerifyEmailInfo {
 }
 
 // Extend DB row with typed scrap_info for better DX in UI
-export interface Lead extends Omit<LeadRow, "scrap_info" | "enrich_info"> {
+export interface Lead extends Omit<LeadRow, "scrap_info" | "enrich_info" | "verify_email_info"> {
   scrap_info: LeadScrapInfo | null;
   enrich_info: LeadEnrichInfo | null;
   verify_email_info?: VerifyEmailInfo[];

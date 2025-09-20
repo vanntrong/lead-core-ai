@@ -40,8 +40,8 @@ CREATE TABLE leads (
     status lead_status NOT NULL DEFAULT 'pending',
     verify_email_status verify_email_status NOT NULL DEFAULT 'pending',
     scrap_info JSONB, -- raw scraping info
-    enrich_info JSONB -- enrichment results
-    total_score INT, -- total score from enrich_info and verify_email_info
+    enrich_info JSONB, -- enrichment results
+    verify_email_info JSONB -- email verification results
 );
 
 CREATE INDEX idx_leads_user_id ON leads(user_id);
@@ -71,8 +71,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create trigger for updated_at
-DROP TRIGGER IF EXISTS set_lead_updated_at ON lead;
+DROP TRIGGER IF EXISTS set_lead_updated_at ON leads;
 CREATE TRIGGER set_lead_updated_at
-  BEFORE UPDATE ON lead
+  BEFORE UPDATE ON leads
   FOR EACH ROW
   EXECUTE FUNCTION update_lead_updated_at();
