@@ -75,7 +75,6 @@ async function processJobsForUser(user_id) {
       console.error(`Enrichment failed for job ${job.id}:`, err);
     }
   }
-  let total_score = 0;
   const updateData = enrichFailed ? {
     status: "scraped",
     enrich_info: null
@@ -98,7 +97,6 @@ async function processJobsForUser(user_id) {
       verifyEmailData = await verifyEmailSync(emails[0]);
       if (verifyEmailData && verifyEmailData.length > 0 && verifyEmailData[0].status === "valid") {
         verifyEmailStatus = "verified";
-        total_score += 30; // add score for verified email
       }
     } catch (err) {
       verifyEmailStatus = "failed";
@@ -107,8 +105,7 @@ async function processJobsForUser(user_id) {
   }
   const updateVerifyEmailData = {
     verify_email_status: verifyEmailStatus,
-    verify_email_info: verifyEmailData,
-    total_score
+    verify_email_info: verifyEmailData
   };
   const { error: updateVerifyEmailError } = await supabase.from("leads").update(updateVerifyEmailData).eq("id", job?.id);
   if (updateVerifyEmailError) {

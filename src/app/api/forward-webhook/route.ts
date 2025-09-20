@@ -1,8 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from "@/lib/supabase/server";
+import { Subscription } from '@/types/subscription';
+
 
 export async function POST(req: NextRequest) {
+  const { webhookUrl, data } = await req.json();
+
   try {
-    const { webhookUrl, data } = await req.json();
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: subscription, error: subError }: { data: Subscription | null, error: Error | null } = await supabase
+      .from("subscriptions")
+      .select("*, usage_limits(*)")
+      .eq("subscription_status", "active")
+      .single();
+
+    if (subError) {
+      return NextResponse.json({ error: 'No active subscription found' }, { status: 403 });
+    }
+
+    if (!subscription?.usage_limits?.zapier_export) {
+      return NextResponse.json({ error: 'No usage limits found for active subscription' }, { status: 403 });
+    }
+
     if (!webhookUrl || !data) {
       return new Response(JSON.stringify({ error: 'Missing webhookUrl or data' }), { status: 400 });
     }

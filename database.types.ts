@@ -91,6 +91,7 @@ export type Database = {
           period_start: string
           plan_tier: Database["public"]["Enums"]["plan_tier"]
           stripe_price_id: string
+          stripe_subscription_id: string | null
           subscription_status: Database["public"]["Enums"]["subscription_status"]
           updated_at: string
           usage_limit_id: string | null
@@ -103,6 +104,7 @@ export type Database = {
           period_start: string
           plan_tier: Database["public"]["Enums"]["plan_tier"]
           stripe_price_id: string
+          stripe_subscription_id?: string | null
           subscription_status?: Database["public"]["Enums"]["subscription_status"]
           updated_at?: string
           usage_limit_id?: string | null
@@ -115,6 +117,7 @@ export type Database = {
           period_start?: string
           plan_tier?: Database["public"]["Enums"]["plan_tier"]
           stripe_price_id?: string
+          stripe_subscription_id?: string | null
           subscription_status?: Database["public"]["Enums"]["subscription_status"]
           updated_at?: string
           usage_limit_id?: string | null

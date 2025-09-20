@@ -10,13 +10,9 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { useRetrieveStripeSession } from "@/hooks/use-stripe-session";
-import {
-	useCreateBillingPortalSession,
-	useCurrentSubscription
-} from "@/hooks/use-subscription-old";
-import { formatPrice } from "@/lib/subscription-old";
-import { PLANS } from "@/constants/plans";
+import pricingPlans from "@/config/pricing-plans.json";
+import { useUserActiveSubscription, useUserSubscription } from "@/hooks/use-subscription";
+import { formatPrice } from "@/lib/subscription";
 import {
 	BarChart3,
 	Bell,
@@ -31,28 +27,28 @@ import {
 import Link from "next/link";
 
 export default function Dashboard() {
-	const { data: currentSubscription, isLoading, error } = useCurrentSubscription();
-	const createBillingPortal = useCreateBillingPortalSession();
+	const { data: activeSubscription, isLoading, error } = useUserActiveSubscription();
+
 	// const retrieveSession = useRetrieveStripeSession();
 
 	// const handleBillingClick = () => {
 	// 	createBillingPortal.mutate();
 	// };
 
-	// if (isLoading || retrieveSession.isPending) {
-	// 	return (
-	// 		<div className="flex min-h-screen items-center justify-center bg-background">
-	// 			<div className="text-center">
-	// 				<div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-	// 				<p className="text-muted-foreground">
-	// 					{retrieveSession.isPending
-	// 						? "Setting up your subscription..."
-	// 						: "Loading dashboard..."}
-	// 				</p>
-	// 			</div>
-	// 		</div>
-	// 	);
-	// }
+	if (isLoading) {
+		return (
+			<div className="flex min-h-screen items-center justify-center bg-background">
+				<div className="text-center">
+					<div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+					{/* <p className="text-muted-foreground">
+						{retrieveSession.isPending
+							? "Setting up your subscription..."
+							: "Loading dashboard..."}
+					</p> */}
+				</div>
+			</div>
+		);
+	}
 
 	if (error) {
 		return (
@@ -68,12 +64,12 @@ export default function Dashboard() {
 		);
 	}
 
-	const _subscription = currentSubscription;
-	// Map subscription to plan from PLANS
+	const _subscription = activeSubscription;
+	// Map subscription to plan from pricingPlans
 	const mappedPlan = _subscription
-		? PLANS.find(
+		? pricingPlans.find(
 			(plan) =>
-				plan.id === _subscription.plan_id
+				plan.tier === _subscription.plan_tier
 		)
 		: null;
 
@@ -260,7 +256,7 @@ export default function Dashboard() {
 								<div>
 									<h4 className="mb-2 font-semibold">Current Plan</h4>
 									<p className="text-muted-foreground text-sm">
-										{mappedPlan.name} - {formatPrice(mappedPlan.price_monthly)}/month
+										{mappedPlan.name} - {formatPrice(mappedPlan.priceMonthly)}/month
 									</p>
 									<ul className="mt-2 text-xs text-gray-600 list-disc pl-4">
 										{mappedPlan.features.map((feature) => (
@@ -273,12 +269,12 @@ export default function Dashboard() {
 									<h4 className="mb-2 font-semibold">Status</h4>
 									<Badge
 										variant={
-											_subscription.status === "active"
+											_subscription.subscription_status === "active"
 												? "default"
 												: "secondary"
 										}
 									>
-										{_subscription.status}
+										{_subscription.subscription_status}
 									</Badge>
 								</div>
 

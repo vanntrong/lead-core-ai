@@ -53,6 +53,10 @@ export function AddLeadDialog({ isOpen, onClose }: AddLeadDialogProps) {
 	// Disable source if no active subscription or no sources available
 	const isSourceDisabled = sourceSelected && !activeSubscription?.usage_limits?.sources?.includes(sourceSelected);
 
+	const isNeedUpgrade =
+		!activeSubscription ||
+		(activeSubscription?.usage_limits?.current_leads ?? 0) >= (activeSubscription?.usage_limits?.max_leads ?? 0);
+
 	const handleClose = () => {
 		reset();
 		setSubmitError(null);
@@ -157,7 +161,7 @@ export function AddLeadDialog({ isOpen, onClose }: AddLeadDialogProps) {
 								</Button>
 							</DialogClose>
 							{
-								isSourceDisabled ? (
+								(isSourceDisabled || isNeedUpgrade) ? (
 									<Button
 										className="flex-1 from-indigo-600 to-purple-600"
 										type="button"

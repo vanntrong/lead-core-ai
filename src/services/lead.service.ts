@@ -5,7 +5,7 @@ import { CreateLeadData, Lead, LeadFilters, LeadScrapInfo, LeadStats, PaginatedL
 import { Json } from '../../database.types';
 import { playwrightScrapeService } from "./playwright-scrape.service";
 import { subscriptionService } from "./subscription.service";
-
+import { usageLimitService } from "./usage-limit.service";
 
 export class LeadService {
   private async getSupabaseClient() {
@@ -217,6 +217,10 @@ export class LeadService {
       console.error("Error creating lead:", error);
       throw new Error(`Failed to create lead: ${error.message}`);
     }
+
+    usageLimitService.increCurrentLeads().catch((err) => {
+      console.error("Error updating usage limit:", err);
+    });
 
     return newLead;
   }
