@@ -18,12 +18,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Download, Loader2, AlertCircle } from "lucide-react";
+import { Download, Loader2, AlertCircle, Crown } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { leadExportService } from "@/services/lead-export.service";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
+import { useUserActiveSubscription } from "@/hooks/use-subscription";
 
 interface ExportLeadData {
   format: "csv" | "google-sheets" | "zapier";
@@ -56,6 +57,7 @@ export function ExportLeadDialog({ isOpen, onClose, leadData }: ExportLeadDialog
   const [submitError, setSubmitError] = React.useState<string | null>(null);
   const [isExporting, setIsExporting] = React.useState(false);
   const selectedFormat = watch("format");
+  const { data: activeSubscription } = useUserActiveSubscription();
 
   const handleClose = () => {
     reset();
@@ -222,6 +224,7 @@ export function ExportLeadDialog({ isOpen, onClose, leadData }: ExportLeadDialog
                   className="mt-2 w-full"
                   placeholder="https://hooks.zapier.com/..."
                   {...register("webhookUrl")}
+                  disabled={activeSubscription?.plan_tier === "pro" && selectedFormat === "zapier"}
                   required
                 />
                 {errors.webhookUrl && (
@@ -254,23 +257,36 @@ export function ExportLeadDialog({ isOpen, onClose, leadData }: ExportLeadDialog
                   Cancel
                 </Button>
               </DialogClose>
-              <Button
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700"
-                disabled={isExporting || isSubmitting || !selectedFormat}
-                type="submit"
-              >
-                {(isExporting || isSubmitting) ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Exporting...
-                  </>
+              {
+                (activeSubscription?.plan_tier === "pro" && selectedFormat === "zapier") ? (
+                  <Button
+                    className="flex-1 from-indigo-600 to-purple-600"
+                    disabled={isExporting || isSubmitting}
+                    type="button"
+                  >
+                    <Crown className="mr-2 h-4 w-4 text-yellow-300" />
+                    Upgrade to export
+                  </Button>
                 ) : (
-                  <>
-                    <Download className="mr-2 h-4 w-4" />
-                    Export Lead
-                  </>
-                )}
-              </Button>
+                  <Button
+                    className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+                    disabled={isExporting || isSubmitting || !selectedFormat}
+                    type="submit"
+                  >
+                    {(isExporting || isSubmitting) ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Exporting...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="mr-2 h-4 w-4" />
+                        Export Lead
+                      </>
+                    )}
+                  </Button>
+                )
+              }
             </div>
           </form>
         </div>

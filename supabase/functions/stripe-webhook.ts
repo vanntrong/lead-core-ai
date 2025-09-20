@@ -1,23 +1,23 @@
 // LeadCore AI - Supabase Edge Function (Deno)
 // Webhook handler: Save Stripe subscription events to subscriptions table
 // File: supabase/functions/stripe-webhook.ts
-
-import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
+import Stripe from 'https://esm.sh/stripe@14?target=denonext';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
+const stripe = new Stripe(Deno.env.get('STRIPE_API_KEY'));
+const cryptoProvider = Stripe.createSubtleCryptoProvider();
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const stripeWebhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET")
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-serve(async (req) => {
-  if (req.method !== "POST") {
-    return new Response("Method Not Allowed", { status: 405 });
-  }
-
+Deno.serve(async (req: Request) => {
+  const signature = req.headers.get('Stripe-Signature');
   let event;
   try {
-    event = await req.json();
+    event = await stripe.webhooks.constructEventAsync(req.body, signature, stripeWebhookSecret, undefined, cryptoProvider);
   } catch (err) {
+    console.error("Failed to parse JSON:", err);
     return new Response("Invalid JSON", { status: 400 });
   }
 
@@ -29,30 +29,46 @@ serve(async (req) => {
   }
 
   try {
-  switch (type) {
+    switch (type) {
       case "customer.subscription.created": {
-        const planId = object.metadata?.plan_id;
-        if (!planId) {
-          return new Response("Missing metadata", { status: 400 });
+        // Extract all relevant metadata fields from Stripe subscription
+        const meta = object.metadata || {};
+        const userId = meta.user_id;
+        const source = meta.source;
+        const priceId = object.items?.data[0]?.price?.id;
+        if (!priceId) {
+          return new Response("Missing priceId", { status: 400 });
         }
-        // Insert with structure inspired by leadcore_enrich_jobs.sql
-        // Insert according to subscriptions table schema
-        const { error } = await supabase.from("subscriptions").insert({
-          user_id: object.metadata?.user_id,
-          plan_tier: object.metadata?.plan_tier,
-          price_monthly: object.items?.data[0]?.price?.unit_amount ?? null,
-          status: object.status ?? "active",
-          leads_per_month: object.metadata?.leads_per_month ? Number(object.metadata.leads_per_month) : null,
-          sources: object.metadata?.sources ? JSON.parse(object.metadata.sources) : null,
-          features: object.metadata?.features ? JSON.parse(object.metadata.features) : null,
-          stripe_price_id: object.items?.data[0]?.price?.id,
-          started_at: object.start_date ? new Date(object.start_date * 1000).toISOString() : new Date().toISOString(),
-          trial_end: object.trial_end ? new Date(object.trial_end * 1000).toISOString() : null,
-          canceled_at: object.canceled_at ? new Date(object.canceled_at * 1000).toISOString() : null,
-          updated_at: new Date().toISOString(),
+
+        // Map priceId to pricingPlans
+        const plan = pricingPlans.find(p => p.priceId === priceId);
+        if (!plan) {
+          return new Response("Invalid priceId", { status: 400 });
+        }
+
+        // Create usage_limits for this plan_tier if not exists
+        const usageLimit = await createUsageLimit({
+          plan_tier: plan.tier,
+          sources: plan.limits.sources === "unlimited" ? ["etsy", "woocommerce", "shopify", "g2"] : source,
+          max_leads: plan.limits.leads_per_month === "unlimited" ? -1 : Number(plan.limits.leads_per_month),
+          current_leads: 0,
+          export_enabled: plan.limits.export_enabled,
+          zapier_export: plan.limits.zapier_export,
+          period_start: object.current_period_start ? new Date(object.current_period_start * 1000).toISOString() : null,
+          period_end: object.current_period_end ? new Date(object.current_period_end * 1000).toISOString() : null,
         });
-        if (error) {
-          return new Response(`DB error: ${error.message}`, { status: 500 });
+
+        // Insert into subscriptions
+        const subResult = await createSubscription({
+          user_id: userId,
+          usage_limit_id: usageLimit?.id ?? null,
+          plan_tier: plan.tier,
+          stripe_price_id: priceId,
+          period_start: object.current_period_start ? new Date(object.current_period_start * 1000).toISOString() : new Date().toISOString(),
+          period_end: object.current_period_end ? new Date(object.current_period_end * 1000).toISOString() : null,
+        });
+        if (subResult.error) {
+          return new Response(`DB error: ${subResult.error.message}`, { status: 500 });
         }
         break;
       }
@@ -73,7 +89,6 @@ serve(async (req) => {
             canceled_at: object.canceled_at
               ? new Date(object.canceled_at * 1000).toISOString()
               : null,
-            event_type: type,
             updated_at: new Date().toISOString(),
             leads_per_month: leadsLimit,
           })
@@ -83,6 +98,7 @@ serve(async (req) => {
         }
         break;
       }
+
       case "customer.subscription.deleted": {
         const { error } = await supabase
           .from("subscriptions")
@@ -98,6 +114,7 @@ serve(async (req) => {
         }
         break;
       }
+
       case "customer.deleted": {
         // Mark all subscriptions for this customer as deleted/canceled
         const { error: subError } = await supabase
@@ -132,6 +149,95 @@ serve(async (req) => {
     }
     return new Response("Webhook processed", { status: 200 });
   } catch (err) {
-    return new Response(`Handler error: ${err.message}`, { status: 500 });
+    const errorMessage = typeof err === "object" && err !== null && "message" in err ? (err as { message: string }).message : String(err);
+    return new Response(`Handler error: ${errorMessage}`, { status: 500 });
   }
 });
+
+async function createUsageLimit({
+  user_id = "",
+  plan_tier = "",
+  sources = [],
+  max_leads = 0,
+  current_leads = 0,
+  export_enabled = false,
+  zapier_export = false,
+  period_start = null,
+  period_end = null,
+}) {
+  const existing = await supabase.from("subscriptions").select().eq("user_id", user_id).eq("plan_tier", plan_tier).eq("subscription_status", 'active').single();
+  if (existing) throw new Error('User already has active subscription for this plan');
+
+  const { data, error } = await supabase.from("usage_limits").insert({
+    plan_tier,
+    sources,
+    max_leads,
+    current_leads,
+    export_enabled,
+    zapier_export,
+    period_start,
+    period_end,
+  }).select().single();
+  if (error) {
+    console.error("Error creating usage_limits:", error);
+    return null;
+  }
+  return data;
+}
+
+async function createSubscription({
+  user_id = "",
+  plan_tier = "",
+  stripe_price_id = "",
+  period_start = null,
+  period_end = null,
+  usage_limit_id = null,
+}) {
+  const existing = await supabase.from("subscriptions").select().eq("user_id", user_id).eq("plan_tier", plan_tier).eq("subscription_status", 'active').single();
+  if (existing) throw new Error('User already has active subscription for this plan');
+
+  const sub = await supabase.from("subscriptions").insert({
+    user_id,
+    usage_limit_id,
+    plan_tier,
+    subscription_status: 'active',
+    stripe_price_id,
+    period_start,
+    period_end,
+  });
+
+  return sub;
+}
+
+const pricingPlans = [
+  {
+    tier: "basic",
+    priceId: "price_1S9FJBG2cJrqXSBvC5Oyd5Km",
+    limits: {
+      sources: 1,
+      leads_per_month: 100,
+      export_enabled: false,
+      zapier_export: false
+    }
+  },
+  {
+    tier: "pro",
+    priceId: "price_1S9FJbG2cJrqXSBvQhFaDnAi",
+    limits: {
+      sources: "unlimited",
+      leads_per_month: 500,
+      export_enabled: true,
+      zapier_export: false
+    }
+  },
+  {
+    tier: "unlimited",
+    priceId: "price_1S9FK0G2cJrqXSBvluk26Kw0",
+    limits: {
+      sources: "unlimited",
+      leads_per_month: "unlimited",
+      export_enabled: true,
+      zapier_export: true
+    }
+  }
+]

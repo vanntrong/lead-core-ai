@@ -55,19 +55,26 @@ export class PlaywrightScrapeService {
       }
 
       // Email extraction directly from HTML
-      const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(?!\.png|\.jpg|\.jpeg|\.gif|\.svg|\.webp|\.ico|\.css|\.js)/g;
+      const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
       let emails: string[] = [];
       // Also extract from mailto links
       const mailtos = await page.$$eval('a[href^="mailto:"]', els => els.map(el => el.getAttribute('href')));
       mailtos.forEach(href => {
         if (href) {
           const mail = href.replace(/^mailto:/, '').split('?')[0];
-          if (emailRegex.test(mail)) emails.push(mail);
+          // Only accept if it looks like a valid email and not a filename
+          if (emailRegex.test(mail) && /^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/.test(mail) && !/\.(png|jpg|jpeg|gif|svg|webp|ico|css|js)$/i.test(mail)) {
+            emails.push(mail);
+          }
         }
       });
-      emails = emails.filter(e => !/(png|jpg|jpeg|gif|svg|webp|ico|css|js)$/i.test(e));
+      // Extract from HTML, but filter out emails that are part of filenames
+      (html.match(emailRegex) || []).forEach(email => {
+        if (/^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/.test(email) && !/\.(png|jpg|jpeg|gif|svg|webp|ico|css|js)$/i.test(email)) {
+          if (!emails.includes(email)) emails.push(email);
+        }
+      });
       emails = Array.from(new Set(emails));
-      (html.match(emailRegex) || []).forEach(email => { if (!emails.includes(email)) emails.push(email); });
       // Title and description extraction
       const title = await page.title();
       const desc = await page.$eval('meta[name="description"]', el => el.getAttribute('content')).catch(() => '') ?? '';

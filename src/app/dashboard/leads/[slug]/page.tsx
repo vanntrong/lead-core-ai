@@ -2,15 +2,20 @@
 
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { ExportLeadDialog } from "@/components/leads/export-lead-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import pricingPlans from "@/config/pricing-plans.json";
 import { useLead } from "@/hooks/use-leads";
+import { useUserActiveSubscription } from "@/hooks/use-subscription";
 import { cn } from "@/lib/utils";
+import { leadScoringService } from "@/services/lead-scoring.service";
 import {
   ArrowLeft,
   Brain,
   Building2,
   Calendar,
   CheckCircle2,
+  Crown,
   Download,
   FileText,
   Globe,
@@ -23,8 +28,8 @@ import {
   XCircle
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Suspense, use as usePromise, useState } from "react";
-import { leadScoringService } from "@/services/lead-scoring.service"
 
 const SOURCE_MAP: Record<string, { label: string; badge: string }> = {
   shopify: {
@@ -42,22 +47,6 @@ const SOURCE_MAP: Record<string, { label: string; badge: string }> = {
   woocommerce: {
     label: "WooCommerce",
     badge: "bg-indigo-100 text-indigo-800 border-indigo-200",
-  },
-  facebook: {
-    label: "Facebook",
-    badge: "bg-blue-100 text-blue-800 border-blue-200",
-  },
-  google: {
-    label: "Google",
-    badge: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  },
-  linkedin: {
-    label: "LinkedIn",
-    badge: "bg-blue-100 text-blue-800 border-blue-200",
-  },
-  manual: {
-    label: "Manual Entry",
-    badge: "bg-gray-100 text-gray-800 border-gray-200",
   },
   unknown: {
     label: "Unknown Source",
@@ -78,6 +67,8 @@ export default function DossierPage({ params }: { params: { slug: string } }) {
 function LeadDossierPage({ leadId }: { leadId: string }) {
   const { data: lead, isLoading: isLoadingLead, isFetching: isFetchingLead, error: leadError, refetch: refetchLead } = useLead(leadId);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const { data: activeSubscription, isLoading, error } = useUserActiveSubscription();
+  const router = useRouter();
 
   if (leadError) {
     return (
@@ -97,15 +88,52 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
     );
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          Loading dashboard...
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <h1 className="mb-4 font-bold text-2xl">Error Loading Dashboard</h1>
+          <p className="mb-6 text-muted-foreground">
+            Failed to load your subscription data.
+          </p>
+          <Button onClick={() => window.location.reload()}>Try Again</Button>
+        </div>
+      </div>
+    );
+  }
+
+  const _subscription = activeSubscription;
+  // Map subscription to plan from pricingPlans
+  const mappedPlan = _subscription
+    ? pricingPlans.find(
+      (plan) =>
+        plan.tier === _subscription.plan_tier
+    )
+    : null;
+
   return (
     <DashboardLayout>
       <div className="border-gray-200 border-b bg-white">
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <div>
-              <h1 className="font-bold text-gray-900 text-xl">
-                Lead Dossier
-              </h1>
+            <div className="flex items-center space-x-4">
+              <h1 className="font-bold text-gray-900 text-xl">Lead Dossier</h1>
+              {_subscription && (
+                <Badge className="border-indigo-200 bg-indigo-50 text-indigo-700">
+                  {mappedPlan?.name}
+                </Badge>
+              )}
             </div>
             <div className="flex items-center space-x-3">
               <Button asChild className="h-9" size="sm" variant="outline">
@@ -128,15 +156,27 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
                 />
                 Refresh
               </Button>
-              <Button
-                className="h-9 bg-indigo-600 hover:bg-indigo-700"
-                size="sm"
-                disabled={!lead}
-                onClick={() => setIsExportDialogOpen(true)}
-              >
-                <Download className="mr-2 h-4 w-4 " />
-                Export
-              </Button>
+              {
+                ["pro", "unlimited"].includes(_subscription?.plan_tier ?? "basic") ? (<Button
+                  className="h-9 bg-indigo-600 hover:bg-indigo-700"
+                  size="sm"
+                  disabled={!lead}
+                  onClick={() => setIsExportDialogOpen(true)}
+                >
+                  <Download className="mr-2 h-4 w-4 " />
+                  Export
+                </Button>
+                ) : (
+                  <Button
+                    className="h-9 from-indigo-600 to-purple-600"
+                    onClick={() => router.push('/pricing')}
+                    size="sm"
+                  >
+                    <Crown className="mr-2 h-4 w-4 text-yellow-300" />
+                    Upgrade to Export
+                  </Button>
+                )
+              }
             </div>
           </div>
         </div>

@@ -1,19 +1,30 @@
 
-import { subscriptionService } from "@/services/subscription.service";
-import { useQuery } from "@tanstack/react-query";
+import { TWO_MINUTES } from "@/constants";
+import { getActiveSubscriptionAction, getSubscriptionsAction } from "@/lib/actions/subscription.actions";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 /**
  * Hook to get user's active subscription
  */
-export function useUserSubscription(userId?: string) {
+export function useUserSubscription() {
 	return useQuery({
-		queryKey: ["subscription", "user", userId],
+		queryKey: ["subscription", "user"],
 		queryFn: () => {
-			if (!userId) throw new Error("User ID is required");
-			return subscriptionService.getActiveSubscription(userId);
+			return getSubscriptionsAction();
 		},
-		enabled: !!userId,
-		staleTime: 5 * 60 * 1000, // 5 minutes
+		staleTime: TWO_MINUTES,
+		placeholderData: keepPreviousData,
+	});
+}
+
+export function useUserActiveSubscription() {
+	return useQuery({
+		queryKey: ["subscription", "user", "active"],
+		queryFn: () => {
+			return getActiveSubscriptionAction();
+		},
+		staleTime: TWO_MINUTES,
+		placeholderData: keepPreviousData,
 	});
 }
 

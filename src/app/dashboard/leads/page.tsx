@@ -3,17 +3,21 @@
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { usePagination } from "@/components/ui/pagination";
-import { Loader2, Plus, RefreshCw } from "lucide-react";
+import { Plus, RefreshCw, Crown } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
+import pricingPlans from "@/config/pricing-plans.json";
 
 import { AddLeadDialog } from "@/components/leads/add-lead-dialog";
 import { LeadFiltersComponent } from "@/components/leads/lead-filters";
 import LeadList from "@/components/leads/lead-list";
 import { LeadStatsCards } from "@/components/leads/lead-stats";
 import { useLeadsPaginated, useLeadStats } from "@/hooks/use-leads";
+import { useUserActiveSubscription } from "@/hooks/use-subscription";
 import { cn } from "@/lib/utils";
 import { LeadFilters } from "@/types/lead";
+import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
 	return (
@@ -26,6 +30,7 @@ export default function Page() {
 function LeadBoardPage() {
 	const [filters, setFilters] = useState<LeadFilters>();
 	const [isAddLeadDialogOpen, setIsAddLeadDialogOpen] = useState(false);
+	const { data: activeSubscription, isLoading, error } = useUserActiveSubscription();
 
 	const {
 		currentPage,
@@ -59,6 +64,7 @@ function LeadBoardPage() {
 		refetch: refetchStats,
 	} = useLeadStats();
 	// const generateMockLoads = useGenerateMockLoads();
+	const router = useRouter();
 
 	// Calculate filtered count for display
 	const totalCount = paginatedResponse?.totalCount || 0;
@@ -84,15 +90,52 @@ function LeadBoardPage() {
 		}
 	};
 
+	if (isLoading) {
+		return (
+			<div className="flex min-h-screen items-center justify-center bg-background">
+				<div className="text-center">
+					<div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+					Loading dashboard...
+				</div>
+			</div>
+		);
+	}
+
+	if (error) {
+		return (
+			<div className="flex min-h-screen items-center justify-center bg-background">
+				<div className="text-center">
+					<h1 className="mb-4 font-bold text-2xl">Error Loading Dashboard</h1>
+					<p className="mb-6 text-muted-foreground">
+						Failed to load your subscription data.
+					</p>
+					<Button onClick={() => window.location.reload()}>Try Again</Button>
+				</div>
+			</div>
+		);
+	}
+
+	const _subscription = activeSubscription;
+	// Map subscription to plan from pricingPlans
+	const mappedPlan = _subscription
+		? pricingPlans.find(
+			(plan) =>
+				plan.tier === _subscription.plan_tier
+		)
+		: null;
+
 	return (
 		<DashboardLayout>
 			<div className="border-gray-200 border-b bg-white">
 				<div className="mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="flex h-16 items-center justify-between">
-						<div>
-							<h1 className="font-bold text-gray-900 text-xl">
-								Lead Management
-							</h1>
+						<div className="flex items-center space-x-4">
+							<h1 className="font-bold text-gray-900 text-xl">Lead Management</h1>
+							{_subscription && (
+								<Badge className="border-indigo-200 bg-indigo-50 text-indigo-700">
+									{mappedPlan?.name}
+								</Badge>
+							)}
 						</div>
 						<div className="flex items-center space-x-3">
 							<Button
@@ -127,14 +170,25 @@ function LeadBoardPage() {
 									</Button>
 								)
 							} */}
-							<Button
-								className="h-9 bg-indigo-600 hover:bg-indigo-700"
-								onClick={handleCreateLead}
-								size="sm"
-							>
-								<Plus className="mr-2 h-4 w-4" />
-								Add Load
-							</Button>
+							{_subscription ? (
+								<Button
+									className="h-9 bg-indigo-600 hover:bg-indigo-700"
+									onClick={handleCreateLead}
+									size="sm"
+								>
+									<Plus className="mr-2 h-4 w-4" />
+									Add Load
+								</Button>
+							) : (
+								<Button
+									className="h-9 from-indigo-600 to-purple-600"
+									onClick={() => router.push('/pricing')}
+									size="sm"
+								>
+									<Crown className="mr-2 h-4 w-4 text-yellow-300" />
+									Upgrade to add leads
+								</Button>
+							)}
 						</div>
 					</div>
 				</div>

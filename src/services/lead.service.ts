@@ -4,6 +4,8 @@ import { leadScoringService } from '@/services/lead-scoring.service';
 import { CreateLeadData, Lead, LeadFilters, LeadScrapInfo, LeadStats, PaginatedLeadResponse, UpdateLeadData } from '@/types/lead';
 import { Json } from '../../database.types';
 import { playwrightScrapeService } from "./playwright-scrape.service";
+import { subscriptionService } from "./subscription.service";
+
 
 export class LeadService {
   private async getSupabaseClient() {
@@ -173,6 +175,25 @@ export class LeadService {
 
     if (!userData.user) {
       throw new Error("User not found");
+    }
+
+    const activeSubscription = await subscriptionService.getUserActiveSubscription();
+    if (!activeSubscription) {
+      throw new Error("No active subscription found. Please subscribe to a plan to add leads.");
+    }
+
+    if (
+      activeSubscription.usage_limits &&
+      typeof activeSubscription.usage_limits.current_leads === "number" &&
+      typeof activeSubscription.usage_limits.max_leads === "number" &&
+      activeSubscription.usage_limits.max_leads !== null &&
+      activeSubscription.usage_limits.current_leads >= activeSubscription.usage_limits.max_leads
+    ) {
+      throw new Error("Lead limit exceeded. Please upgrade your plan.");
+    }
+
+    if (activeSubscription.usage_limits?.sources?.includes(data.source) === false) {
+      throw new Error(`Selected source is not available in your current plan. Please choose a different source or upgrade your plan.`);
     }
 
     const scrapInfo = await playwrightScrapeService.scrape(data.url, data.source);

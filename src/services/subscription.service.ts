@@ -1,19 +1,18 @@
-import { supabase } from "@/lib/supabase";
-import type { Database } from "../../database.types";
-
-type Subscription = Database["public"]["Tables"]["subscriptions"]["Row"];
-type SubscriptionInsert = Database["public"]["Tables"]["subscriptions"]["Insert"];
-type SubscriptionUpdate = Database["public"]["Tables"]["subscriptions"]["Update"];
+import { createClient } from "@/lib/supabase/server";
+import { Subscription, SubscriptionInsert, SubscriptionUpdate } from "@/types/subscription";
 
 export class SubscriptionService {
+  private async getSupabaseClient() {
+    return await createClient();
+  }
   /**
    * Get all subscriptions for a user
    */
-  async getUserSubscriptions(userId: string): Promise<Subscription[]> {
+  async getUserSubscriptions(): Promise<Subscription[]> {
+    const supabase = await this.getSupabaseClient();
     const { data, error } = await supabase
       .from("subscriptions")
       .select("*")
-      .eq("user_id", userId)
       .order("created_at", { ascending: false });
     if (error) throw error;
     return (data as Subscription[]) || [];
@@ -22,21 +21,22 @@ export class SubscriptionService {
   /**
    * Get active subscription for a user
    */
-  async getActiveSubscription(userId: string): Promise<Subscription | null> {
+  async getUserActiveSubscription(): Promise<Subscription | null> {
+    const supabase = await this.getSupabaseClient();
     const { data, error } = await supabase
       .from("subscriptions")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("status", "active")
+      .select("*, usage_limits(*)")
+      .eq("subscription_status", "active")
       .single();
     if (error) return null;
-    return (data as Subscription) || null;
+    return data || null;
   }
 
   /**
    * Create a new subscription
    */
   async createSubscription(sub: SubscriptionInsert): Promise<string | null> {
+    const supabase = await this.getSupabaseClient();
     const { data, error } = await supabase
       .from("subscriptions")
       .insert([sub])
@@ -50,6 +50,7 @@ export class SubscriptionService {
    * Update subscription status
    */
   async updateSubscriptionStatus(id: string, sub: SubscriptionUpdate): Promise<boolean> {
+    const supabase = await this.getSupabaseClient();
     const { error } = await supabase
       .from("subscriptions")
       .update(sub)
@@ -61,6 +62,7 @@ export class SubscriptionService {
    * Cancel a subscription
    */
   async cancelSubscription(id: string): Promise<boolean> {
+    const supabase = await this.getSupabaseClient();
     const { error } = await supabase
       .from("subscriptions")
       .update({ subscription_status: "canceled", canceled_at: new Date().toISOString() })
@@ -72,6 +74,7 @@ export class SubscriptionService {
    * Delete a subscription
    */
   async deleteSubscription(id: string): Promise<boolean> {
+    const supabase = await this.getSupabaseClient();
     const { error } = await supabase
       .from("subscriptions")
       .delete()

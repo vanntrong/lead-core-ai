@@ -1,12 +1,11 @@
 import pricingPlans from '@/config/pricing-plans.json';
-import { saasSource } from '@/constants/saas-source';
 import { stripe } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase/server";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
 	try {
-		const { planId, sources, referral } = await req.json();
+		const { planId, source, referral } = await req.json();
 
 		// Check if planId matches any priceId in pricing-plans.json
 		const matchedPlan = pricingPlans.find(plan => plan.priceId === planId);
@@ -64,14 +63,14 @@ export async function POST(req: NextRequest) {
 				},
 			});
 			customerId = customer.id;
-		}
 
-		const planLimits = {
-			sources: matchedPlan?.limits?.sources === "unlimited" ? Object.keys(saasSource) : sources,
-			leads_per_month: matchedPlan?.limits?.leads_per_month,
-			export_enabled: matchedPlan?.limits?.export_enabled,
-			zapier_export: matchedPlan?.limits?.zapier_export
-		};
+			// Insert new Stripe customer into supabase
+			await supabase.from("stripe_customers").insert({
+				user_id: user.id,
+				stripe_customer_id: customer.id,
+				status: "active",
+			});
+		}
 
 		const session = await stripe.checkout.sessions.create({
 			customer: customerId,
@@ -86,7 +85,8 @@ export async function POST(req: NextRequest) {
 			subscription_data: {
 				metadata: {
 					user_id: user.id,
-					plan_limits: JSON.stringify(planLimits),
+					source,
+					plan_id: planId
 				},
 			},
 			...(referral ? { client_reference_id: referral } : {}),

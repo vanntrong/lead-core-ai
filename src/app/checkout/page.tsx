@@ -71,7 +71,7 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           planId: plan?.priceId,
-          sources: source ? [source] : [],
+          source: source ?? null,
           referral,
         }),
       });
