@@ -73,3 +73,12 @@ export async function getLeadStatsAction() {
     throw error;
   }
 }
+
+export async function generateMockLeadsAction() {
+  try {
+    return await leadService.generateMockLeads();
+  } catch (error) {
+    console.error("Error in generateMockLeadsAction:", error);
+    throw error;
+  }
+}

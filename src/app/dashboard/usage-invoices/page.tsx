@@ -11,7 +11,7 @@ import pricingPlans from "@/config/pricing-plans.json";
 import { useUserInvoicesPaginated } from "@/hooks/use-invoice";
 import { useUserActiveSubscription } from "@/hooks/use-subscription";
 import { InvoiceFilters } from "@/types/invoice";
-import { Crown } from "lucide-react";
+import { BarChart3, Crown } from "lucide-react";
 import { useEffect } from "react";
 
 export default function UsageAndInvoicesPage() {
@@ -119,6 +119,49 @@ export default function UsageAndInvoicesPage() {
         <div className="mb-8">
           <h2 className="mb-2 font-bold text-3xl text-gray-900">Plan Usage & Billing</h2>
           <p className="text-gray-600 text-lg">Monitor your usage and billing history.</p>
+        </div>
+
+        {/* Premium Insights - Compact Top Section */}
+        <div className="mb-8 rounded-xl border border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600">
+                <span className="text-white font-bold text-base">AI</span>
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 text-lg">Premium Insights</h3>
+                <p className="text-gray-600 text-sm">Enhanced lead intelligence for smarter decisions</p>
+              </div>
+              <Badge className="flex items-center gap-1 bg-purple-100 text-purple-700 border-purple-200 text-sm px-3 py-1 font-medium">
+                <span className="text-lg mr-2">🚀</span>
+                <span>Coming Soon</span>
+              </Badge>
+            </div>
+
+            <div className="flex items-center space-x-6">
+              <div className="text-center">
+                <div className="flex items-center space-x-2">
+                  <BarChart3 className="h-4 w-4 text-green-600" />
+                  <span className="font-semibold text-gray-900 text-sm">SpyFu Snapshot</span>
+                </div>
+                <div className="mt-1 flex items-center justify-center space-x-1">
+                  <span className="font-bold text-orange-600 text-base">25 $TOWN</span>
+                </div>
+              </div>
+
+              <div className="h-8 w-px bg-gray-300" />
+
+              <div className="text-center">
+                <div className="flex items-center space-x-2">
+                  <span className="text-lg">🤖</span>
+                  <span className="font-semibold text-gray-900 text-sm">Claude Boost</span>
+                </div>
+                <div className="mt-1 flex items-center justify-center space-x-1">
+                  <span className="font-bold text-purple-600 text-base">50 $TOWN</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Usage Overview */}

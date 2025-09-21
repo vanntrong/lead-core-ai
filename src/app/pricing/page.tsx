@@ -204,14 +204,6 @@ export default async function PricingPage() {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Is there a free trial?
-              </h3>
-              <p className="text-gray-600">
-                Yes, all plans come with a 7-day free trial. No credit card required to get started.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 What happens if I exceed my limits?
               </h3>
               <p className="text-gray-600">

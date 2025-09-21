@@ -1,6 +1,3 @@
-/** biome-ignore-all lint/style/noMagicNumbers: Constants for cache durations */
-"use client";
-
 import {
   createLeadAction,
   deleteLeadAction,
@@ -9,7 +6,9 @@ import {
   getLeadsPaginatedAction,
   getLeadStatsAction,
   updateLeadAction,
+  generateMockLeadsAction,
 } from "@/lib/actions/lead.actions";
+
 import type {
   CreateLeadData,
   Lead,
@@ -145,6 +144,21 @@ export function useLeadStats() {
     queryKey: leadKeys.stats(),
     queryFn: () => getLeadStatsAction(),
     staleTime: TWO_MINUTES,
+  });
+}
+
+export function useGenerateMockLeads() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => generateMockLeadsAction(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: leadKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: leadKeys.paginatedLists() });
+      queryClient.invalidateQueries({ queryKey: leadKeys.stats() });
+    },
+    onError: (error) => {
+      console.error("Failed to generate mock leads:", error);
+    },
   });
 }
 

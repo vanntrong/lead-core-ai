@@ -1,22 +1,22 @@
 "use client";
 
 import { DashboardLayout } from "@/components/dashboard-layout";
-import { Button } from "@/components/ui/button";
-import { usePagination } from "@/components/ui/pagination";
-import { Plus, RefreshCw, Crown } from "lucide-react";
-import { Suspense, useEffect, useState } from "react";
-import { toast } from "sonner";
-import pricingPlans from "@/config/pricing-plans.json";
 import { AddLeadDialog } from "@/components/leads/add-lead-dialog";
 import { LeadFiltersComponent } from "@/components/leads/lead-filters";
 import LeadList from "@/components/leads/lead-list";
 import { LeadStatsCards } from "@/components/leads/lead-stats";
-import { useLeadsPaginated, useLeadStats } from "@/hooks/use-leads";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { usePagination } from "@/components/ui/pagination";
+import pricingPlans from "@/config/pricing-plans.json";
+import { useGenerateMockLeads, useLeadsPaginated, useLeadStats } from "@/hooks/use-leads";
 import { useUserActiveSubscription } from "@/hooks/use-subscription";
 import { cn } from "@/lib/utils";
 import { LeadFilters } from "@/types/lead";
-import { Badge } from "@/components/ui/badge";
+import { Crown, Plus, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function Page() {
 	return (
@@ -62,7 +62,7 @@ function LeadBoardPage() {
 		isFetching: statsLoading,
 		refetch: refetchStats,
 	} = useLeadStats();
-	// const generateMockLoads = useGenerateMockLoads();
+	const generateMockLeads = useGenerateMockLeads();
 	const router = useRouter();
 
 	// Calculate filtered count for display
@@ -78,14 +78,12 @@ function LeadBoardPage() {
 		toast.success("Load board refreshed");
 	};
 
-	const MOCK_LOAD_COUNT = 20;
-
 	const handleGenerateMockData = async () => {
 		try {
-			// await generateMockLoads.mutateAsync(MOCK_LOAD_COUNT);
-			toast.success(`Generated ${MOCK_LOAD_COUNT} mock loads`);
+			await generateMockLeads.mutateAsync();
+			toast.success(`Generated 2 mock leads`);
 		} catch {
-			toast.error("Failed to generate mock loads");
+			toast.error("Failed to generate mock leads");
 		}
 	};
 
@@ -151,24 +149,6 @@ function LeadBoardPage() {
 								/>
 								Refresh
 							</Button>
-							{/* {
-								(paginatedResponse?.totalCount ?? 0) <= 0 && (
-									<Button
-										className="h-9"
-										disabled={generateMockLoads.isPending}
-										onClick={handleGenerateMockData}
-										size="sm"
-										variant="outline"
-									>
-										{generateMockLoads.isPending && (
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-										)}
-										{generateMockLoads.isPending
-											? "Generating..."
-											: "Generate Mock Data"}
-									</Button>
-								)
-							} */}
 							{_subscription ? (
 								<Button
 									className="h-9 bg-indigo-600 hover:bg-indigo-700"
@@ -220,7 +200,8 @@ function LeadBoardPage() {
 						filters={filters ?? {}}
 						isFetching={isFetchingLeads}
 						isLoading={isLoadingLeads}
-						// isMockDataGenerating={generateMockLoads.isPending}
+						isMockDataGenerating={generateMockLeads.isPending}
+						isShowUpgradeButton={!_subscription}
 						onCreateLead={handleCreateLead}
 						onGenerateMockData={handleGenerateMockData}
 						pagination={{

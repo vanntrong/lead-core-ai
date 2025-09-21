@@ -1,8 +1,9 @@
 import { LeadFilters, PaginatedLeadResponse } from "@/types/lead";
-import { Loader2, Plus } from "lucide-react";
+import { Crown, Loader2, Plus } from "lucide-react";
 import { Button } from "../ui/button";
 import { Pagination } from "../ui/pagination";
 import { LeadTable } from "./lead-table";
+import { useRouter } from "next/navigation";
 
 interface LeadListProps {
   response: PaginatedLeadResponse;
@@ -12,6 +13,7 @@ interface LeadListProps {
   onCreateLead: () => void;
   onGenerateMockData?: () => void;
   isMockDataGenerating?: boolean;
+  isShowUpgradeButton?: boolean;
   error: Error | null;
 
   pagination: {
@@ -27,6 +29,7 @@ const LeadList = ({
   onCreateLead,
   onGenerateMockData,
   isMockDataGenerating,
+  isShowUpgradeButton,
   isFetching,
   isLoading,
   error,
@@ -34,6 +37,8 @@ const LeadList = ({
   pagination,
 }: LeadListProps) => {
   // Handle error state
+  const router = useRouter()
+
   if (error) {
     return (
       <div className="flex min-h-[400px] items-center justify-center rounded-lg border border-red-200 bg-red-50">
@@ -155,10 +160,24 @@ const LeadList = ({
                   : "Get started by adding your first lead to the system."}
               </p>
               <div className="mt-6 flex items-center justify-center space-x-3">
-                <Button onClick={onCreateLead} size="sm">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Lead
-                </Button>
+
+                {
+                  isShowUpgradeButton ? (
+                    <Button
+                      className="h-9 from-indigo-600 to-purple-600"
+                      onClick={() => router.push('/pricing')}
+                      size="sm"
+                    >
+                      <Crown className="mr-2 h-4 w-4 text-yellow-300" />
+                      Upgrade to add leads
+                    </Button>
+                  ) : (
+                    <Button onClick={onCreateLead} size="sm">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Lead
+                    </Button>
+                  )
+                }
                 {onGenerateMockData && (
                   <Button
                     disabled={isMockDataGenerating}

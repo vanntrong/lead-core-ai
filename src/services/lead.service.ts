@@ -292,120 +292,92 @@ export class LeadService {
       throw new Error("User not found");
     }
 
-    // First mock record
-    const scrap_info_1 = {
-      raw: {
-        h: ["Chúng tôi là ai?", "Tại sao hợp tác với VAC", "Đăng ký trở thành đối tác của chúng tôi"],
-        desc: "",
-        about: "",
-        title: "Trang chủ - VAC",
-        emails: ["info@vac.com.vn", "info@vac.com.vn", "info@vac.com.vn", "info@vac.com.vn"],
-        features: ["Gạo An Nam", "Gạo Bếp Ăn"],
-      },
-      url: "https://vac.com.vn/",
-      points: ["Focus: Trang chủ - VAC", "Key offering: Chúng tôi là ai?", "Key features: Gạo An Nam, Gạo Bếp Ăn"],
-    };
-    const enrich_info_1 = {
-      score: 45,
-      summary:
-        "VAC appears to be a Vietnamese company specializing in rice products, particularly Gạo An Nam and Gạo Bếp Ăn varieties. They seem to be seeking partners or distributors for their rice products, as indicated by their call for partnership registration.",
-      title_guess: "Vietnamese Rice Supplier and Distribution",
-    };
-    const verify_email_info_1 = [
-      {
-        status: "valid",
-        details: {
-          mx: [[0, "vac-com-vn.mail.protection.outlook.com"]],
-          domain: "vac.com.vn",
-          original: "info@vac.com.vn",
-          smtputf8: false,
-          local_part: "info",
-          normalized: "info@vac.com.vn",
-          ascii_email: "info@vac.com.vn",
-          ascii_domain: "vac.com.vn",
-          display_name: null,
-          ascii_local_part: "info",
-          mx_fallback_type: null,
-        },
-        input_email: "info@vac.com.vn",
-      },
-    ];
-
-    // Second mock record (from user)
-    const scrap_info_2 = {
-      raw: {
-        h: ["THE TREND REPORT", "Shop By Brand"],
-        desc: "Fashion Nova is the top online fashion store for women. Shop sexy club dresses, jeans, shoes, bodysuits, skirts and more. Affordable fashion online!",
-        about: "SHOP FASTER WITH THE APPGet HelpHelp CenterTrack OrderShipping InfoReturnsContact UsCompanyCareersAboutStoresWant to Collab?Quick LinksSize GuideSitemapGift CardsCheck Gift Card BalanceGet HelpHelp CenterTrack OrderShipping InfoReturnsContact UsCompanyCareersAboutStoresWant to Collab?Quick LinksSize GuideSitemapGift CardsCheck Gift Card BalanceLEGALPromo T&CsPrivacy PolicyTerms of ServiceCA Supply Chains ActSIGN UP FOR DISCOUNTS + UPDATESEmail Address© 2025 Fashion Nova, LLC All Rights ReservedPromo T&CsPrivacy PolicyTerms of ServiceCA Supply Chains Act",
-        title: "Fashion Nova | Fashion Online For Women | Affordable Women's Clothing | Fashion Nova",
-        emails: [
-          "e7c5d00f7ff26a82791e5ece4cbfb27c@o4504566675341312.ingest.sentry.io",
-          "e7c5d00f7ff26a82791e5ece4cbfb27c@o4504566675341312.ingest.sentry.io",
-        ],
-        features: [],
-      },
-      url: "https://www.fashionnova.com/",
-      points: [
-        "Focus: Fashion Nova | Fashion Online For Women | Affordable Women's Clothing | Fashion Nova",
-        "Key offering: THE TREND REPORT",
-        "Positioning: Fashion Nova is the top online fashion store for women. Shop sexy club dresses, jeans, shoes, bodysuits, and skirts. Affordable fashion…",
-        "What they do: SHOP FASTER WITH THE APPGet HelpHelp CenterTrack OrderShipping InfoReturnsContact UsCompanyCareersAboutStoresWant to Collab?Quick LinksSize …",
-      ],
-    };
-    const enrich_info_2 = {
-      score: 55,
-      summary:
-        "Fashion Nova is an online fashion retailer offering affordable women's clothing including dresses, jeans, shoes, bodysuits, and skirts. The company positions itself as the top online fashion destination for women, emphasizing trendy styles and accessible pricing.",
-      title_guess: "Affordable Women's Fashion Online",
-    };
-    const verify_email_info_2 = [
-      {
-        status: "valid",
-        details: {
-          mx: [[0, "o4504566675341312.ingest.sentry.io"]],
-          domain: "o4504566675341312.ingest.sentry.io",
-          original: "e7c5d00f7ff26a82791e5ece4cbfb27c@o4504566675341312.ingest.sentry.io",
-          smtputf8: false,
-          local_part: "e7c5d00f7ff26a82791e5ece4cbfb27c",
-          normalized: "e7c5d00f7ff26a82791e5ece4cbfb27c@o4504566675341312.ingest.sentry.io",
-          ascii_email: "e7c5d00f7ff26a82791e5ece4cbfb27c@o4504566675341312.ingest.sentry.io",
-          ascii_domain: "o4504566675341312.ingest.sentry.io",
-          display_name: null,
-          ascii_local_part: "e7c5d00f7ff26a82791e5ece4cbfb27c",
-          mx_fallback_type: "A",
-        },
-        input_email: "e7c5d00f7ff26a82791e5ece4cbfb27c@o4504566675341312.ingest.sentry.io",
-      },
-    ];
-
+    // Lead 1: Creative Web Designs
     const { error } = await supabase
       .from('leads')
       .insert([
         {
-          id: "cbabac60-fd6a-44bf-b340-8d1edc304c8d",
-          created_at: "2025-09-16 10:25:46.308016+00",
-          updated_at: "2025-09-16 10:25:46.308016+00",
-          user_id: userData.user.id,
-          source: "woocommerce",
-          url: "https://vac.com.vn",
-          status: "enriched",
-          verify_email_status: "verified",
-          scrap_info: scrap_info_1,
-          enrich_info: enrich_info_1,
-          total_score: 75,
-        },
-        {
-          id: "b15ac779-3c3d-49b5-b11e-add23e025a50",
-          created_at: "2025-09-16 09:49:49.348765+00",
-          updated_at: "2025-09-16 09:49:49.348765+00",
           user_id: userData.user.id,
           source: "shopify",
-          url: "https://www.fashionnova.com",
+          url: "https://www.creativewebdesigns.co.nz/pages/contact-creative-web-designs",
           status: "enriched",
           verify_email_status: "verified",
-          scrap_info: scrap_info_2,
-          enrich_info: enrich_info_2,
-          total_score: 88,
+          scrap_info: {
+            desc: "Modern, on-brand Shopify websites that are easy to manage, designed to convert, and ready to grow with your business. Get in touch.",
+            title: "Contact Creative Web Designs | Shopify Experts Auckland",
+            emails: ["jeanine@creativewebdesigns.co.nz"],
+          },
+          enrich_info: {
+            summary: "Creative Web Designs specializes in creating modern, branded Shopify websites for businesses in Auckland. They focus on developing sites that are easy to manage while being designed to drive conversions. Their expertise as Shopify specialists positions them to build scalable e-commerce solutions that can grow alongside their clients' businesses.",
+            title_guess: "Auckland Shopify Experts",
+          },
+          verify_email_info: [
+            {
+              status: "valid",
+              details: {
+                mx: [
+                  [10, "aspmx.l.google.com"],
+                  [20, "alt1.aspmx.l.google.com"],
+                  [30, "alt2.aspmx.l.google.com"],
+                  [40, "alt3.aspmx.l.google.com"],
+                  [50, "alt4.aspmx.l.google.com"],
+                ],
+                domain: "creativewebdesigns.co.nz",
+                original: "jeanine@creativewebdesigns.co.nz",
+                smtputf8: false,
+                local_part: "jeanine",
+                normalized: "jeanine@creativewebdesigns.co.nz",
+                ascii_email: "jeanine@creativewebdesigns.co.nz",
+                ascii_domain: "creativewebdesigns.co.nz",
+                display_name: null,
+                ascii_local_part: "jeanine",
+                mx_fallback_type: null,
+              },
+              input_email: "jeanine@creativewebdesigns.co.nz",
+            },
+          ],
+        },
+        // Lead 2: Astrid & Miyu
+        {
+          user_id: userData.user.id,
+          source: "shopify",
+          url: "https://www.astridandmiyu.com",
+          status: "enriched",
+          verify_email_status: "verified",
+          scrap_info: {
+            desc: "Discover Astrid & Miyu's jewellery, designed in London and curated by you. Shop necklaces, rings and earrings today.",
+            title: "Shop Contemporary Jewellery to Stack & Style | Astrid & Miyu",
+            emails: ["customercare@astridandmiyu.com", "hey@craftpip.com"],
+          },
+          enrich_info: {
+            summary: "Astrid & Miyu is a London-based jewelry brand offering contemporary pieces designed to be stacked and styled together. Their collection includes necklaces, rings, and earrings that customers can curate to create personalized looks. The brand emphasizes modern, stylish designs that allow for individual expression through jewelry layering and combination.",
+            title_guess: "London's Stackable Jewelry Designer",
+          },
+          verify_email_info: [
+            {
+              status: "valid",
+              details: {
+                mx: [
+                  [1, "aspmx.l.google.com"],
+                  [5, "alt1.aspmx.l.google.com"],
+                  [5, "alt2.aspmx.l.google.com"],
+                  [10, "alt3.aspmx.l.google.com"],
+                  [10, "alt4.aspmx.l.google.com"],
+                ],
+                domain: "astridandmiyu.com",
+                original: "customercare@astridandmiyu.com",
+                smtputf8: false,
+                local_part: "customercare",
+                normalized: "customercare@astridandmiyu.com",
+                ascii_email: "customercare@astridandmiyu.com",
+                ascii_domain: "astridandmiyu.com",
+                display_name: null,
+                ascii_local_part: "customercare",
+                mx_fallback_type: null,
+              },
+              input_email: "customercare@astridandmiyu.com",
+            },
+          ],
         },
       ]);
 

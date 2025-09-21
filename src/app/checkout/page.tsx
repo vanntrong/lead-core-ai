@@ -4,7 +4,7 @@ import RewardfulScript from "@/components/rewardfull-script";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import pricingPlans from "@/config/pricing-plans.json";
-import { ArrowLeft, Check, Crown, Globe, Shield, Star, Zap } from "lucide-react";
+import { ArrowLeft, Check, Crown, Globe, Loader2, Shield, Star, Zap } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -251,12 +251,17 @@ export default function CheckoutPage() {
 
             {/* Checkout Button */}
             <Button
-              className="w-full h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold text-lg transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-lg transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               disabled={planParam === "basic" && !source || loading}
               onClick={handleCheckout}
             >
               {loading
-                ? "Processing..."
+                ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Processing...
+                  </>
+                )
                 : buttonText}
             </Button>
 
