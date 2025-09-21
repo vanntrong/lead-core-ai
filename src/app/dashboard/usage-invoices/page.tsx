@@ -1,8 +1,8 @@
 "use client";
-
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { usePagination } from "@/components/ui/pagination";
 import { CancelSubscriptionDialog } from "@/components/usage-invoices/cancel-subscription-dialog";
 import InvoiceList from "@/components/usage-invoices/invoice-list";
@@ -12,9 +12,11 @@ import { useUserInvoicesPaginated } from "@/hooks/use-invoice";
 import { useUserActiveSubscription } from "@/hooks/use-subscription";
 import { InvoiceFilters } from "@/types/invoice";
 import { BarChart3, Crown } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+
 
 export default function UsageAndInvoicesPage() {
+  const [showUpdateDialog, setShowUpdateDialog] = useState(false);
   const { data: activeSubscription, isLoading, error } = useUserActiveSubscription();
 
   const {
@@ -101,6 +103,7 @@ export default function UsageAndInvoicesPage() {
                   <Button
                     className="h-9 from-indigo-600 to-purple-600"
                     size="sm"
+                    onClick={() => setShowUpdateDialog(true)}
                   >
                     <Crown className="mr-2 h-4 w-4 text-yellow-300" />
                     Update Usage
@@ -114,6 +117,39 @@ export default function UsageAndInvoicesPage() {
           </div>
         </div>
       </div>
+
+      {/* Update Usage Dialog - SaaS Standard UI */}
+      <Dialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
+        <DialogContent className="max-w-md mx-auto rounded-xl border border-gray-200 bg-white shadow-lg p-6">
+          <DialogHeader className="flex flex-col items-center text-center">
+            <div className="mb-3 flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600">
+              <Crown className="h-7 w-7 text-yellow-300" />
+            </div>
+            <DialogTitle className="text-2xl font-bold text-gray-900">Change Your Usage Plan</DialogTitle>
+            <DialogDescription className="mt-2 text-gray-600 text-base">
+              Want to upgrade or switch your plan? Just follow these simple steps below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 mb-6">
+            <ol className="list-decimal pl-6 space-y-2 text-gray-700 text-base">
+              <li>
+                <span className="font-medium text-indigo-600">Cancel your current subscription</span> using the <span className="font-semibold">Cancel Subscription</span> button.
+              </li>
+              <li>
+                <span className="font-medium text-purple-600">Go to the Pricing page</span> and choose your new plan.
+              </li>
+              <li>
+                <span className="font-medium text-green-600">Complete checkout</span> to activate your new subscription instantly.
+              </li>
+            </ol>
+          </div>
+          <DialogFooter className="flex flex-col gap-2">
+            <Button variant="outline" className="w-full h-10" onClick={() => setShowUpdateDialog(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="mx-auto space-y-8 px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">

@@ -154,50 +154,121 @@ export default function Dashboard() {
 					</div>
 				</div>
 
-				{/* Stats Grid */}
-				<div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-					<div className="rounded-2xl border border-gray-200 bg-white p-6 transition-shadow hover:shadow-lg">
-						<div className="mb-4 flex items-center justify-between">
-							<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100">
-								<Globe className="h-6 w-6 text-blue-600" />
+				{/* Stats Grid - Enhanced SaaS UI */}
+				<div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+					<div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+						<div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+						<div className="relative">
+							<div className="mb-4 flex items-center justify-between">
+								<div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg group-hover:scale-110 transition-transform duration-300">
+									<Globe className="h-7 w-7 text-white" />
+								</div>
+								<div className="flex items-center gap-1 text-emerald-500">
+									<TrendingUp className="h-4 w-4" />
+									<span className="text-xs font-medium">+12%</span>
+								</div>
 							</div>
-							<TrendingUp className="h-5 w-5 text-green-500" />
+							<div className="mb-2 font-bold text-3xl text-gray-900 group-hover:text-indigo-700 transition-colors duration-300">{stats?.total || 0}</div>
+							<p className="text-gray-600 text-sm font-medium">Total Leads</p>
 						</div>
-						<div className="mb-1 font-bold text-3xl text-gray-900">{stats?.total}</div>
-						<p className="text-gray-600 text-sm">Total leads</p>
 					</div>
 
-					<div className="rounded-2xl border border-gray-200 bg-white p-6 transition-shadow hover:shadow-lg">
-						<div className="mb-4 flex items-center justify-between">
-							<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100">
-								<Brain className="h-6 w-6 text-green-600" />
+					<div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+						<div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-green-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+						<div className="relative">
+							<div className="mb-4 flex items-center justify-between">
+								<div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 shadow-lg group-hover:scale-110 transition-transform duration-300">
+									<Brain className="h-7 w-7 text-white" />
+								</div>
+								<div className="flex items-center gap-1 text-emerald-500">
+									<TrendingUp className="h-4 w-4" />
+									<span className="text-xs font-medium">+8%</span>
+								</div>
 							</div>
-							<TrendingUp className="h-5 w-5 text-green-500" />
+							<div className="mb-2 font-bold text-3xl text-gray-900 group-hover:text-emerald-700 transition-colors duration-300">{stats?.enriched || 0}</div>
+							<p className="text-gray-600 text-sm font-medium">AI Enriched</p>
 						</div>
-						<div className="mb-1 font-bold text-3xl text-gray-900">{stats?.enriched}</div>
-						<p className="text-gray-600 text-sm">Enriched</p>
 					</div>
 
-					<div className="rounded-2xl border border-gray-200 bg-white p-6 transition-shadow hover:shadow-lg">
-						<div className="mb-4 flex items-center justify-between">
-							<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100">
-								<CheckCircle2 className="h-6 w-6 text-purple-600" />
+					<div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+						<div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-violet-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+						<div className="relative">
+							<div className="mb-4 flex items-center justify-between">
+								<div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-violet-600 shadow-lg group-hover:scale-110 transition-transform duration-300">
+									<CheckCircle2 className="h-7 w-7 text-white" />
+								</div>
+								<div className="flex items-center gap-1 text-emerald-500">
+									<TrendingUp className="h-4 w-4" />
+									<span className="text-xs font-medium">+15%</span>
+								</div>
 							</div>
-							<TrendingUp className="h-5 w-5 text-green-500" />
+							<div className="mb-2 font-bold text-3xl text-gray-900 group-hover:text-purple-700 transition-colors duration-300">{stats?.verified_email || 0}</div>
+							<p className="text-gray-600 text-sm font-medium">Verified Emails</p>
 						</div>
-						<div className="mb-1 font-bold text-3xl text-gray-900">{stats?.verified_email}</div>
-						<p className="text-gray-600 text-sm">Verified Email</p>
 					</div>
 
-					<div className="rounded-2xl border border-gray-200 bg-white p-6 transition-shadow hover:shadow-lg">
-						<div className="mb-4 flex items-center justify-between">
-							<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100">
-								<Package className="h-6 w-6 text-orange-600" />
+					<div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+						<div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-amber-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+						<div className="relative">
+							<div className="mb-4 flex items-center justify-between">
+								<div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 shadow-lg group-hover:scale-110 transition-transform duration-300">
+									<Package className="h-7 w-7 text-white" />
+								</div>
+								<div className="flex items-center gap-1 text-emerald-500">
+									<TrendingUp className="h-4 w-4" />
+									<span className="text-xs font-medium">+5%</span>
+								</div>
 							</div>
-							<TrendingUp className="h-5 w-5 text-green-500" />
+							<div className="mb-2 font-bold text-3xl text-gray-900 group-hover:text-orange-700 transition-colors duration-300">{stats?.score_70_plus || 0}</div>
+							<p className="text-gray-600 text-sm font-medium">High Quality (≥70)</p>
 						</div>
-						<div className="mb-1 font-bold text-3xl text-gray-900">{stats?.score_70_plus}</div>
-						<p className="text-gray-600 text-sm">Score ≥ 70</p>
+					</div>
+				</div>
+
+				{/* Lead Source Breakdown - Enhanced SaaS UI */}
+				<div className="mb-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+					<div className="mb-6 flex items-center justify-between">
+						<div>
+							<h3 className="font-bold text-xl text-gray-900">Lead Sources</h3>
+							<p className="text-gray-500 text-sm">Breakdown by platform</p>
+						</div>
+						<Badge className="bg-indigo-50 text-indigo-700 border-indigo-200">
+							{(stats?.source_breakdown ?? []).length} Active Sources
+						</Badge>
+					</div>
+					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+						{(stats?.source_breakdown ?? []).map((item) => (
+							<div key={item.source} className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 p-5 border border-gray-200 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-indigo-200">
+								<div className="absolute inset-0 bg-gradient-to-br from-white to-gray-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+								<div className="relative flex items-center gap-4">
+									<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm group-hover:shadow-md transition-shadow duration-300">
+										{item.source === "shopify" && <Globe className="h-6 w-6 text-indigo-600" />}
+										{item.source === "woocommerce" && <Package className="h-6 w-6 text-orange-600" />}
+										{item.source === "g2" && <BarChart3 className="h-6 w-6 text-emerald-600" />}
+										{item.source === "capterra" && <Brain className="h-6 w-6 text-purple-600" />}
+									</div>
+									<div className="flex-1">
+										<div className="font-bold text-gray-900 text-lg capitalize group-hover:text-indigo-700 transition-colors duration-300">
+											{item.source}
+										</div>
+										<div className="text-gray-500 text-sm">Platform</div>
+									</div>
+									<div className="text-right">
+										<div className="font-bold text-2xl text-indigo-700 group-hover:text-indigo-800 transition-colors duration-300">
+											{item.count}
+										</div>
+										<div className="text-gray-500 text-xs">leads</div>
+									</div>
+								</div>
+							</div>
+						))}
+						{(stats?.source_breakdown ?? []).length === 0 && (
+							<div className="col-span-full text-center py-8">
+								<div className="text-gray-400 text-lg mb-2">📊</div>
+								<p className="text-gray-500">No lead sources yet</p>
+								<p className="text-gray-400 text-sm">Start adding leads to see breakdown</p>
+							</div>
+						)}
 					</div>
 				</div>
 			</div>

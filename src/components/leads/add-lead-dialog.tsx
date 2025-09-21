@@ -18,11 +18,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { saasSource } from "@/constants/saas-source";
 import { useCreateLead } from "@/hooks/use-leads";
 import { useUserActiveSubscription } from "@/hooks/use-subscription";
 import type { CreateLeadData, LeadSource } from "@/types/lead";
 import { AlertCircle, Crown, Globe, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -43,6 +43,7 @@ export function AddLeadDialog({ isOpen, onClose }: AddLeadDialogProps) {
 	} = useForm<CreateLeadData>({
 		defaultValues: { url: "", source: undefined },
 	});
+	const router = useRouter();
 	const createLeadMutation = useCreateLead();
 	const { data: activeSubscription } = useUserActiveSubscription();
 
@@ -165,6 +166,7 @@ export function AddLeadDialog({ isOpen, onClose }: AddLeadDialogProps) {
 									<Button
 										className="flex-1 from-indigo-600 to-purple-600"
 										type="button"
+										onClick={() => router.push(activeSubscription ? '/dashboard/usage-invoices' : '/pricing')}
 									>
 										<Crown className="mr-2 h-4 w-4 text-yellow-300" />
 										Upgrade to add lead

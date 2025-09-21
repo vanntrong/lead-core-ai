@@ -71,6 +71,11 @@ export interface PaginatedLeadResponse {
   itemsPerPage: number;
 }
 
+export interface LeadSourceBreakdownItem {
+  source: string;
+  count: number;
+}
+
 export interface LeadStats {
   total: number; // Total leads
   verified_email: number; // Leads with verified email
@@ -78,4 +83,5 @@ export interface LeadStats {
   score_70_plus: number; // Leads with score >= 70
   score_90_plus: number; // Leads with score >= 90
   error: number; // Leads in error state
+  source_breakdown?: LeadSourceBreakdownItem[];
 }

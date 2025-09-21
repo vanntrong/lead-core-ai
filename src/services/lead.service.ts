@@ -274,6 +274,15 @@ export class LeadService {
       return typeof score === "number" && score >= 90;
     }).length;
 
+    // Calculate breakdown by source
+    const sourceMap: Record<string, number> = {};
+    typedLeads.forEach((lead) => {
+      if (lead.source) {
+        sourceMap[lead.source] = (sourceMap[lead.source] || 0) + 1;
+      }
+    });
+    const source_breakdown = Object.entries(sourceMap).map(([source, count]) => ({ source, count }));
+
     return {
       total,
       verified_email,
@@ -281,6 +290,7 @@ export class LeadService {
       score_70_plus,
       score_90_plus,
       error: errorCount,
+      source_breakdown,
     };
   }
 

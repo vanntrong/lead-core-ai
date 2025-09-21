@@ -169,7 +169,7 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
                 ) : (
                   <Button
                     className="h-9 from-indigo-600 to-purple-600"
-                    onClick={() => router.push('/pricing')}
+                    onClick={() => router.push(activeSubscription ? '/dashboard/usage-invoices' : '/pricing')}
                     size="sm"
                   >
                     <Crown className="mr-2 h-4 w-4 text-yellow-300" />
