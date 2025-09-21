@@ -9,13 +9,14 @@ CREATE TABLE subscriptions (
     user_id UUID NOT NULL,
     usage_limit_id UUID NULL,
     plan_tier plan_tier NOT NULL,
+    stripe_subscription_id TEXT,
     subscription_status subscription_status NOT NULL DEFAULT 'active',
     stripe_price_id TEXT NOT NULL,
     period_start TIMESTAMPTZ NOT NULL,
     period_end TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    UNIQUE(user_id, plan_tier),
+    UNIQUE(user_id, plan_tier, stripe_subscription_id),
     FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE,
     FOREIGN KEY (usage_limit_id) REFERENCES usage_limits(id) ON DELETE SET NULL
 );
@@ -46,3 +47,9 @@ ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can select their own subscriptions" ON subscriptions
   FOR SELECT
   USING (auth.uid() = user_id);
+
+-- Policy: Allow UPDATE for users on their own subscriptions
+CREATE POLICY "Users can update their own subscriptions" ON subscriptions
+  FOR UPDATE
+  USING (auth.uid() = user_id);
+

@@ -7,7 +7,6 @@ import { Plus, RefreshCw, Crown } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import pricingPlans from "@/config/pricing-plans.json";
-
 import { AddLeadDialog } from "@/components/leads/add-lead-dialog";
 import { LeadFiltersComponent } from "@/components/leads/lead-filters";
 import LeadList from "@/components/leads/lead-list";
@@ -95,7 +94,7 @@ function LeadBoardPage() {
 			<div className="flex min-h-screen items-center justify-center bg-background">
 				<div className="text-center">
 					<div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-					Loading dashboard...
+					Loading subscription data...
 				</div>
 			</div>
 		);

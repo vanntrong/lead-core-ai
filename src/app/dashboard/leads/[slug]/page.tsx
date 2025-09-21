@@ -93,7 +93,7 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
           <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          Loading dashboard...
+          Loading subscription data...
         </div>
       </div>
     );

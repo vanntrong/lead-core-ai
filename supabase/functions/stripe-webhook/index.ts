@@ -9,7 +9,9 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const stripeWebhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
 const supabase = createClient(supabaseUrl, supabaseKey);
-Deno.serve(async (req) => {
+import { handleInvoicePaymentSucceeded } from "./invoice.ts";
+import { handleSubscriptionCreated, handleSubscriptionUpdated, handleSubscriptionDeleted } from "./subscription.ts";
+Deno.serve(async (req)=>{
   const signature = req.headers.get('Stripe-Signature');
   const body = await req.text();
   let event;
@@ -30,97 +32,41 @@ Deno.serve(async (req) => {
   }
   console.log("Webhook event", type);
   try {
-    switch (type) {
+    switch(type){
+      case "invoice.payment_succeeded":
+        {
+          // Stripe Invoice object
+          const invoice = object;
+          // Fetch subscription from Stripe
+          return handleInvoicePaymentSucceeded({
+            invoice,
+            supabase,
+            stripe,
+            pricingPlans
+          });
+        }
       case "customer.subscription.created":
         {
           // Extract all relevant metadata fields from Stripe subscription
-          const meta = object.metadata || {};
-          const userId = meta.user_id;
-          const source = meta.source;
-          const priceId = object.items?.data[0]?.price?.id;
-          if (!priceId) {
-            return new Response("Missing priceId", {
-              status: 400
-            });
-          }
-          // Map priceId to pricingPlans
-          const plan = pricingPlans.find((p) => p.priceId === priceId);
-          if (!plan) {
-            return new Response("Invalid priceId", {
-              status: 400
-            });
-          }
-          const { data: subscriptionExisting } = await supabase.from("subscriptions").select().eq("user_id", userId).eq("plan_tier", plan.tier).eq("subscription_status", 'active').maybeSingle();
-          if (subscriptionExisting) throw new Error('User already has active subscription for this plan');
-          // Create usage_limits for this plan_tier if not exists
-          const usageLimit = await createUsageLimit({
-            user_id: userId,
-            plan_tier: plan.tier,
-            sources: plan.limits.sources === "unlimited" ? [
-              "etsy",
-              "woocommerce",
-              "shopify",
-              "g2"
-            ] : [
-              source
-            ],
-            max_leads: plan.limits.leads_per_month === "unlimited" ? -1 : Number(plan.limits.leads_per_month),
-            current_leads: 0,
-            export_enabled: plan.limits.export_enabled,
-            zapier_export: plan.limits.zapier_export,
-            period_start: object.current_period_start ? new Date(object.current_period_start * 1000).toISOString() : null,
-            period_end: object.current_period_end ? new Date(object.current_period_end * 1000).toISOString() : null
+          const subscription = object;
+          return handleSubscriptionCreated({
+            subscription
           });
-          if (!usageLimit) throw new Error(`Create usage_limits for sub: ${object.id} error`);
-          // Insert into subscriptions
-          const subResult = await createSubscription({
-            user_id: userId,
-            usage_limit_id: usageLimit?.id ?? null,
-            stripe_subscription_id: object.id,
-            plan_tier: plan.tier,
-            stripe_price_id: priceId,
-            period_start: object.current_period_start ? new Date(object.current_period_start * 1000).toISOString() : new Date().toISOString(),
-            period_end: object.current_period_end ? new Date(object.current_period_end * 1000).toISOString() : null
-          });
-          if (subResult.error) {
-            return new Response(`DB error: ${subResult.error.message}`, {
-              status: 500
-            });
-          }
-          break;
         }
       case "customer.subscription.updated":
         {
-          // Reset leads_per_month to plan value on renewal
-          const leadsLimit = object.metadata?.leads_per_month ? Number(object.metadata.leads_per_month) : null;
-          const { error } = await supabase.from("subscriptions").update({
-            status: object.status,
-            current_period_start: object.current_period_start ? new Date(object.current_period_start * 1000).toISOString() : null,
-            current_period_end: object.current_period_end ? new Date(object.current_period_end * 1000).toISOString() : null,
-            cancel_at_period_end: object.cancel_at_period_end,
-            canceled_at: object.canceled_at ? new Date(object.canceled_at * 1000).toISOString() : null,
-            updated_at: new Date().toISOString(),
-            leads_per_month: leadsLimit
-          }).eq("stripe_subscription_id", object.id);
-          if (error) {
-            return new Response(`DB error: ${error.message}`, {
-              status: 500
-            });
-          }
-          break;
+          // Extract all relevant metadata fields from Stripe subscription
+          const subscription = object;
+          return handleSubscriptionUpdated({
+            subscription
+          });
         }
       case "customer.subscription.deleted":
         {
-          const { error } = await supabase.from("subscriptions").update({
-            subscription_status: "canceled",
-            updated_at: new Date().toISOString()
-          }).eq("stripe_subscription_id", object.id);
-          if (error) {
-            return new Response(`DB error: ${error.message}`, {
-              status: 500
-            });
-          }
-          break;
+          const subscription = object;
+          return handleSubscriptionDeleted({
+            subscription
+          });
         }
       case "customer.deleted":
         {

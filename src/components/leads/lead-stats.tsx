@@ -41,7 +41,7 @@ export function LeadStatsCards({ stats, isLoading }: LeadStatsProps) {
 				<div className="flex items-center justify-between">
 					<div>
 						<p className="font-medium text-gray-600 text-sm">Total Leads</p>
-						<p className="font-bold text-2xl text-gray-900">{stats?.total}</p>
+						<p className="font-bold text-xl text-gray-900">{stats?.total}</p>
 					</div>
 					<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50">
 						<TrendingUp className="h-5 w-5 text-indigo-600" />
@@ -54,7 +54,7 @@ export function LeadStatsCards({ stats, isLoading }: LeadStatsProps) {
 				<div className="flex items-center justify-between">
 					<div>
 						<p className="font-medium text-gray-600 text-sm">Enriched</p>
-						<p className="font-bold text-2xl text-gray-900">{stats?.enriched}</p>
+						<p className="font-bold text-xl text-gray-900">{stats?.enriched}</p>
 					</div>
 					<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50">
 						<Package className="h-5 w-5 text-green-600" />
@@ -67,7 +67,7 @@ export function LeadStatsCards({ stats, isLoading }: LeadStatsProps) {
 				<div className="flex items-center justify-between">
 					<div>
 						<p className="font-medium text-gray-600 text-sm">Verified Email</p>
-						<p className="font-bold text-2xl text-gray-900">{stats?.verified_email}</p>
+						<p className="font-bold text-xl text-gray-900">{stats?.verified_email}</p>
 					</div>
 					<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50">
 						<DollarSign className="h-5 w-5 text-green-600" />
@@ -80,7 +80,7 @@ export function LeadStatsCards({ stats, isLoading }: LeadStatsProps) {
 				<div className="flex items-center justify-between">
 					<div>
 						<p className="font-medium text-gray-600 text-sm">Score ≥ 70</p>
-						<p className="font-bold text-2xl text-gray-900">{stats?.score_70_plus}</p>
+						<p className="font-bold text-xl text-gray-900">{stats?.score_70_plus}</p>
 					</div>
 					<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50">
 						<TrendingUp className="h-5 w-5 text-indigo-600" />
@@ -93,7 +93,7 @@ export function LeadStatsCards({ stats, isLoading }: LeadStatsProps) {
 				<div className="flex items-center justify-between">
 					<div>
 						<p className="font-medium text-gray-600 text-sm">Score ≥ 90</p>
-						<p className="font-bold text-2xl text-gray-900">{stats?.score_90_plus}</p>
+						<p className="font-bold text-xl text-gray-900">{stats?.score_90_plus}</p>
 					</div>
 					<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50">
 						<DollarSign className="h-5 w-5 text-purple-600" />

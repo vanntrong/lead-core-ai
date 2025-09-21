@@ -15,11 +15,12 @@ import {
 	ChevronDown,
 	ChevronLeft,
 	ChevronRight,
+	Crown,
 	Globe,
+	Home,
 	LogOut,
 	Settings,
-	Truck,
-	Users
+	Truck
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -42,10 +43,27 @@ const navigationSections: NavigationSection[] = [
 		title: "Overview",
 		items: [
 			{
+				name: "Dashboard",
+				href: "/dashboard",
+				icon: Home,
+				description: "Main dashboard overview",
+			},
+			{
 				name: "Lead Board",
 				href: "/dashboard/leads",
-				icon: Users,
-				description: "Enrich leads",
+				icon: Globe,
+				description: "Enrich and manage leads",
+			},
+		],
+	},
+	{
+		title: "Plan Usage & Billing",
+		items: [
+			{
+				name: "Usage & Billing",
+				href: "/dashboard/usage-invoices",
+				icon: Crown,
+				description: "Monitor usage and invoices",
 			},
 		],
 	},
@@ -125,8 +143,14 @@ export function DashboardSidebar({
 							)}
 							<ul className="space-y-1">
 								{section.items.map((item) => {
-									// Highlight if current path is the item route or a subroute (e.g. /dashboard/leads/[id])
-									const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+									// Highlight if current path is the item route or a subroute, but avoid /dashboard matching /dashboard/leads
+									let isActive = false;
+									if (pathname === item.href) {
+										isActive = true;
+									} else if (pathname.startsWith(item.href + "/")) {
+										// Only match subroutes if item.href is not /dashboard
+										isActive = item.href !== "/dashboard";
+									}
 									return (
 										<li key={item.name}>
 											<Link

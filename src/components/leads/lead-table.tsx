@@ -9,47 +9,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { leadSourceColorConfig } from "@/constants/saas-source";
+import { leadScoringService } from "@/services/lead-scoring.service";
 import { Lead } from "@/types/lead";
 import {
   Calendar,
-  Eye,
-  Link,
   CheckCircle2,
   Clock,
-  XCircle,
-  Mail
+  Eye,
+  Link,
+  Mail,
+  XCircle
 } from "lucide-react";
-import React from "react";
 import { useRouter } from "next/navigation";
+import React from "react";
 import { Badge } from "../ui/badge";
 import { HighlightText } from "../ui/highlight-text";
-import { leadScoringService } from "@/services/lead-scoring.service";
 
 interface LeadTableProps {
   leads: Lead[];
   searchTerms?: string;
   showSummary?: boolean;
 }
-
-
-const leadSourceConfig: Record<string, { label: string; badge: string }> = {
-  shopify: {
-    label: "Shopify",
-    badge: "bg-green-100 text-green-800 border-green-200", // Shopify: green
-  },
-  etsy: {
-    label: "Etsy",
-    badge: "bg-orange-100 text-orange-800 border-orange-200", // Etsy: orange
-  },
-  g2: {
-    label: "G2",
-    badge: "bg-red-100 text-red-800 border-red-200", // G2: red
-  },
-  woocommerce: {
-    label: "WooCommerce",
-    badge: "bg-indigo-100 text-indigo-800 border-indigo-200", // WooCommerce: indigo
-  },
-};
 
 // Status badge config
 const statusConfig: Record<string, { label: string; color: string; dot: string }> = {
@@ -175,7 +156,7 @@ const LeadRow = ({
   lead: Lead;
   highlightTerms: string[];
 }) => {
-  const sourceInfo = leadSourceConfig[lead.source];
+  const sourceInfo = leadSourceColorConfig[lead.source];
 
   const statusInfo = statusConfig[lead.status] || {
     label: lead.status || "N/A",

@@ -20,3 +20,14 @@ export async function getActiveSubscriptionAction() {
     throw error;
   }
 }
+
+export async function cancelSubscriptionAction() {
+  try {
+    const result = await subscriptionService.cancelSubscription();
+    revalidatePath("/dashboard/usage-invoices");
+    return result;
+  } catch (error) {
+    console.error("Error in cancelSubscriptionAction:", error);
+    throw error;
+  }
+}

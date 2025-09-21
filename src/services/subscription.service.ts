@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { Subscription, SubscriptionInsert, SubscriptionUpdate } from "@/types/subscription";
+import { stripeService } from "./stripe.service"
 
 export class SubscriptionService {
   private async getSupabaseClient() {
@@ -61,12 +62,17 @@ export class SubscriptionService {
   /**
    * Cancel a subscription
    */
-  async cancelSubscription(id: string): Promise<boolean> {
+  async cancelSubscription(): Promise<boolean> {
     const supabase = await this.getSupabaseClient();
+    const currentSub = await this.getUserActiveSubscription();
+    if (!currentSub?.stripe_subscription_id) {
+      throw new Error("No active subscription found");
+    }
+    await stripeService.cancelSubscription(currentSub?.stripe_subscription_id);
     const { error } = await supabase
       .from("subscriptions")
-      .update({ subscription_status: "canceled", canceled_at: new Date().toISOString() })
-      .eq("id", id);
+      .update({ subscription_status: "canceled" })
+      .eq("id", currentSub?.id);
     return !error;
   }
 

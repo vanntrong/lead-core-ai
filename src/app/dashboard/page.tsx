@@ -3,16 +3,8 @@
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
 import pricingPlans from "@/config/pricing-plans.json";
-import { useUserActiveSubscription, useUserSubscription } from "@/hooks/use-subscription";
-import { formatPrice } from "@/lib/subscription";
+import { useUserActiveSubscription } from "@/hooks/use-subscription";
 import {
 	BarChart3,
 	Bell,
@@ -241,60 +233,6 @@ export default function Dashboard() {
 						</p>
 					</button>
 				</div>
-
-				{/* Subscription Info */}
-				{_subscription && mappedPlan && (
-					<Card className="mt-8">
-						<CardHeader>
-							<CardTitle>Subscription Details</CardTitle>
-							<CardDescription>
-								Manage your LeadCore AI subscription
-							</CardDescription>
-						</CardHeader>
-						<CardContent>
-							<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-								<div>
-									<h4 className="mb-2 font-semibold">Current Plan</h4>
-									<p className="text-muted-foreground text-sm">
-										{mappedPlan.name} - {formatPrice(mappedPlan.priceMonthly)}/month
-									</p>
-									<ul className="mt-2 text-xs text-gray-600 list-disc pl-4">
-										{mappedPlan.features.map((feature) => (
-											<li key={feature}>{feature}</li>
-										))}
-									</ul>
-								</div>
-
-								<div>
-									<h4 className="mb-2 font-semibold">Status</h4>
-									<Badge
-										variant={
-											_subscription.subscription_status === "active"
-												? "default"
-												: "secondary"
-										}
-									>
-										{_subscription.subscription_status}
-									</Badge>
-								</div>
-
-								{/* <div>
-									<h4 className="mb-2 font-semibold">Actions</h4>
-									<Button
-										disabled={createBillingPortal.isPending}
-										onClick={handleBillingClick}
-										size="sm"
-										variant="outline"
-									>
-										{createBillingPortal.isPending
-											? "Loading..."
-											: "Manage Billing"}
-									</Button>
-								</div> */}
-							</div>
-						</CardContent>
-					</Card>
-				)}
 			</div>
 		</DashboardLayout>
 	);
