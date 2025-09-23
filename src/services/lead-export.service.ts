@@ -62,40 +62,49 @@ export class LeadExportService {
 
   // Send leads to Zapier or GHL webhook
   async exportToWebhook(leads: Lead[], webhookUrl: string): Promise<any> {
-    const headers = [
-      "URL",
-      "Source",
-      "Status",
-      "Title",
-      "Description",
-      "Enrichment Title",
-      "Enrichment Summary",
-      "Emails",
-      "Verified Email Status",
-      "Score"
-    ];
-    const rows = leads.map(lead => [
-      lead.url,
-      lead.source,
-      lead.status,
-      lead.scrap_info?.title ?? "",
-      lead.scrap_info?.desc ?? "",
-      lead.enrich_info?.title_guess ?? "",
-      lead.enrich_info?.summary ?? "",
-      (lead.scrap_info?.emails ?? []).join(", "),
-      lead?.verify_email_status ?? "",
-      leadScoringService.scoreLead(lead).toString()
-    ]);
-    // Gửi toàn bộ leads qua API chuyển tiếp để tránh lỗi CORS
-    const payloadArray = rows.map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])));
-    await fetch('/api/forward-webhook', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ webhookUrl, data: payloadArray })
-    });
-    return { success: true };
+    console.log("exportToWebhook");
+    try {
+      const headers = [
+        "URL",
+        "Source",
+        "Status",
+        "Title",
+        "Description",
+        "Enrichment Title",
+        "Enrichment Summary",
+        "Emails",
+        "Verified Email Status",
+        "Score"
+      ];
+      const rows = leads.map(lead => [
+        lead.url,
+        lead.source,
+        lead.status,
+        lead.scrap_info?.title ?? "",
+        lead.scrap_info?.desc ?? "",
+        lead.enrich_info?.title_guess ?? "",
+        lead.enrich_info?.summary ?? "",
+        (lead.scrap_info?.emails ?? []).join(", "),
+        lead?.verify_email_status ?? "",
+        leadScoringService.scoreLead(lead).toString()
+      ]);
+      const payloadArray = rows.map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])));
+      const resp = await fetch('/api/forward-webhook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ webhookUrl, data: payloadArray })
+      });
+      if (!resp.ok) {
+        const text = await resp.text();
+        throw new Error(`Webhook export failed: ${resp.status} ${resp.statusText}.`);
+      }
+      return { success: true };
+    } catch (error) {
+      console.error("Error exporting to webhook:", error);
+      throw error;
+    }
   }
 
   // Main export function

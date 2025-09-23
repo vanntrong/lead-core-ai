@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import {
   Dialog,
   DialogClose,
@@ -10,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -18,13 +18,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Download, Loader2, AlertCircle, Crown } from "lucide-react";
+import { useUserActiveSubscription } from "@/hooks/use-subscription";
+import { leadExportService } from "@/services/lead-export.service";
+import { AlertCircle, Crown, Download, Loader2 } from "lucide-react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { leadExportService } from "@/services/lead-export.service";
-import { Input } from "@/components/ui/input";
 import { z } from "zod";
-import { useUserActiveSubscription } from "@/hooks/use-subscription";
 
 interface ExportLeadData {
   format: "csv" | "google-sheets" | "zapier";
@@ -60,14 +60,17 @@ export function ExportLeadDialog({ isOpen, onClose, leadData }: ExportLeadDialog
   const { data: activeSubscription } = useUserActiveSubscription();
 
   const handleClose = () => {
-    reset();
-    setSubmitError(null);
     onClose();
   };
+
+  // Retry state: list of attempts with status and error
+  type RetryStatus = 'pending' | 'success' | 'error' | 'waiting';
+  const [retryAttempts, setRetryAttempts] = React.useState<Array<{ attempt: number; status: RetryStatus; error?: string }>>([]);
 
   const exportLead = async (data: z.infer<typeof ExportLeadSchema>) => {
     setSubmitError(null);
     setIsExporting(true);
+    setRetryAttempts([]);
 
     if (data.format === "zapier") {
       if (!data.webhookUrl) {
@@ -84,30 +87,47 @@ export function ExportLeadDialog({ isOpen, onClose, leadData }: ExportLeadDialog
       }
     }
 
-    try {
-      switch (data.format) {
-        case "csv":
-          await exportToCSV();
-          break;
-        case "google-sheets":
-          await exportToGoogleSheets();
-          break;
-        case "zapier":
-          await exportToZapier(data.webhookUrl ?? "");
-          break;
-        default:
-          throw new Error("Please select an export format");
+    let lastError: string | null = null;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      setRetryAttempts((prev) => [...prev, { attempt, status: 'pending' }]);
+      try {
+        switch (data.format) {
+          case "csv":
+            await exportToCSV();
+            break;
+          case "google-sheets":
+            await exportToGoogleSheets();
+            break;
+          case "zapier":
+            await exportToZapier(data.webhookUrl ?? "");
+            break;
+          default:
+            throw new Error("Please select an export format");
+        }
+        setRetryAttempts((prev) => prev.map((r) => r.attempt === attempt ? { ...r, status: 'success' } : r));
+        toast.success(`Lead exported to ${data.format.replace("-", " ")} successfully!`);
+        handleClose();
+        lastError = null;
+        break;
+      } catch (error: any) {
+        lastError = error?.message || "Something went wrong during export. Please try again.";
+        setRetryAttempts((prev) => prev.map((r) => r.attempt === attempt ? { ...r, status: 'error', error: lastError ?? undefined } : r));
+        if (attempt < 3) {
+          // Show waiting status for next attempt
+          setRetryAttempts((prev) => [...prev, { attempt: attempt + 1, status: 'waiting' }]);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          // Remove waiting status after delay
+          setRetryAttempts((prev) => prev.filter((r) => !(r.attempt === attempt + 1 && r.status === 'waiting')));
+        }
       }
-
-      toast.success(`Lead exported to ${data.format.replace("-", " ")} successfully!`);
-      reset();
-      onClose();
-    } catch (error: any) {
-      console.error("Error exporting lead:", error);
-      setSubmitError(error?.message || "Something went wrong during export. Please try again.");
-    } finally {
-      setIsExporting(false);
     }
+
+    // If all attempts failed, show final error message
+    if (lastError) {
+      setSubmitError("Export failed after 3 attempts. Please check your configuration and try again.");
+    }
+
+    setIsExporting(false);
   };
 
   const exportToCSV = async () => {
@@ -130,6 +150,14 @@ export function ExportLeadDialog({ isOpen, onClose, leadData }: ExportLeadDialog
     // This would send data to a Zapier webhook
     await leadExportService.export({ format: "zapier", webhookUrl, leads: [leadData] })
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      reset();
+      setSubmitError(null);
+      setRetryAttempts([]);
+    }
+  }, [isOpen, reset]);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -159,6 +187,50 @@ export function ExportLeadDialog({ isOpen, onClose, leadData }: ExportLeadDialog
               </Alert>
             </div>
           )}
+
+          {/* Retry Progress Display */}
+          {retryAttempts.length > 1 && (
+            <div className="mb-4">
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="text-sm font-medium text-blue-800 mb-2">Export Progress</h4>
+                <div className="space-y-2">
+                  {retryAttempts.map((attempt) => (
+                    <div key={attempt.attempt + '-' + attempt.status} className="flex items-center space-x-2 text-sm">
+                      <span className="text-blue-700">Attempt {attempt.attempt}:</span>
+                      {attempt.status === 'pending' && (
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin text-blue-600" />
+                          <span className="text-blue-600">In progress...</span>
+                        </>
+                      )}
+                      {attempt.status === 'waiting' && (
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin text-yellow-500" />
+                          <span className="text-yellow-700">Waiting 2s before retry...</span>
+                        </>
+                      )}
+                      {attempt.status === 'success' && (
+                        <>
+                          <span className="text-green-600">✓</span>
+                          <span className="text-green-600">Success</span>
+                        </>
+                      )}
+                      {attempt.status === 'error' && (
+                        <>
+                          <span className="text-red-600">✗</span>
+                          <span className="text-red-600">Failed</span>
+                          {attempt.error && (
+                            <span className="text-red-500 text-xs">({attempt.error})</span>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           <form className="space-y-6" onSubmit={handleSubmit(exportLead)}>
             {/* Export Format Field */}
             <div>

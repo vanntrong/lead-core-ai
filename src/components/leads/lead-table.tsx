@@ -289,17 +289,21 @@ const LeadRow = ({
       {/* Quick Actions */}
       <TableCell className="py-3 text-center align-middle">
         <div className="flex items-center justify-center space-x-1">
-          <Button
-            className="h-7 w-7 p-0 hover:bg-indigo-100 hover:text-indigo-700 focus:ring-2 focus:ring-indigo-500/20"
-            size="sm"
-            title="View Details"
-            variant="ghost"
-            aria-label="View Lead Details"
-            type="button"
-            onClick={() => router.push(`/dashboard/leads/${lead.id}`)}
-          >
-            <Eye className="h-4 w-4" aria-hidden="true" />
-          </Button>
+          {
+            lead.verify_email_status !== "pending" && (
+              <Button
+                className="h-7 w-7 p-0 hover:bg-indigo-100 hover:text-indigo-700 focus:ring-2 focus:ring-indigo-500/20"
+                size="sm"
+                title="View Details"
+                variant="ghost"
+                aria-label="View Lead Details"
+                type="button"
+                onClick={() => router.push(`/dashboard/leads/${lead.id}`)}
+              >
+                <Eye className="h-4 w-4" aria-hidden="true" />
+              </Button>
+            )
+          }
         </div>
       </TableCell>
     </TableRow>

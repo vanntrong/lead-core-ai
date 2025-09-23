@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
     if (!webhookUrl || !data) {
       return new Response(JSON.stringify({ error: 'Missing webhookUrl or data' }), { status: 400 });
     }
+
     const resp = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
@@ -41,6 +42,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify(data),
     });
+
     const result = await resp.text();
     return NextResponse.json({ success: true, result }, { status: 200 });
   } catch (error) {

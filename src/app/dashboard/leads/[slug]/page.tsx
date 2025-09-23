@@ -164,7 +164,7 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
                   onClick={() => setIsExportDialogOpen(true)}
                 >
                   <Download className="mr-2 h-4 w-4 " />
-                  Export
+                  Export Lead
                 </Button>
                 ) : (
                   <Button
