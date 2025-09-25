@@ -53,7 +53,7 @@ function LeadBoardPage() {
 	const {
 		data: paginatedResponse,
 		isLoading: isLoadingLeads,
-		error: loadsError,
+		error: leadsError,
 		isFetching: isFetchingLeads,
 		refetch: refetchLoads,
 	} = useLeadsPaginated(paginatedFilters);
@@ -196,7 +196,7 @@ function LeadBoardPage() {
 				{/* Load Table */}
 				<div className="space-y-4">
 					<LeadList
-						error={loadsError}
+						error={leadsError}
 						filters={filters ?? {}}
 						isFetching={isFetchingLeads}
 						isLoading={isLoadingLeads}

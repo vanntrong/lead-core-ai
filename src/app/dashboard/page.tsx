@@ -13,10 +13,7 @@ import {
 	CheckCircle2,
 	Globe,
 	Package,
-	Route,
-	Settings,
-	TrendingUp,
-	Users
+	Settings
 } from "lucide-react";
 import Link from "next/link";
 
@@ -24,8 +21,6 @@ export default function Dashboard() {
 	const { data: activeSubscription, isLoading, error } = useUserActiveSubscription();
 	const {
 		data: stats,
-		isFetching: statsLoading,
-		refetch: refetchStats,
 	} = useLeadStats();
 
 	if (isLoading) {
@@ -156,70 +151,58 @@ export default function Dashboard() {
 
 				{/* Stats Grid - Enhanced SaaS UI */}
 				<div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-					<div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+					<div className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-5 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
 						<div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 						<div className="relative">
-							<div className="mb-4 flex items-center justify-between">
-								<div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg group-hover:scale-110 transition-transform duration-300">
-									<Globe className="h-7 w-7 text-white" />
+							<div className="mb-3 flex items-start justify-between">
+								<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 shadow-sm">
+									<Globe className="h-5 w-5 text-white" />
 								</div>
-								<div className="flex items-center gap-1 text-emerald-500">
-									<TrendingUp className="h-4 w-4" />
-									<span className="text-xs font-medium">+12%</span>
-								</div>
+								<div className="text-xs text-gray-500 uppercase tracking-wide font-medium">LEADS</div>
 							</div>
-							<div className="mb-2 font-bold text-3xl text-gray-900 group-hover:text-indigo-700 transition-colors duration-300">{stats?.total || 0}</div>
+							<div className="mb-1 font-bold text-2xl text-gray-900 group-hover:text-indigo-700 transition-colors duration-300">{stats?.total || 0}</div>
 							<p className="text-gray-600 text-sm font-medium">Total Leads</p>
 						</div>
 					</div>
 
-					<div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+					<div className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-5 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
 						<div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-green-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 						<div className="relative">
-							<div className="mb-4 flex items-center justify-between">
-								<div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 shadow-lg group-hover:scale-110 transition-transform duration-300">
-									<Brain className="h-7 w-7 text-white" />
+							<div className="mb-3 flex items-start justify-between">
+								<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 shadow-sm">
+									<Brain className="h-5 w-5 text-white" />
 								</div>
-								<div className="flex items-center gap-1 text-emerald-500">
-									<TrendingUp className="h-4 w-4" />
-									<span className="text-xs font-medium">+8%</span>
-								</div>
+								<div className="text-xs text-gray-500 uppercase tracking-wide font-medium">AI</div>
 							</div>
-							<div className="mb-2 font-bold text-3xl text-gray-900 group-hover:text-emerald-700 transition-colors duration-300">{stats?.enriched || 0}</div>
+							<div className="mb-1 font-bold text-2xl text-gray-900 group-hover:text-emerald-700 transition-colors duration-300">{stats?.enriched || 0}</div>
 							<p className="text-gray-600 text-sm font-medium">AI Enriched</p>
 						</div>
 					</div>
 
-					<div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+					<div className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-5 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
 						<div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-violet-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 						<div className="relative">
-							<div className="mb-4 flex items-center justify-between">
-								<div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-violet-600 shadow-lg group-hover:scale-110 transition-transform duration-300">
-									<CheckCircle2 className="h-7 w-7 text-white" />
+							<div className="mb-3 flex items-start justify-between">
+								<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 shadow-sm">
+									<CheckCircle2 className="h-5 w-5 text-white" />
 								</div>
-								<div className="flex items-center gap-1 text-emerald-500">
-									<TrendingUp className="h-4 w-4" />
-									<span className="text-xs font-medium">+15%</span>
-								</div>
+								<div className="text-xs text-gray-500 uppercase tracking-wide font-medium">VERIFIED</div>
 							</div>
-							<div className="mb-2 font-bold text-3xl text-gray-900 group-hover:text-purple-700 transition-colors duration-300">{stats?.verified_email || 0}</div>
+							<div className="mb-1 font-bold text-2xl text-gray-900 group-hover:text-purple-700 transition-colors duration-300">{stats?.verified_email || 0}</div>
 							<p className="text-gray-600 text-sm font-medium">Verified Emails</p>
 						</div>
 					</div>
 
-					<div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+					<div className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-5 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
 						<div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-amber-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 						<div className="relative">
-							<div className="mb-4 flex items-center justify-between">
-								<div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 shadow-lg group-hover:scale-110 transition-transform duration-300">
-									<Package className="h-7 w-7 text-white" />
+							<div className="mb-3 flex items-start justify-between">
+								<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 shadow-sm">
+									<Package className="h-5 w-5 text-white" />
 								</div>
-								<div className="flex items-center gap-1 text-emerald-500">
-									<TrendingUp className="h-4 w-4" />
-									<span className="text-xs font-medium">+5%</span>
-								</div>
+								<div className="text-xs text-gray-500 uppercase tracking-wide font-medium">QUALITY</div>
 							</div>
-							<div className="mb-2 font-bold text-3xl text-gray-900 group-hover:text-orange-700 transition-colors duration-300">{stats?.score_70_plus || 0}</div>
+							<div className="mb-1 font-bold text-2xl text-gray-900 group-hover:text-orange-700 transition-colors duration-300">{stats?.score_70_plus || 0}</div>
 							<p className="text-gray-600 text-sm font-medium">High Quality (≥70)</p>
 						</div>
 					</div>

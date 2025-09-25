@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { InvoiceRow } from "@/types/invoice";
-import { Calendar, Download, Eye, Link } from "lucide-react";
+import { Calendar, Download, Link } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface InvoiceTableProps {

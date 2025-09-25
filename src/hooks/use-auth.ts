@@ -1,5 +1,6 @@
 /** biome-ignore-all lint/style/noMagicNumbers: <explanation> */
 import { authService } from "@/services/auth.service";
+import { getAdminEmails } from "@/utils/helper";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
@@ -38,9 +39,14 @@ export const useSignIn = () => {
 	return useMutation({
 		mutationFn: (data: { email: string; password: string }) =>
 			authService.signIn(data.email, data.password),
-		onSuccess: () => {
+		onSuccess: (_result, variables) => {
 			queryClient.invalidateQueries({ queryKey: ["auth"] });
-			router.push("/dashboard/leads");
+			const email = variables?.email?.toLowerCase();
+			if (email && getAdminEmails().includes(email)) {
+				router.push("/admin/dashboard/scraper-logs");
+			} else {
+				router.push("/dashboard/leads");
+			}
 		},
 	});
 };

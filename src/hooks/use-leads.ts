@@ -85,6 +85,7 @@ export function useCreateLead() {
       // Invalidate and refetch lead lists
       queryClient.invalidateQueries({ queryKey: leadKeys.lists() });
       queryClient.invalidateQueries({ queryKey: leadKeys.paginatedLists() });
+      queryClient.invalidateQueries({ queryKey: leadKeys.stats() });
     },
     onError: (error) => {
       console.error("Failed to create lead:", error);

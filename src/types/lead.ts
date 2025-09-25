@@ -55,6 +55,7 @@ export interface LeadFilters {
   source?: LeadSource;
   verify_email_status?: LeadVerifyEmailStatus;
   search?: string; // Search across url, source, status
+  flagged?: boolean;
   date_range?: {
     start: string;
     end: string;

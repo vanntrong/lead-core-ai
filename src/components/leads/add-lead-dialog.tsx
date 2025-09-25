@@ -23,7 +23,7 @@ import { useUserActiveSubscription } from "@/hooks/use-subscription";
 import type { CreateLeadData, LeadSource } from "@/types/lead";
 import { AlertCircle, Crown, Globe, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -59,8 +59,6 @@ export function AddLeadDialog({ isOpen, onClose }: AddLeadDialogProps) {
 		(activeSubscription?.usage_limits?.current_leads ?? 0) >= (activeSubscription?.usage_limits?.max_leads ?? 0);
 
 	const handleClose = () => {
-		reset();
-		setSubmitError(null);
 		onClose();
 	};
 
@@ -69,13 +67,19 @@ export function AddLeadDialog({ isOpen, onClose }: AddLeadDialogProps) {
 		try {
 			await createLeadMutation.mutateAsync(data);
 			toast.success("Lead added successfully!");
-			reset();
 			onClose();
 		} catch (error: any) {
 			console.error("Error adding lead:", error);
 			setSubmitError(error?.message || "Something went wrong. Please try again or contact support.");
 		}
 	};
+
+	useEffect(() => {
+		if (isOpen) {
+			reset();
+			setSubmitError(null);
+		}
+	}, [isOpen]);
 
 	return (
 		<Dialog open={isOpen} onOpenChange={handleClose}>

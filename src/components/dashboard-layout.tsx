@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useCurrentUser } from "@/hooks/use-auth";
+import { getAdminEmails } from "@/utils/helper";
 import { Menu } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { DashboardSidebar } from "./dashboard-sidebar";
@@ -16,6 +17,8 @@ export function DashboardLayout({ children, planName }: DashboardLayoutProps) {
 	const { data: user } = useCurrentUser();
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+	const isAdmin = user?.email ? getAdminEmails().includes(user.email.toLowerCase()) : false;
 
 	const toggleSidebarCollapse = useCallback(() => {
 		const newState = !sidebarCollapsed;
@@ -53,6 +56,7 @@ export function DashboardLayout({ children, planName }: DashboardLayoutProps) {
 			<div className="hidden lg:flex">
 				<DashboardSidebar
 					userName={userName}
+					isAdmin={isAdmin}
 					isCollapsed={sidebarCollapsed}
 					onToggleCollapse={toggleSidebarCollapse}
 					planName={planName}
@@ -62,7 +66,7 @@ export function DashboardLayout({ children, planName }: DashboardLayoutProps) {
 			{/* Mobile Sidebar */}
 			<Sheet onOpenChange={setSidebarOpen} open={sidebarOpen}>
 				<SheetContent className="w-64 p-0" side="left">
-					<DashboardSidebar userName={userName} planName={planName} />
+					<DashboardSidebar userName={userName} isAdmin={isAdmin} planName={planName} />
 				</SheetContent>
 			</Sheet>
 

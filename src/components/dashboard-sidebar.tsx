@@ -19,6 +19,8 @@ import {
 	Globe,
 	Home,
 	LogOut,
+	ScrollText,
+	Server,
 	Settings,
 	Truck
 } from "lucide-react";
@@ -69,8 +71,34 @@ const navigationSections: NavigationSection[] = [
 	},
 ];
 
+const navigationAdminSections: NavigationSection[] = [
+	{
+		title: "Admin Console",
+		items: [
+			{
+				name: "Scraper Logs",
+				href: "/admin/dashboard/scraper-logs",
+				icon: ScrollText,
+				description: "Monitor scraper logs",
+			},
+			{
+				name: "Proxies",
+				href: "/admin/dashboard/proxies",
+				icon: Server,
+				description: "Monitor proxies logs",
+			},
+			{
+				name: "Lead Moderation",
+				href: "/admin/dashboard/lead-moderation",
+				icon: Crown,
+				description: "Monitor lead moderation",
+			},
+		],
+	},
+];
 interface DashboardSidebarProps {
 	userName?: string;
+	isAdmin?: boolean;
 	planName?: string;
 	isCollapsed?: boolean;
 	onToggleCollapse?: () => void;
@@ -78,6 +106,7 @@ interface DashboardSidebarProps {
 
 export function DashboardSidebar({
 	userName = "User Name",
+	isAdmin = false,
 	planName,
 	isCollapsed = false,
 	onToggleCollapse,
@@ -134,7 +163,7 @@ export function DashboardSidebar({
 			{/* Navigation */}
 			<div className="flex-1 overflow-y-auto px-3 py-4">
 				<nav className="space-y-6">
-					{navigationSections.map((section) => (
+					{((isAdmin ? navigationAdminSections : navigationSections)).map((section) => (
 						<div key={section.title}>
 							{!isCollapsed && (
 								<h3 className="mb-3 px-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">
@@ -222,7 +251,7 @@ export function DashboardSidebar({
 										</p>
 										{planName && (
 											<p className="truncate text-gray-500 text-xs">
-												{planName} Plan
+												{planName}
 											</p>
 										)}
 									</div>

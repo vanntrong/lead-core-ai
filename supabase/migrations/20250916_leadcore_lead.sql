@@ -17,7 +17,8 @@ DROP TYPE IF EXISTS verify_email_status;
 CREATE TYPE verify_email_status AS ENUM (
     'pending',
     'verified',
-    'failed'
+    'failed',
+    'invalid'
 );
 
 -- Add lead_source enum
