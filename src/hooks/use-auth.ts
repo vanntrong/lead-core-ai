@@ -2,12 +2,18 @@
 import { authService } from "@/services/auth.service";
 import { getAdminEmails } from "@/utils/helper";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@bprogress/next/app";
 
 export const useCurrentUser = () => {
 	return useQuery({
 		queryKey: ["auth", "currentUser"],
-		queryFn: () => authService.getCurrentUser(),
+		queryFn: async () => {
+			const user = await authService.getCurrentUser();
+			return {
+				...user,
+				is_admin: user?.email ? getAdminEmails().includes(user.email.toLowerCase()) : false
+			}
+		},
 		staleTime: 60 * 60 * 1000, // 1 hour
 	});
 };

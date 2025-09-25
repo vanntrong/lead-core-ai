@@ -65,7 +65,7 @@ export async function updateSession(request: NextRequest) {
 		homeUrl.searchParams.set("redirectTo", pathname);
 		homeUrl.searchParams.set(
 			"message",
-			"Please sign in to access your fleet dashboard"
+			"Please sign in to access your leadcore dashboard"
 		);
 		return NextResponse.redirect(homeUrl);
 	}

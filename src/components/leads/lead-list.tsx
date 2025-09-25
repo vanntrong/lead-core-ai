@@ -3,7 +3,7 @@ import { Crown, Loader2, Plus } from "lucide-react";
 import { Button } from "../ui/button";
 import { Pagination } from "../ui/pagination";
 import { LeadTable } from "./lead-table";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@bprogress/next/app";
 
 interface LeadListProps {
   response: PaginatedLeadResponse;

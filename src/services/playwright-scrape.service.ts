@@ -27,7 +27,13 @@ export class PlaywrightScrapeService {
     let shouldLogProxy = true;
     const startTime = new Date();
     try {
-      browser = await chromium.launch();
+      browser = await chromium.launch(proxy ? {
+        proxy: {
+          server: `http://${proxy?.host}:${proxy?.port}`,
+          username: proxy?.username ?? undefined,
+          password: proxy?.password ?? undefined,
+        }
+      } : undefined);
       page = await browser.newPage({
         userAgent: this.getRandomUserAgent(),
         viewport: { width: 1280, height: 800 },

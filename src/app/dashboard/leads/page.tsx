@@ -13,8 +13,8 @@ import { useGenerateMockLeads, useLeadsPaginated, useLeadStats } from "@/hooks/u
 import { useUserActiveSubscription } from "@/hooks/use-subscription";
 import { cn } from "@/lib/utils";
 import { LeadFilters } from "@/types/lead";
+import { useRouter } from "@bprogress/next/app";
 import { Crown, Plus, RefreshCw } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 

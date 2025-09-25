@@ -2,6 +2,7 @@ import "@/app/globals.css";
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
+import { getAdminEmails } from "@/utils/helper";
 import {
 	ArrowRight,
 	CheckCircle,
@@ -19,6 +20,8 @@ export default async function Home() {
 	const {
 		data: { user },
 	} = await supabase.auth.getUser();
+
+	const isAdmin = getAdminEmails().includes(user?.email || "");
 
 	return (
 		<div className="min-h-screen bg-white">
@@ -59,7 +62,7 @@ export default async function Home() {
 									</>
 								) : (
 									<Button asChild className="h-10 rounded-lg px-4 text-sm font-medium shadow-sm border border-gray-200 bg-white text-gray-900 hover:bg-gray-50 transition-all duration-200" size="sm" variant="outline">
-										<Link href="/dashboard/leads">Dashboard</Link>
+										<Link href={isAdmin ? `/admin/dashboard/scraper-logs` : `/dashboard/leads`}>Dashboard</Link>
 									</Button>
 								)}
 							</div>
@@ -101,10 +104,10 @@ export default async function Home() {
 									className="h-12 bg-indigo-600 hover:bg-indigo-700 text-white px-8 text-lg font-semibold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105"
 									size="lg"
 								>
-									<a className="flex items-center" href="/register">
+									<Link className="flex items-center" href="/signup">
 										Get more leads now
 										<ArrowRight className="ml-2 h-5 w-5" />
-									</a>
+									</Link>
 								</Button>
 							</div>
 						</div>
@@ -238,10 +241,10 @@ export default async function Home() {
 								className="h-12 bg-white px-8 text-lg font-semibold rounded-xl text-indigo-600 shadow-lg transition-all duration-200 hover:bg-gray-50 hover:shadow-xl hover:scale-105"
 								size="lg"
 							>
-								<a className="flex items-center" href="/register">
+								<Link className="flex items-center" href="/signup">
 									Get started now
 									<ArrowRight className="ml-2 h-5 w-5" />
-								</a>
+								</Link>
 							</Button>
 						</div>
 

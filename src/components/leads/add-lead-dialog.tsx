@@ -21,8 +21,8 @@ import {
 import { useCreateLead } from "@/hooks/use-leads";
 import { useUserActiveSubscription } from "@/hooks/use-subscription";
 import type { CreateLeadData, LeadSource } from "@/types/lead";
+import { useRouter } from "@bprogress/next/app";
 import { AlertCircle, Crown, Globe, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";

@@ -2,10 +2,10 @@ import pricingPlans from "@/config/pricing-plans.json";
 import { leadSourceColorConfig } from "@/constants/saas-source";
 import { Subscription } from "@/types/subscription";
 import { BarChart3, Calendar, CheckCircle, Crown, DollarSign, Zap } from "lucide-react";
-import { useRouter } from "next/navigation";
 import React from "react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
+import { useRouter } from "@bprogress/next/app";
 
 interface UsageOverviewProps {
   activeSubscription?: Subscription | null;

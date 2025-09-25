@@ -9,6 +9,7 @@ import { useLead } from "@/hooks/use-leads";
 import { useUserActiveSubscription } from "@/hooks/use-subscription";
 import { cn } from "@/lib/utils";
 import { leadScoringService } from "@/services/lead-scoring.service";
+import { useRouter } from "@bprogress/next/app";
 import {
   ArrowLeft,
   Brain,
@@ -28,7 +29,6 @@ import {
   XCircle
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Suspense, use as usePromise, useState } from "react";
 
 const SOURCE_MAP: Record<string, { label: string; badge: string }> = {
