@@ -119,39 +119,123 @@ export type Database = {
         }
         Relationships: []
       }
-      proxy_logs: {
+      proxies: {
+        Row: {
+          avg_response_ms: number | null
+          created_at: string
+          error_count_24h: number | null
+          host: string
+          id: string
+          last_checked_at: string | null
+          password: string | null
+          port: number
+          status: Database["public"]["Enums"]["proxy_status"]
+          total_count_24h: number | null
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avg_response_ms?: number | null
+          created_at?: string
+          error_count_24h?: number | null
+          host: string
+          id?: string
+          last_checked_at?: string | null
+          password?: string | null
+          port: number
+          status?: Database["public"]["Enums"]["proxy_status"]
+          total_count_24h?: number | null
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avg_response_ms?: number | null
+          created_at?: string
+          error_count_24h?: number | null
+          host?: string
+          id?: string
+          last_checked_at?: string | null
+          password?: string | null
+          port?: number
+          status?: Database["public"]["Enums"]["proxy_status"]
+          total_count_24h?: number | null
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      proxy_heal_check_logs: {
         Row: {
           created_at: string
+          duration: number | null
           error: string | null
           id: string
           proxy_host: string
           proxy_ip: string | null
           proxy_port: number
-          status: Database["public"]["Enums"]["proxy_status"]
+          status: Database["public"]["Enums"]["proxy_heal_check_log_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration?: number | null
+          error?: string | null
+          id?: string
+          proxy_host: string
+          proxy_ip?: string | null
+          proxy_port: number
+          status: Database["public"]["Enums"]["proxy_heal_check_log_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration?: number | null
+          error?: string | null
+          id?: string
+          proxy_host?: string
+          proxy_ip?: string | null
+          proxy_port?: number
+          status?: Database["public"]["Enums"]["proxy_heal_check_log_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      proxy_logs: {
+        Row: {
+          created_at: string
+          duration: number | null
+          error: string | null
+          id: string
+          proxy_host: string
+          proxy_ip: string | null
+          proxy_port: number
+          status: Database["public"]["Enums"]["proxy_log_status"]
           updated_at: string
           web_source: Database["public"]["Enums"]["lead_source"]
           web_url: string
         }
         Insert: {
           created_at?: string
+          duration?: number | null
           error?: string | null
           id?: string
           proxy_host: string
           proxy_ip?: string | null
           proxy_port: number
-          status: Database["public"]["Enums"]["proxy_status"]
+          status: Database["public"]["Enums"]["proxy_log_status"]
           updated_at?: string
           web_source: Database["public"]["Enums"]["lead_source"]
           web_url: string
         }
         Update: {
           created_at?: string
+          duration?: number | null
           error?: string | null
           id?: string
           proxy_host?: string
           proxy_ip?: string | null
           proxy_port?: number
-          status?: Database["public"]["Enums"]["proxy_status"]
+          status?: Database["public"]["Enums"]["proxy_log_status"]
           updated_at?: string
           web_source?: Database["public"]["Enums"]["lead_source"]
           web_url?: string
@@ -339,7 +423,9 @@ export type Database = {
         | "failed"
         | "scrap_failed"
       plan_tier: "basic" | "pro" | "unlimited"
-      proxy_status: "success" | "failed" | "banned" | "timeout"
+      proxy_heal_check_log_status: "success" | "failed"
+      proxy_log_status: "success" | "failed" | "banned" | "timeout"
+      proxy_status: "active" | "inactive" | "error"
       scraper_status: "success" | "fail"
       source_type: "etsy" | "woocommerce" | "shopify" | "g2"
       stripe_customer_status: "active" | "inactive" | "canceled"
@@ -483,7 +569,9 @@ export const Constants = {
         "scrap_failed",
       ],
       plan_tier: ["basic", "pro", "unlimited"],
-      proxy_status: ["success", "failed", "banned", "timeout"],
+      proxy_heal_check_log_status: ["success", "failed"],
+      proxy_log_status: ["success", "failed", "banned", "timeout"],
+      proxy_status: ["active", "inactive", "error"],
       scraper_status: ["success", "fail"],
       source_type: ["etsy", "woocommerce", "shopify", "g2"],
       stripe_customer_status: ["active", "inactive", "canceled"],

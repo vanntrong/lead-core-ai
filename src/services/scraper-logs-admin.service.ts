@@ -2,6 +2,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { PaginatedScraperLogResponse, ScraperLog, ScraperLogFilters, ScraperLogStats, ScraperSource } from "@/types/scraper_log";
 
 export class ScraperLogsAdminService {
+  private async getSupabaseClient() {
+    return createAdminClient();
+  }
   async createScraperLog(data: any): Promise<ScraperLog> {
     const supabase = await this.getSupabaseClient();
     const { data: newLog, error } = await supabase
@@ -54,9 +57,6 @@ export class ScraperLogsAdminService {
       console.error("Error deleting scraper log (admin):", error);
       throw new Error(`Failed to delete scraper log: ${error.message}`);
     }
-  }
-  private async getSupabaseClient() {
-    return await createAdminClient();
   }
 
   async getScraperLogById(id: string): Promise<ScraperLog | null> {

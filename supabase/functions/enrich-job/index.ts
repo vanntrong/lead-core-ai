@@ -15,7 +15,7 @@ async function sendToClaude(promptContent, { model = "claude-3-7-sonnet-20250219
         }
       ]
     });
-    const textOutput = response.content.filter((block) => block.type === "text").map((block) => block.text).join("\n");
+    const textOutput = response.content.filter((block)=>block.type === "text").map((block)=>block.text).join("\n");
     return textOutput;
   } catch (error) {
     console.error("Anthropic API Error:", error);
@@ -48,23 +48,22 @@ Format strictly as:
   console.log(output);
   try {
     return JSON.parse(output.trim());
-  } catch {
+  } catch  {
     throw new Error("Claude did not return valid JSON: " + output);
   }
 }
 const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
 async function processJobsForUser(user_id) {
-  const { data: job, error } = await supabase.from("leads").select("id, scrap_info").eq("user_id", user_id).eq("status", "scraped").limit(1).maybeSingle();
-  if (error && error.code !== "PGRST116") {
-    console.error(`Error fetching job for user ${user_id}:`, error);
-  }
+  // 1. Lấy job
+  const { data: job, error } = await supabase.from("leads").select("id, scrap_info").eq("user_id", user_id).eq("status", "scraped").order("created_at").limit(1).maybeSingle();
+  if (error && error.code !== "PGRST116") return console.error(error);
   if (!job) return;
+  // 2. Set status enriching
   const { error: updateError } = await supabase.from("leads").update({
     status: "enriching"
-  }).eq("id", job?.id);
-  if (updateError) {
-    console.error(`Error update job for user ${user_id}:`, updateError);
-  }
+  }).eq("id", job.id);
+  if (updateError) return console.error(updateError);
+  // 3. Enrich
   let enriched = null;
   let enrichFailed = false;
   if (job.scrap_info) {
@@ -75,42 +74,34 @@ async function processJobsForUser(user_id) {
       console.error(`Enrichment failed for job ${job.id}:`, err);
     }
   }
-  const updateData = enrichFailed ? {
+  // 4. Update enrichment result
+  const { error: updateEnrichError } = await supabase.from("leads").update(enrichFailed ? {
     status: "scraped",
     enrich_info: null
-  } // For retry
-    : {
-      status: "enriched",
-      enrich_info: enriched
-    };
-  const { error: updateEnrichError } = await supabase.from("leads").update(updateData).eq("id", job?.id);
-  if (updateEnrichError) {
-    console.error(`Error update enrich job for user ${user_id}:`, updateEnrichError);
-    return;
-  }
+  } : {
+    status: "enriched",
+    enrich_info: enriched
+  }).eq("id", job.id);
+  if (updateEnrichError) return console.error(updateEnrichError);
+  // 5. Verify email
+  const emails = job.scrap_info?.emails ?? [];
   let verifyEmailStatus = "invalid";
   let verifyEmailData = null;
-  const emails = job?.scrap_info?.emails ?? [];
-  verifyEmailSync(emails[0]);
-  if (emails && emails.length > 0) {
+  if (emails.length > 0) {
     try {
       verifyEmailData = await verifyEmailSync(emails[0]);
-      if (verifyEmailData && verifyEmailData.length > 0 && verifyEmailData[0].status === "valid") {
-        verifyEmailStatus = "verified";
-      }
+      if (verifyEmailData?.[0]?.status === "valid") verifyEmailStatus = "verified";
     } catch (err) {
       verifyEmailStatus = "failed";
       console.error(`Email verification failed for job ${job.id}:`, err);
     }
   }
-  const updateVerifyEmailData = {
+  // 6. Update email verification
+  const { error: updateVerifyEmailError } = await supabase.from("leads").update({
     verify_email_status: verifyEmailStatus,
     verify_email_info: verifyEmailData
-  };
-  const { error: updateVerifyEmailError } = await supabase.from("leads").update(updateVerifyEmailData).eq("id", job?.id);
-  if (updateVerifyEmailError) {
-    console.error(`Error update verify email job for user ${user_id}:`, updateVerifyEmailError);
-  }
+  }).eq("id", job.id);
+  if (updateVerifyEmailError) console.error(updateVerifyEmailError);
 }
 const APIFY_API_TOKEN = Deno.env.get("APIFY_API_TOKEN");
 async function verifyEmailSync(email) {
@@ -138,7 +129,7 @@ async function verifyEmailSync(email) {
   const result = await resp.json();
   return result; // result là OUTPUT record từ key-value store
 }
-Deno.serve(async () => {
+Deno.serve(async ()=>{
   try {
     const { data: users, error } = await supabase.rpc("get_users_with_available_enrich_jobs");
     if (error) {
@@ -157,7 +148,7 @@ Deno.serve(async () => {
         status: 200
       });
     }
-    for (const user of users) {
+    for (const user of users){
       processJobsForUser(user.user_id);
     }
     return new Response(JSON.stringify({
