@@ -4,6 +4,7 @@ import { leadScoringService } from '@/services/lead-scoring.service';
 import { CreateLeadData, Lead, LeadFilters, LeadScrapInfo, LeadStats, PaginatedLeadResponse, UpdateLeadData } from '@/types/lead';
 import { Json } from '../../database.types';
 import { playwrightScrapeService } from "./playwright-scrape.service";
+import { scraperLogsService } from "./scraper-logs.service";
 import { subscriptionService } from "./subscription.service";
 import { usageLimitService } from "./usage-limit.service";
 
@@ -46,8 +47,12 @@ export class LeadService {
     // Build data query
     let query = supabase.from('leads').select('*');
 
+    query = query.eq('flagged', false);
+
     // Build count query (head:true for faster count)
     let countQuery = supabase.from('leads').select('*', { count: 'exact', head: true });
+
+    countQuery = countQuery.eq('flagged', false);
 
     // Apply filters to both queries
     if (filters.status) {
@@ -120,6 +125,9 @@ export class LeadService {
     const supabase = await this.getSupabaseClient();
 
     let query = supabase.from('leads').select('*');
+
+    query = query.eq('flagged', false);
+
     if (filters?.status) {
       query = query.eq('status', filters.status);
     }
@@ -196,9 +204,35 @@ export class LeadService {
       throw new Error(`Selected source is not available in your current plan. Please choose a different source or upgrade your plan.`);
     }
 
-    const scrapInfo = await playwrightScrapeService.scrape(data.url, data.source);
-    if (scrapInfo?.error) {
-      throw new Error(scrapInfo?.error || "Failed to scrape URL");
+    // Track scraping operation
+    const startTime = new Date();
+    let scrapInfo;
+    let scrapingSuccess = false;
+    let scrapingError: string | undefined;
+
+    try {
+      scrapInfo = await playwrightScrapeService.scrape(data.url, data.source);
+      if (scrapInfo?.error) {
+        scrapingError = scrapInfo.error;
+        throw new Error(scrapInfo.error || "Failed to scrape URL");
+      }
+      scrapingSuccess = true;
+    } catch (error: any) {
+      scrapingError = error.message || "Failed to scrape URL";
+      throw error;
+    } finally {
+      // Log scraping operation regardless of success or failure
+      const endTime = new Date();
+      scraperLogsService.logScrapingOperation({
+        source: data.source,
+        url: data.url,
+        startTime,
+        endTime,
+        success: scrapingSuccess,
+        error: scrapingError
+      }).catch((err) => {
+        console.error("Error logging scraping operation:", err);
+      });
     }
 
     const { data: newLead, error } = await supabase
@@ -251,7 +285,8 @@ export class LeadService {
 
     const { data: leads, error: supabaseError } = await supabase
       .from("leads")
-      .select("*");
+      .select("*")
+      .eq('flagged', false);
 
     if (supabaseError) {
       console.error("Error fetching lead stats:", supabaseError);
@@ -398,7 +433,6 @@ export class LeadService {
 
     return true;
   }
-
 }
 
 export const leadService = new LeadService();
