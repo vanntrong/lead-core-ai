@@ -1,18 +1,27 @@
 "use client";
 import { DashboardLayout } from "@/components/dashboard-layout";
-import { ProxyList } from "@/components/proxy-logs/proxy-list";
-import ProxyLogList from "@/components/proxy-logs/proxy-log-list";
-import { ProxyLogStatsCards } from "@/components/proxy-logs/proxy-log-stats";
+import ProxyHealCheckLogsList from "@/components/proxy-heal-check-logs/proxy-heal-check-logs-list";
+import { ProxyList } from "@/components/proxy-heal-check-logs/proxy-list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { usePagination } from "@/components/ui/pagination";
-import { useProxyLogsPaginatedAdmin, useProxyLogStatsAdmin } from "@/hooks/use-proxy-logs-admin";
+import { useProxiesAdmin } from "@/hooks/use-proxy-admin";
+import { useProxyHealCheckLogsPaginatedAdmin } from "@/hooks/use-proxy-heal-check-logs-admin";
 import { cn } from "@/lib/utils";
 import { RefreshCw } from "lucide-react";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
-export default function ProxyLogsPage() {
+export default function ProxiesPage() {
+
+  const {
+    data: proxies,
+    isLoading: proxiesLoading,
+    isFetching: proxiesFetching,
+    error: proxiesError,
+    refetch: refetchProxies,
+  } = useProxiesAdmin()
+
   const {
     currentPage,
     itemsPerPage,
@@ -33,30 +42,24 @@ export default function ProxyLogsPage() {
 
   const {
     data: paginatedResponse,
-    isLoading: isLoadingProxyLog,
+    isLoading: isLoadingProxyHealCheckLog,
     error: proxyLogError,
-    isFetching: isFetchingProxyLog,
-    refetch: refetchProxyLog,
-  } = useProxyLogsPaginatedAdmin(paginatedFilters);
-
-  const {
-    data: stats,
-    isFetching: statsLoading,
-    refetch: refetchStats,
-  } = useProxyLogStatsAdmin();
+    isFetching: isFetchingProxyHealCheckLog,
+    refetch: refetchProxyHealCheckLog,
+  } = useProxyHealCheckLogsPaginatedAdmin(paginatedFilters);
 
   const handleRefresh = async () => {
-    await Promise.all([refetchProxyLog(), refetchStats()]);
-    toast.success("Proxy log board refreshed");
+    await Promise.all([refetchProxyHealCheckLog(), refetchProxies()]);
+    toast.success("Proxies board refreshed");
   };
 
-  if (proxyLogError) {
+  if (proxyLogError || proxiesError) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
-          <h1 className="mb-4 font-bold text-2xl">Error Loading Proxy Logs</h1>
+          <h1 className="mb-4 font-bold text-2xl">Error Loading Proxies</h1>
           <p className="mb-6 text-muted-foreground">
-            Failed to load proxy log data.
+            Failed to load proxies data.
           </p>
           <Button onClick={() => window.location.reload()}>Try Again</Button>
         </div>
@@ -76,14 +79,14 @@ export default function ProxyLogsPage() {
             <div className="flex items-center space-x-3">
               <Button
                 className="h-9"
-                disabled={isFetchingProxyLog || isLoadingProxyLog}
+                disabled={isFetchingProxyHealCheckLog || isLoadingProxyHealCheckLog}
                 onClick={handleRefresh}
                 size="sm"
                 variant="outline"
               >
                 <RefreshCw
                   className={cn("mr-2 h-4 w-4", {
-                    "animate-spin": isFetchingProxyLog || isLoadingProxyLog,
+                    "animate-spin": isFetchingProxyHealCheckLog || isLoadingProxyHealCheckLog,
                   })}
                 />
                 Refresh
@@ -99,22 +102,19 @@ export default function ProxyLogsPage() {
         </div>
 
         {/* Proxy List */}
-        <ProxyList isLoading={statsLoading} />
+        <ProxyList proxies={proxies} isLoading={proxiesLoading || proxiesFetching} />
 
         {/* Section Divider */}
         <div className="flex items-center justify-between pt-2 mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">Proxies Logs</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Proxies Health Check Logs</h3>
           <div className="flex-1 border-t border-gray-200 ml-4" />
         </div>
 
-        {/* Stats Cards */}
-        <ProxyLogStatsCards isLoading={statsLoading} stats={stats} />
-
         {/* Logs Table */}
-        <ProxyLogList
+        <ProxyHealCheckLogsList
           error={proxyLogError}
-          isFetching={isFetchingProxyLog}
-          isLoading={isLoadingProxyLog}
+          isFetching={isFetchingProxyHealCheckLog}
+          isLoading={isLoadingProxyHealCheckLog}
           pagination={{
             currentPage,
             itemsPerPage,

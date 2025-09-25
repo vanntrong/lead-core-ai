@@ -4,7 +4,7 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const supabase = createClient(supabaseUrl, supabaseKey);
 const stripe = new Stripe(Deno.env.get('STRIPE_API_KEY'));
-import { pricingPlans } from "./utils.ts";
+import { pricingPlans } from "./utils.js";
 export async function handleInvoicePaymentSucceeded({ invoice }) {
   try {
     // Fetch subscription from Stripe
@@ -17,7 +17,7 @@ export async function handleInvoicePaymentSucceeded({ invoice }) {
     }
     const userId = subscription.metadata?.user_id;
     const priceId = subscription.items?.data[0]?.price?.id;
-    const plan = pricingPlans.find((p)=>p.priceId === priceId);
+    const plan = pricingPlans.find((p) => p.priceId === priceId);
     if (!userId || !plan) {
       console.error("InvoicePaymentSucceeded: missing userId or plan", invoice.id);
       return new Response("Invalid subscription metadata", {

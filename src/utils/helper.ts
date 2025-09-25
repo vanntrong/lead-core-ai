@@ -15,3 +15,12 @@ export const getAdminEmails = (): string[] => {
 		.map(e => e.trim().toLowerCase())
 		.filter(Boolean);
 }
+
+export const formatDate = (dateString: string) => {
+	return new Date(dateString).toLocaleString("en-US", {
+		month: "short",
+		day: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+	});
+};

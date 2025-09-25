@@ -2,33 +2,17 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import type { Proxy, ProxyStatus } from "@/types/proxy";
+import { formatDate } from "@/utils/helper";
 import { Activity, AlertCircle, Server } from "lucide-react";
 
-interface ProxyStatus {
-  host: string;
-  port: number;
-  status: "active" | "inactive" | "error";
-  lastChecked?: string;
-  responseTime?: number;
-}
-
 interface ProxyListProps {
-  proxyStatuses?: ProxyStatus[];
   isLoading?: boolean;
+  proxies?: Proxy[];
 }
 
-export function ProxyList({ proxyStatuses, isLoading }: ProxyListProps) {
-  const proxies = []
-  // If no proxy statuses provided, use default proxies from config
-  const proxiesWithStatus: ProxyStatus[] = proxyStatuses ||
-    proxies.map((proxy, index) => ({
-      ...proxy,
-      status: index % 3 === 0 ? "active" : index % 3 === 1 ? "inactive" : "error",
-      lastChecked: new Date(Date.now() - Math.random() * 3600000).toLocaleTimeString(),
-      responseTime: Math.floor(Math.random() * 500) + 100,
-    }));
-
-  const getStatusConfig = (status: ProxyStatus["status"]) => {
+export function ProxyList({ isLoading, proxies = [] }: Readonly<ProxyListProps>) {
+  const getStatusConfig = (status: ProxyStatus) => {
     switch (status) {
       case "active":
         return {
@@ -71,8 +55,8 @@ export function ProxyList({ proxyStatuses, isLoading }: ProxyListProps) {
           <span className="text-red-600">Error: <span className="inline-block h-4 w-8 bg-gray-200 rounded align-middle" /></span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i} className="p-4 animate-pulse">
+          {Array.from({ length: 3 }, (_, i) => `loading-proxy-skeleton-${Date.now()}-${i}`).map((uniqueKey) => (
+            <Card key={uniqueKey} className="p-4 animate-pulse">
               <div className="flex items-center justify-between mb-3">
                 <div className="h-4 w-32 bg-gray-200 rounded" />
                 <div className="h-5 w-16 bg-gray-200 rounded" />
@@ -90,10 +74,10 @@ export function ProxyList({ proxyStatuses, isLoading }: ProxyListProps) {
 
   // Calculate statistics
   const stats = {
-    total: proxiesWithStatus.length,
-    active: proxiesWithStatus.filter(p => p.status === "active").length,
-    inactive: proxiesWithStatus.filter(p => p.status === "inactive").length,
-    error: proxiesWithStatus.filter(p => p.status === "error").length,
+    total: proxies.length,
+    active: proxies.filter(p => p.status === "active").length,
+    inactive: proxies.filter(p => p.status === "inactive").length,
+    error: proxies.filter(p => p.status === "error").length,
   };
 
   return (
@@ -109,7 +93,7 @@ export function ProxyList({ proxyStatuses, isLoading }: ProxyListProps) {
         <span className="text-red-600">Error: {stats.error}</span>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {proxiesWithStatus.map((proxy) => {
+        {proxies.map((proxy) => {
           const statusConfig = getStatusConfig(proxy.status);
 
           return (
@@ -126,14 +110,23 @@ export function ProxyList({ proxyStatuses, isLoading }: ProxyListProps) {
                   {statusConfig.label}
                 </Badge>
               </div>
-
-              <div className="space-y-1 text-xs text-gray-600">
-                {proxy.lastChecked && (
-                  <div>Last checked: {proxy.lastChecked}</div>
-                )}
-                {proxy.responseTime && proxy.status === "active" && (
-                  <div>Response: {proxy.responseTime}ms</div>
-                )}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-gray-600">
+                <div className="flex flex-col gap-1">
+                  {proxy.last_checked_at && (
+                    <div>Last checked: {formatDate(proxy.last_checked_at)}</div>
+                  )}
+                  {proxy.avg_response_ms && proxy.status === "active" && (
+                    <div>Avg Response: {proxy.avg_response_ms} ms</div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1 sm:items-end sm:text-right">
+                  {proxy.total_count_24h !== null && proxy.total_count_24h > 0 && (
+                    <div>Total requests (24h): {proxy.total_count_24h}</div>
+                  )}
+                  {proxy.error_count_24h !== null && proxy.error_count_24h > 0 && (
+                    <div className="text-red-600">Errors (24h): {proxy.error_count_24h}</div>
+                  )}
+                </div>
               </div>
             </Card>
           );

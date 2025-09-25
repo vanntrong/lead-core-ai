@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { Minimatch } from "minimatch";
 import { type NextRequest, NextResponse } from "next/server";
-import type { Database } from "../../../database.types1";
+import type { Database } from "../../../database.types";
 
 export async function updateSession(request: NextRequest) {
 	let supabaseResponse = NextResponse.next({
@@ -45,7 +45,7 @@ export async function updateSession(request: NextRequest) {
 		new Minimatch("/privacy"),
 		new Minimatch("/pricing"),
 		new Minimatch("/checkout"),
-		new Minimatch("/api/webhooks/stripe"),
+		new Minimatch("/api/heal-check"),
 	];
 	const authRoutes = [
 		new Minimatch("/login"),

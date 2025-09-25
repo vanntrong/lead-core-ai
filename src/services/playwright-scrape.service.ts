@@ -1,6 +1,9 @@
 import APIFY_ACTORS from '@/constants/apify';
+import { LeadSource } from '@/types/lead';
 import { Browser, chromium, Page } from 'playwright';
 import { apifyService } from './apify.service';
+import { proxyAdminService } from './proxy-admin.service';
+import { proxyLogsService } from './proxy-logs.service';
 
 export class PlaywrightScrapeService {
   private userAgents = [
@@ -11,30 +14,20 @@ export class PlaywrightScrapeService {
     'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
   ];
 
-  private proxies = [
-    undefined, // direct connection
-    // Example: 'http://dc.oxylabs.io:8001',
-    // Add more proxies here
-  ];
-
   private getRandomUserAgent(): string {
     const idx = Math.floor(Math.random() * this.userAgents.length);
     return this.userAgents[idx];
   }
 
-  private getRandomProxy(): string | undefined {
-    const idx = Math.floor(Math.random() * this.proxies.length);
-    return this.proxies[idx];
-  }
-
   async processScrape(url: string, source?: string): Promise<{ title: string, desc: string, emails: string[], error?: string }> {
     let browser: Browser | undefined;
     let page: Page | undefined;
-    const proxy = this.getRandomProxy();
+    const proxy = await proxyAdminService.getNextProxy();
+    let proxyResult: { status: 'success' | 'failed' | 'banned' | 'timeout'; message: string | null } = { status: 'success', message: null };
+    let shouldLogProxy = true;
+    const startTime = new Date();
     try {
-      browser = await chromium.launch({
-        proxy: proxy ? { server: proxy } : undefined,
-      });
+      browser = await chromium.launch();
       page = await browser.newPage({
         userAgent: this.getRandomUserAgent(),
         viewport: { width: 1280, height: 800 },
@@ -42,49 +35,121 @@ export class PlaywrightScrapeService {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
       const html = await page.content();
 
-      if (source === 'shopify') {
-        const shopifyValidation = this.validateShopify(url, html);
-        if (!shopifyValidation.valid) {
-          return { title: '', desc: '', emails: [], error: shopifyValidation.error };
-        }
-      } else if (source === 'woocommerce') {
-        const wooValidation = this.validateWooCommerce(html);
-        if (!wooValidation.valid) {
-          return { title: '', desc: '', emails: [], error: wooValidation.error };
-        }
+      const validationError = this.getValidationError(url, html, source);
+      if (validationError) {
+        shouldLogProxy = false;
+        return { title: '', desc: '', emails: [], error: validationError };
       }
 
-      // Email extraction directly from HTML
-      const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
-      let emails: string[] = [];
-      // Also extract from mailto links
-      const mailtos = await page.$$eval('a[href^="mailto:"]', els => els.map(el => el.getAttribute('href')));
-      mailtos.forEach(href => {
-        if (href) {
-          const mail = href.replace(/^mailto:/, '').split('?')[0];
-          // Only accept if it looks like a valid email and not a filename
-          if (emailRegex.test(mail) && /^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/.test(mail) && !/\.(png|jpg|jpeg|gif|svg|webp|ico|css|js)$/i.test(mail)) {
-            emails.push(mail);
-          }
-        }
-      });
-      // Extract from HTML, but filter out emails that are part of filenames
-      (html.match(emailRegex) || []).forEach(email => {
-        if (/^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/.test(email) && !/\.(png|jpg|jpeg|gif|svg|webp|ico|css|js)$/i.test(email)) {
-          if (!emails.includes(email)) emails.push(email);
-        }
-      });
-      emails = Array.from(new Set(emails));
-      // Title and description extraction
+      const emails = await this.extractEmails(page, html);
       const title = await page.title();
       const desc = await page.$eval('meta[name="description"]', el => el.getAttribute('content')).catch(() => '') ?? '';
       return { title, desc, emails };
     } catch (error) {
+      const scrapError = this.handleScrapeError(error);
+      // Classify status based on errorType
+      switch (scrapError.errorType) {
+        case 'timeout':
+          proxyResult.status = 'timeout';
+          break;
+        case 'forbidden':
+        case 'ssl_error':
+          proxyResult.status = 'banned';
+          break;
+        case 'server_error':
+        case 'connection_refused':
+        case 'unknown':
+        case 'not_found':
+          proxyResult.status = 'failed';
+          break;
+        default:
+          proxyResult.status = 'failed';
+      }
+      proxyResult.message = scrapError.error;
       console.error('Playwright scrape error:', error);
-      return { title: '', desc: '', emails: [], error: 'Scrape failed' };
+      return scrapError;
     } finally {
+      if (shouldLogProxy && proxy?.host && proxy?.port) {
+        const endTime = new Date();
+        // Log the proxy operation
+        proxyLogsService.logProxyOperation({
+          web_source: source as LeadSource,
+          web_url: url,
+          proxy_host: proxy.host,
+          proxy_port: proxy.port,
+          proxy_ip: null,
+          status: proxyResult.status,
+          error: proxyResult.message,
+          endTime,
+          startTime
+        }).catch(err => {
+          console.error('Failed to log proxy operation:', err);
+        });
+      }
       if (browser) await browser.close();
     }
+  }
+
+  private getValidationError(url: string, html: string, source?: string): string | undefined {
+    if (source === 'shopify') {
+      const shopifyValidation = this.validateShopify(url, html);
+      if (!shopifyValidation.valid) {
+        return shopifyValidation.error;
+      }
+    } else if (source === 'woocommerce') {
+      const wooValidation = this.validateWooCommerce(html);
+      if (!wooValidation.valid) {
+        return wooValidation.error;
+      }
+    }
+    return undefined;
+  }
+
+  private async extractEmails(page: Page, html: string): Promise<string[]> {
+    const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
+    let emails: string[] = [];
+    const mailtos = await page.$$eval('a[href^="mailto:"]', els => els.map(el => el.getAttribute('href')));
+    mailtos.forEach(href => {
+      if (href) {
+        const mail = href.replace(/^mailto:/, '').split('?')[0];
+        if (emailRegex.test(mail) && /^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/.test(mail) && !/\.(png|jpg|jpeg|gif|svg|webp|ico|css|js)$/i.test(mail)) {
+          emails.push(mail);
+        }
+      }
+    });
+    (html.match(emailRegex) || []).forEach(email => {
+      if (/^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/.test(email) && !/\.(png|jpg|jpeg|gif|svg|webp|ico|css|js)$/i.test(email)) {
+        if (!emails.includes(email)) emails.push(email);
+      }
+    });
+    return Array.from(new Set(emails));
+  }
+
+  private handleScrapeError(error: unknown): { title: string, desc: string, emails: string[], error: string, errorType: string } {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    if (errorMessage.includes('net::ERR_TIMED_OUT') || errorMessage.includes('timeout')) {
+      return { title: '', desc: '', emails: [], error: 'Request timed out - website took too long to respond', errorType: 'timeout' } as any;
+    }
+    if (errorMessage.includes('net::ERR_NAME_NOT_RESOLVED')) {
+      return { title: '', desc: '', emails: [], error: 'Website not found - please check the URL', errorType: 'not_found' } as any;
+    }
+    if (errorMessage.includes('net::ERR_CONNECTION_REFUSED')) {
+      return { title: '', desc: '', emails: [], error: 'Connection refused - website may be down', errorType: 'connection_refused' } as any;
+    }
+    if (errorMessage.includes('net::ERR_SSL_PROTOCOL_ERROR')) {
+      return { title: '', desc: '', emails: [], error: 'SSL certificate error - website security issue', errorType: 'ssl_error' } as any;
+    }
+    if (errorMessage.includes('403')) {
+      return { title: '', desc: '', emails: [], error: 'Access forbidden - website blocked the request', errorType: 'forbidden' } as any;
+    }
+    if (errorMessage.includes('404')) {
+      return { title: '', desc: '', emails: [], error: 'Page not found - please check the URL', errorType: 'not_found' } as any;
+    }
+    if (errorMessage.includes('500') || errorMessage.includes('502') || errorMessage.includes('503')) {
+      return { title: '', desc: '', emails: [], error: 'Website server error - please try again later', errorType: 'server_error' } as any;
+    }
+    return { title: '', desc: '', emails: [], error: 'Scrape failed - unable to access website', errorType: 'unknown' } as any;
   }
 
   async scrape(url: string, source: string): Promise<{ title: string, desc: string, emails: string[], error?: string }> {
@@ -97,7 +162,7 @@ export class PlaywrightScrapeService {
     if (source === 'g2') {
       return this.g2ProductScrape(url);
     }
-    return await this.processScrape(url);
+    return await this.processScrape(url, source);
   }
 
   validateUrl(url: string, source: string): boolean {

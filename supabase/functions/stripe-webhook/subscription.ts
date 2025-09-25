@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const supabase = createClient(supabaseUrl, supabaseKey);
-import { pricingPlans } from "./utils.ts";
+import { pricingPlans } from "./utils.js";
 export async function handleSubscriptionUpdated({ subscription }) {
   try {
     const meta = subscription.metadata || {};
@@ -15,7 +15,7 @@ export async function handleSubscriptionUpdated({ subscription }) {
         status: 200
       });
     }
-    const plan = pricingPlans.find((p)=>p.priceId === priceId);
+    const plan = pricingPlans.find((p) => p.priceId === priceId);
     if (!plan) {
       console.error("Invalid priceId:", priceId);
       return new Response("Invalid priceId", {
@@ -105,7 +105,7 @@ export async function handleSubscriptionCreated({ subscription }) {
         status: 200
       });
     }
-    const plan = pricingPlans.find((p)=>p.priceId === priceId);
+    const plan = pricingPlans.find((p) => p.priceId === priceId);
     if (!plan) {
       console.error("Invalid priceId", priceId);
       return new Response("Invalid priceId", {

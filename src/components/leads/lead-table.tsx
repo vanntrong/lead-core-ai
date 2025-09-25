@@ -12,6 +12,7 @@ import {
 import { leadSourceColorConfig } from "@/constants/saas-source";
 import { leadScoringService } from "@/services/lead-scoring.service";
 import { Lead } from "@/types/lead";
+import { formatDate } from "@/utils/helper";
 import {
   Calendar,
   CheckCircle2,
@@ -162,13 +163,6 @@ const LeadRow = ({
     label: lead.status || "N/A",
     color: "bg-gray-100 text-gray-800 border-gray-200",
     dot: "bg-gray-400",
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
   };
 
   const router = useRouter();

@@ -12,6 +12,7 @@ import {
 import { leadSourceColorConfig } from "@/constants/saas-source";
 import { leadScoringService } from "@/services/lead-scoring.service";
 import { Lead } from "@/types/lead";
+import { formatDate } from "@/utils/helper";
 import {
   Calendar,
   CheckCircle2,
@@ -21,7 +22,6 @@ import {
   ShieldAlert,
   XCircle
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import React from "react";
 import { Badge } from "../ui/badge";
 import { HighlightText } from "../ui/highlight-text";
@@ -164,15 +164,6 @@ const LeadRow = ({
     color: "bg-gray-100 text-gray-800 border-gray-200",
     dot: "bg-gray-400",
   };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const router = useRouter();
 
   const totalScore = leadScoringService.scoreLead(lead);
 

@@ -12,12 +12,11 @@ import {
 } from "@/components/ui/table";
 import { leadSourceColorConfig } from "@/constants/saas-source";
 import { ScraperLog } from "@/types/scraper_log";
-import { formatDuration } from "@/utils/helper";
+import { formatDate, formatDuration } from "@/utils/helper";
 import {
   Calendar,
   Link
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import React from "react";
 
 interface ScraperLogTableProps {
@@ -104,14 +103,6 @@ const ScraperLogRow = ({ log, highlightTerms }: { log: ScraperLog; highlightTerm
   const sourceInfo = leadSourceColorConfig[log.source] || {
     label: log.source,
     badge: "bg-gray-100 text-gray-800 border-gray-200",
-  };
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
   return (
     <TableRow className="group cursor-pointer transition-colors hover:bg-indigo-50/50" key={log.id} aria-label={`Scraper log ${log.url}`}>
