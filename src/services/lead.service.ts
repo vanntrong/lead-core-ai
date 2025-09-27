@@ -3,7 +3,7 @@ import { normalizeUrl } from '@/lib/utils';
 import { leadScoringService } from '@/services/lead-scoring.service';
 import { CreateLeadData, Lead, LeadFilters, LeadScrapInfo, LeadStats, PaginatedLeadResponse, UpdateLeadData } from '@/types/lead';
 import { Json } from '../../database.types';
-import { playwrightScrapeService } from "./playwright-scrape.service";
+import { scrapeService } from "./scrape.service";
 import { scraperLogsService } from "./scraper-logs.service";
 import { subscriptionService } from "./subscription.service";
 import { usageLimitService } from "./usage-limit.service";
@@ -211,7 +211,7 @@ export class LeadService {
     let scrapingError: string | undefined;
 
     try {
-      scrapInfo = await playwrightScrapeService.scrape(data.url, data.source);
+      scrapInfo = await scrapeService.scrape(data.url, data.source);
       if (scrapInfo?.error) {
         scrapingError = scrapInfo.error;
         throw new Error(scrapInfo.error || "Failed to scrape URL");

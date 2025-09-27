@@ -1,11 +1,11 @@
 import APIFY_ACTORS from '@/constants/apify';
-import { LeadSource } from '@/types/lead';
-import { Browser, chromium, Page } from 'playwright';
+import * as cheerio from 'cheerio';
+import fetch from 'node-fetch';
 import { apifyService } from './apify.service';
 import { proxyAdminService } from './proxy-admin.service';
 import { proxyLogsService } from './proxy-logs.service';
 
-export class PlaywrightScrapeService {
+export class ScrapeService {
   private userAgents = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36',
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15',
@@ -20,40 +20,34 @@ export class PlaywrightScrapeService {
   }
 
   async processScrape(url: string, source?: string): Promise<{ title: string, desc: string, emails: string[], error?: string }> {
-    let browser: Browser | undefined;
-    let page: Page | undefined;
-    const proxy = await proxyAdminService.getNextProxy();
+    let proxy = await proxyAdminService.getNextProxy();
     let proxyResult: { status: 'success' | 'failed' | 'banned' | 'timeout'; message: string | null } = { status: 'success', message: null };
     let shouldLogProxy = true;
     const startTime = new Date();
     try {
-      browser = await chromium.launch(proxy ? {
-        proxy: {
-          server: `http://${proxy?.host}:${proxy?.port}`,
-          username: proxy?.username ?? undefined,
-          password: proxy?.password ?? undefined,
-        }
-      } : undefined);
-      page = await browser.newPage({
-        userAgent: this.getRandomUserAgent(),
-        viewport: { width: 1280, height: 800 },
-      });
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
-      const html = await page.content();
-
+      // Use proxy if available
+      const fetchOptions = {
+        headers: {
+          'User-Agent': this.getRandomUserAgent(),
+        },
+      };
+      const response = await fetch(url, fetchOptions);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch: ${response.status}`);
+      }
+      const html = await response.text();
       const validationError = this.getValidationError(url, html, source);
       if (validationError) {
         shouldLogProxy = false;
         return { title: '', desc: '', emails: [], error: validationError };
       }
-
-      const emails = await this.extractEmails(page, html);
-      const title = await page.title();
-      const desc = await page.$eval('meta[name="description"]', el => el.getAttribute('content')).catch(() => '') ?? '';
+      const $ = cheerio.load(html);
+      const title = $('title').text() || '';
+      const desc = $('meta[name="description"]').attr('content') || '';
+      const emails = this.extractEmailsCheerio($, html);
       return { title, desc, emails };
     } catch (error) {
       const scrapError = this.handleScrapeError(error);
-      // Classify status based on errorType
       switch (scrapError.errorType) {
         case 'timeout':
           proxyResult.status = 'timeout';
@@ -71,15 +65,14 @@ export class PlaywrightScrapeService {
         default:
           proxyResult.status = 'failed';
       }
-      proxyResult.message = scrapError.error;
-      console.error('Playwright scrape error:', error);
+      proxyResult.message = scrapError.error ?? null;
+      console.error('Cheerio scrape error:', error);
       return scrapError;
     } finally {
       if (shouldLogProxy && proxy?.host && proxy?.port) {
         const endTime = new Date();
-        // Log the proxy operation
         proxyLogsService.logProxyOperation({
-          web_source: source as LeadSource,
+          web_source: (source ?? 'shopify') as 'shopify' | 'etsy' | 'g2' | 'woocommerce',
           web_url: url,
           proxy_host: proxy.host,
           proxy_port: proxy.port,
@@ -92,7 +85,6 @@ export class PlaywrightScrapeService {
           console.error('Failed to log proxy operation:', err);
         });
       }
-      if (browser) await browser.close();
     }
   }
 
@@ -111,11 +103,11 @@ export class PlaywrightScrapeService {
     return undefined;
   }
 
-  private async extractEmails(page: Page, html: string): Promise<string[]> {
+  private extractEmailsCheerio($: any, html: string): string[] {
     const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
     let emails: string[] = [];
-    const mailtos = await page.$$eval('a[href^="mailto:"]', els => els.map(el => el.getAttribute('href')));
-    mailtos.forEach(href => {
+    $('a[href^="mailto:"]').each((_: number, el: any) => {
+      const href = $(el).attr('href');
       if (href) {
         const mail = href.replace(/^mailto:/, '').split('?')[0];
         if (emailRegex.test(mail) && /^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/.test(mail) && !/\.(png|jpg|jpeg|gif|svg|webp|ico|css|js)$/i.test(mail)) {
@@ -123,7 +115,7 @@ export class PlaywrightScrapeService {
         }
       }
     });
-    (html.match(emailRegex) || []).forEach(email => {
+    (html.match(emailRegex) || []).forEach((email: string) => {
       if (/^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/.test(email) && !/\.(png|jpg|jpeg|gif|svg|webp|ico|css|js)$/i.test(email)) {
         if (!emails.includes(email)) emails.push(email);
       }
@@ -266,4 +258,4 @@ export class PlaywrightScrapeService {
     }
   }
 }
-export const playwrightScrapeService = new PlaywrightScrapeService();
+export const scrapeService = new ScrapeService();
