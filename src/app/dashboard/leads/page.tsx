@@ -75,7 +75,7 @@ function LeadBoardPage() {
 
 	const handleRefresh = async () => {
 		await Promise.all([refetchLeads(), refetchStats()]);
-		toast.message("Lead board refreshed");
+		toast.success("Lead board refreshed");
 	};
 
 	const handleGenerateMockData = async () => {
