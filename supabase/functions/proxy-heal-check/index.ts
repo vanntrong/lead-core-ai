@@ -1,4 +1,4 @@
-
+// @ts-nocheck
 import { processJobsForProxy, supabase } from './helper.ts';
 
 Deno.serve(async () => {
@@ -27,10 +27,6 @@ Deno.serve(async () => {
     for (const proxy of proxies) {
       processJobsForProxy({
         id: proxy.id,
-        host: proxy.host,
-        port: proxy.port,
-        username: proxy.username,
-        password: proxy.password
       });
     }
     return new Response(JSON.stringify({

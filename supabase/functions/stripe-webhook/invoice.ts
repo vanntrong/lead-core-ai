@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
 import Stripe from 'https://esm.sh/stripe@14?target=denonext';
 const supabaseUrl = Deno.env.get("SUPABASE_URL");

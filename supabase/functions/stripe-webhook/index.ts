@@ -1,6 +1,4 @@
-// LeadCore AI - Supabase Edge Function (Deno)
-// Webhook handler: Save Stripe subscription events to subscriptions table
-// File: supabase/functions/stripe-webhook.ts
+// @ts-nocheck
 import Stripe from 'https://esm.sh/stripe@14?target=denonext';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
 const stripe = new Stripe(Deno.env.get('STRIPE_API_KEY'));

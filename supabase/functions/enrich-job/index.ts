@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Anthropic from "https://esm.sh/@anthropic-ai/sdk@latest";
 const anthropic = new Anthropic({
@@ -15,7 +16,7 @@ async function sendToClaude(promptContent, { model = "claude-3-7-sonnet-20250219
         }
       ]
     });
-    const textOutput = response.content.filter((block)=>block.type === "text").map((block)=>block.text).join("\n");
+    const textOutput = response.content.filter((block) => block.type === "text").map((block) => block.text).join("\n");
     return textOutput;
   } catch (error) {
     console.error("Anthropic API Error:", error);
@@ -48,7 +49,7 @@ Format strictly as:
   console.log(output);
   try {
     return JSON.parse(output.trim());
-  } catch  {
+  } catch {
     throw new Error("Claude did not return valid JSON: " + output);
   }
 }
@@ -129,7 +130,7 @@ async function verifyEmailSync(email) {
   const result = await resp.json();
   return result; // result là OUTPUT record từ key-value store
 }
-Deno.serve(async ()=>{
+Deno.serve(async () => {
   try {
     const { data: users, error } = await supabase.rpc("get_users_with_available_enrich_jobs");
     if (error) {
@@ -148,7 +149,7 @@ Deno.serve(async ()=>{
         status: 200
       });
     }
-    for (const user of users){
+    for (const user of users) {
       processJobsForUser(user.user_id);
     }
     return new Response(JSON.stringify({
