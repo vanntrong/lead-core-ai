@@ -4,9 +4,11 @@ import pricingPlans from "@/config/pricing-plans.json";
 import { createClient } from "@/lib/supabase/server";
 import { ArrowRight, Check, Crown, Globe, Shield, Star, Zap } from "lucide-react";
 import Link from "next/link";
+import { subscriptionService } from "@/services/subscription.service"
 
 export default async function PricingPage() {
   const supabase = await createClient();
+  const activeSubscription = await subscriptionService.getUserActiveSubscription();
 
   const {
     data: { user },
@@ -116,13 +118,24 @@ export default async function PricingPage() {
             {pricingPlans.map((plan) => {
               const isPopular = plan.tier === 'pro';
               const isEnterprise = plan.tier === 'unlimited';
+              const isCurrentPlan = activeSubscription?.plan_tier === plan.tier;
 
               return (
                 <div
                   key={plan.tier}
-                  className={`relative rounded-2xl border-2 bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl ${getCardStyles(isPopular, isEnterprise)}`}
+                  className={`relative rounded-2xl border-2 bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl ${isCurrentPlan
+                    ? 'border-green-500 bg-gradient-to-br from-green-50/50 to-white'
+                    : getCardStyles(isPopular, isEnterprise)
+                    }`}
                 >
-                  {isPopular && (
+                  {isCurrentPlan && (
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                      <div className="bg-green-500 text-white px-4 py-1 rounded-full text-sm font-medium">
+                        Current Plan
+                      </div>
+                    </div>
+                  )}
+                  {isPopular && !isCurrentPlan && (
                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                       <div className="bg-indigo-500 text-white px-4 py-1 rounded-full text-sm font-medium">
                         Most Popular
@@ -132,7 +145,10 @@ export default async function PricingPage() {
 
                   <div className="text-center mb-6">
                     {/* Plan Icon */}
-                    <div className={`mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl ${getIconStyles(isPopular, isEnterprise)}`}>
+                    <div className={`mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl ${isCurrentPlan
+                      ? "bg-gradient-to-br from-green-500 to-green-700 text-white"
+                      : getIconStyles(isPopular, isEnterprise)
+                      }`}>
                       {getPlanIcon(plan.tier)}
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 mb-2">{plan.name}</h3>
@@ -155,15 +171,34 @@ export default async function PricingPage() {
                     ))}
                   </ul>
 
-                  <Link
-                    href={user ? `/checkout?plan=${plan.tier}` : "/login"}
-                    className={`w-full py-3 px-5 rounded-xl font-semibold text-base transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 ${getButtonStyles(isPopular, isEnterprise)} block text-center no-underline`}
-                  >
-                    <span className="flex items-center justify-center gap-2">
-                      {getButtonText(plan.tier)}
-                      <ArrowRight className="h-4 w-4" />
-                    </span>
-                  </Link>
+                  {isCurrentPlan ? (
+                    <div className="w-full py-3 px-5 rounded-xl font-semibold text-base bg-green-100 text-green-700 border-2 border-green-300 text-center">
+                      <span className="flex items-center justify-center gap-2">
+                        <Check className="h-4 w-4" />
+                        Active Plan
+                      </span>
+                    </div>
+                  ) : (
+                    <Link
+                      href={user ? `/checkout?plan=${plan.tier}` : "/login"}
+                      className={`w-full py-3 px-5 rounded-xl font-semibold text-base transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 ${getButtonStyles(isPopular, isEnterprise)} block text-center no-underline ${activeSubscription ? 'pointer-events-none opacity-50' : ''}`}
+                      aria-disabled={!!activeSubscription}
+                    >
+                      <span className="flex items-center justify-center gap-2">
+                        {(() => {
+                          if (!activeSubscription) return getButtonText(plan.tier);
+
+                          const currentPlanPrice = pricingPlans.find(p => p.tier === activeSubscription.plan_tier)?.priceMonthly || 0;
+                          if (plan.priceMonthly > currentPlanPrice) {
+                            return 'Upgrade to ' + plan.name;
+                          } else {
+                            return 'Switch to ' + plan.name;
+                          }
+                        })()}
+                        <ArrowRight className="h-4 w-4" />
+                      </span>
+                    </Link>
+                  )}
 
                   {/* Trust Badge */}
                   <div className="mt-4 pt-4 border-t border-gray-100">

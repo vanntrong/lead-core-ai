@@ -55,7 +55,7 @@ function LeadBoardPage() {
 		isLoading: isLoadingLeads,
 		error: leadsError,
 		isFetching: isFetchingLeads,
-		refetch: refetchLoads,
+		refetch: refetchLeads,
 	} = useLeadsPaginated(paginatedFilters);
 	const {
 		data: stats,
@@ -74,8 +74,8 @@ function LeadBoardPage() {
 	};
 
 	const handleRefresh = async () => {
-		await Promise.all([refetchLoads(), refetchStats()]);
-		toast.success("Load board refreshed");
+		await Promise.all([refetchLeads(), refetchStats()]);
+		toast.message("Lead board refreshed");
 	};
 
 	const handleGenerateMockData = async () => {

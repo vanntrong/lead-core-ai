@@ -3,6 +3,7 @@
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import pricingPlans from "@/config/pricing-plans.json";
 import { useLeadStats } from "@/hooks/use-leads";
 import { useUserActiveSubscription } from "@/hooks/use-subscription";
@@ -21,6 +22,7 @@ export default function Dashboard() {
 	const { data: activeSubscription, isLoading, error } = useUserActiveSubscription();
 	const {
 		data: stats,
+		isLoading: statsLoading,
 	} = useLeadStats();
 
 	if (isLoading) {
@@ -151,61 +153,76 @@ export default function Dashboard() {
 
 				{/* Stats Grid - Enhanced SaaS UI */}
 				<div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-					<div className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-5 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
-						<div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-						<div className="relative">
-							<div className="mb-3 flex items-start justify-between">
-								<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 shadow-sm">
-									<Globe className="h-5 w-5 text-white" />
+					{statsLoading ? (
+						// Skeleton loading state
+						[...Array(4)].map((_, i) => (
+							<div key={i} className="relative overflow-hidden rounded-lg border border-gray-200 bg-white p-5">
+								<div className="mb-3 flex items-start justify-between">
+									<Skeleton className="h-10 w-10 rounded-lg" />
+									<Skeleton className="h-4 w-16" />
 								</div>
-								<div className="text-xs text-gray-500 uppercase tracking-wide font-medium">LEADS</div>
+								<Skeleton className="mb-1 h-8 w-20" />
+								<Skeleton className="h-4 w-24" />
 							</div>
-							<div className="mb-1 font-bold text-2xl text-gray-900 group-hover:text-indigo-700 transition-colors duration-300">{stats?.total || 0}</div>
-							<p className="text-gray-600 text-sm font-medium">Total Leads</p>
-						</div>
-					</div>
-
-					<div className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-5 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
-						<div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-green-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-						<div className="relative">
-							<div className="mb-3 flex items-start justify-between">
-								<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 shadow-sm">
-									<Brain className="h-5 w-5 text-white" />
+						))
+					) : (
+						// Actual stats content
+						[
+							{
+								icon: Globe,
+								label: "LEADS",
+								value: stats?.total || 0,
+								title: "Total Leads",
+								colors: "from-indigo-500 to-purple-600",
+								hoverColor: "text-indigo-700",
+								bgGradient: "from-indigo-50 to-purple-50"
+							},
+							{
+								icon: Brain,
+								label: "AI",
+								value: stats?.enriched || 0,
+								title: "AI Enriched",
+								colors: "from-emerald-500 to-green-600",
+								hoverColor: "text-emerald-700",
+								bgGradient: "from-emerald-50 to-green-50"
+							},
+							{
+								icon: CheckCircle2,
+								label: "VERIFIED",
+								value: stats?.verified_email || 0,
+								title: "Verified Emails",
+								colors: "from-purple-500 to-violet-600",
+								hoverColor: "text-purple-700",
+								bgGradient: "from-purple-50 to-violet-50"
+							},
+							{
+								icon: Package,
+								label: "QUALITY",
+								value: stats?.score_70_plus || 0,
+								title: "High Quality (≥70)",
+								colors: "from-orange-500 to-amber-600",
+								hoverColor: "text-orange-700",
+								bgGradient: "from-orange-50 to-amber-50"
+							}
+						].map((stat, i) => {
+							const Icon = stat.icon;
+							return (
+								<div key={i} className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-5 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
+									<div className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+									<div className="relative">
+										<div className="mb-3 flex items-start justify-between">
+											<div className={`flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br ${stat.colors} shadow-sm`}>
+												<Icon className="h-5 w-5 text-white" />
+											</div>
+											<div className="text-xs text-gray-500 uppercase tracking-wide font-medium">{stat.label}</div>
+										</div>
+										<div className={`mb-1 font-bold text-2xl text-gray-900 group-hover:${stat.hoverColor} transition-colors duration-300`}>{stat.value}</div>
+										<p className="text-gray-600 text-sm font-medium">{stat.title}</p>
+									</div>
 								</div>
-								<div className="text-xs text-gray-500 uppercase tracking-wide font-medium">AI</div>
-							</div>
-							<div className="mb-1 font-bold text-2xl text-gray-900 group-hover:text-emerald-700 transition-colors duration-300">{stats?.enriched || 0}</div>
-							<p className="text-gray-600 text-sm font-medium">AI Enriched</p>
-						</div>
-					</div>
-
-					<div className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-5 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
-						<div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-violet-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-						<div className="relative">
-							<div className="mb-3 flex items-start justify-between">
-								<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 shadow-sm">
-									<CheckCircle2 className="h-5 w-5 text-white" />
-								</div>
-								<div className="text-xs text-gray-500 uppercase tracking-wide font-medium">VERIFIED</div>
-							</div>
-							<div className="mb-1 font-bold text-2xl text-gray-900 group-hover:text-purple-700 transition-colors duration-300">{stats?.verified_email || 0}</div>
-							<p className="text-gray-600 text-sm font-medium">Verified Emails</p>
-						</div>
-					</div>
-
-					<div className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white p-5 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
-						<div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-amber-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-						<div className="relative">
-							<div className="mb-3 flex items-start justify-between">
-								<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 shadow-sm">
-									<Package className="h-5 w-5 text-white" />
-								</div>
-								<div className="text-xs text-gray-500 uppercase tracking-wide font-medium">QUALITY</div>
-							</div>
-							<div className="mb-1 font-bold text-2xl text-gray-900 group-hover:text-orange-700 transition-colors duration-300">{stats?.score_70_plus || 0}</div>
-							<p className="text-gray-600 text-sm font-medium">High Quality (≥70)</p>
-						</div>
-					</div>
+							);
+						})
+					)}
 				</div>
 
 				{/* Lead Source Breakdown - Enhanced SaaS UI */}
@@ -215,42 +232,68 @@ export default function Dashboard() {
 							<h3 className="font-bold text-xl text-gray-900">Lead Sources</h3>
 							<p className="text-gray-500 text-sm">Breakdown by platform</p>
 						</div>
-						<Badge className="bg-indigo-50 text-indigo-700 border-indigo-200">
-							{(stats?.source_breakdown ?? []).length} Active Sources
-						</Badge>
+						{statsLoading ? (
+							<Skeleton className="h-6 w-32" />
+						) : (
+							<Badge className="bg-indigo-50 text-indigo-700 border-indigo-200">
+								{(stats?.source_breakdown ?? []).length} Active Sources
+							</Badge>
+						)}
 					</div>
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-						{(stats?.source_breakdown ?? []).map((item) => (
-							<div key={item.source} className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 p-5 border border-gray-200 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-indigo-200">
-								<div className="absolute inset-0 bg-gradient-to-br from-white to-gray-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-								<div className="relative flex items-center gap-4">
-									<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm group-hover:shadow-md transition-shadow duration-300">
-										{item.source === "shopify" && <Globe className="h-6 w-6 text-indigo-600" />}
-										{item.source === "woocommerce" && <Package className="h-6 w-6 text-orange-600" />}
-										{item.source === "g2" && <BarChart3 className="h-6 w-6 text-emerald-600" />}
-										{item.source === "capterra" && <Brain className="h-6 w-6 text-purple-600" />}
-									</div>
-									<div className="flex-1">
-										<div className="font-bold text-gray-900 text-lg capitalize group-hover:text-indigo-700 transition-colors duration-300">
-											{item.source}
+						{statsLoading ? (
+							// Skeleton for source breakdown
+							[...Array(4)].map((_, i) => (
+								<div key={i} className="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 p-5 border border-gray-200">
+									<div className="flex items-center gap-4">
+										<Skeleton className="h-12 w-12 rounded-xl" />
+										<div className="flex-1">
+											<Skeleton className="h-5 w-20 mb-2" />
+											<Skeleton className="h-4 w-16" />
 										</div>
-										<div className="text-gray-500 text-sm">Platform</div>
-									</div>
-									<div className="text-right">
-										<div className="font-bold text-2xl text-indigo-700 group-hover:text-indigo-800 transition-colors duration-300">
-											{item.count}
+										<div className="text-right">
+											<Skeleton className="h-6 w-8 mb-1" />
+											<Skeleton className="h-3 w-12" />
 										</div>
-										<div className="text-gray-500 text-xs">leads</div>
 									</div>
 								</div>
-							</div>
-						))}
-						{(stats?.source_breakdown ?? []).length === 0 && (
-							<div className="col-span-full text-center py-8">
-								<div className="text-gray-400 text-lg mb-2">📊</div>
-								<p className="text-gray-500">No lead sources yet</p>
-								<p className="text-gray-400 text-sm">Start adding leads to see breakdown</p>
-							</div>
+							))
+						) : (
+							// Actual source breakdown
+							<>
+								{(stats?.source_breakdown ?? []).map((item) => (
+									<div key={item.source} className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 p-5 border border-gray-200 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-indigo-200">
+										<div className="absolute inset-0 bg-gradient-to-br from-white to-gray-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+										<div className="relative flex items-center gap-4">
+											<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm group-hover:shadow-md transition-shadow duration-300">
+												{item.source === "shopify" && <Globe className="h-6 w-6 text-indigo-600" />}
+												{item.source === "woocommerce" && <Package className="h-6 w-6 text-orange-600" />}
+												{item.source === "g2" && <BarChart3 className="h-6 w-6 text-emerald-600" />}
+												{item.source === "capterra" && <Brain className="h-6 w-6 text-purple-600" />}
+											</div>
+											<div className="flex-1">
+												<div className="font-bold text-gray-900 text-lg capitalize group-hover:text-indigo-700 transition-colors duration-300">
+													{item.source}
+												</div>
+												<div className="text-gray-500 text-sm">Platform</div>
+											</div>
+											<div className="text-right">
+												<div className="font-bold text-2xl text-indigo-700 group-hover:text-indigo-800 transition-colors duration-300">
+													{item.count}
+												</div>
+												<div className="text-gray-500 text-xs">leads</div>
+											</div>
+										</div>
+									</div>
+								))}
+								{(stats?.source_breakdown ?? []).length === 0 && (
+									<div className="col-span-full text-center py-8">
+										<div className="text-gray-400 text-lg mb-2">📊</div>
+										<p className="text-gray-500">No lead sources yet</p>
+										<p className="text-gray-400 text-sm">Start adding leads to see breakdown</p>
+									</div>
+								)}
+							</>
 						)}
 					</div>
 				</div>
