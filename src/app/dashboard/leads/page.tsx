@@ -213,6 +213,10 @@ function LeadBoardPage() {
 						response={paginatedResponse!}
 					/>
 				</div>
+
+				<p className="text-center text-gray-500 text-sm">
+					© {new Date().getFullYear()} LeadCore AI. Powered by $TOWN.
+				</p>
 			</div>
 
 			{/* Add Lead Dialog */}

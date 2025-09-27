@@ -114,6 +114,9 @@ export default function ScraperLogsPage() {
           }}
           response={paginatedResponse!}
         />
+        <p className="text-center text-gray-500 text-sm">
+          © {new Date().getFullYear()} LeadCore AI. Powered by $TOWN.
+        </p>
       </div>
     </DashboardLayout>
   );

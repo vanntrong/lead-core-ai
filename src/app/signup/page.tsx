@@ -288,6 +288,9 @@ export default function Signup() {
           </div>
         </div>
       </div>
+      <p className="text-center text-gray-500 text-sm pb-4">
+        © {new Date().getFullYear()} LeadCore AI. Powered by $TOWN.
+      </p>
     </div>
   );
 }
