@@ -1,0 +1,65 @@
+import { Lead } from "@/types/lead";
+
+export async function fetchSpreadsheets(token: string): Promise<{ id: string; name: string }[]> {
+  const res = await fetch(
+    "https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'&fields=files(id,name)&orderBy=modifiedTime desc",
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  if (!res.ok) throw new Error("Failed to fetch spreadsheets");
+  const data = await res.json();
+  return data.files || [];
+}
+
+export async function createNewSpreadsheet(token: string, name: string): Promise<{ id: string; name: string }> {
+  const res = await fetch("https://sheets.googleapis.com/v4/spreadsheets", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      properties: { title: name },
+      sheets: [
+        {
+          properties: {
+            title: "Leads"
+          }
+        }
+      ]
+    }),
+  });
+  if (!res.ok) throw new Error("Failed to create spreadsheet");
+  const newSheet = await res.json();
+  return { id: newSheet.spreadsheetId, name };
+}
+
+export async function exportLeadToSheet(token: string, sheetId: string, lead: Lead): Promise<void> {
+  const leadRow = [
+    lead.id,
+    lead.url,
+    lead.source,
+    lead.status,
+    lead.created_at,
+    lead.scrap_info?.title || "N/A",
+    lead.scrap_info?.desc || "N/A",
+    lead.scrap_info?.emails?.join(", ") || "N/A",
+    lead.enrich_info?.title_guess || "N/A",
+    lead.enrich_info?.summary || "N/A",
+  ];
+  const range = "Leads";
+  const body = { values: [leadRow] };
+  const res = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}:append?valueInputOption=USER_ENTERED`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    }
+  );
+  if (!res.ok) throw new Error("Failed to export data to Google Sheet");
+}

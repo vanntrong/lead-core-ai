@@ -22,10 +22,10 @@ import {
   Mail,
   XCircle
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import React from "react";
 import { Badge } from "../ui/badge";
 import { HighlightText } from "../ui/highlight-text";
+import { useRouter } from "@bprogress/next/app";
 
 interface LeadTableProps {
   leads: Lead[];

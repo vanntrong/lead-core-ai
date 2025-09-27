@@ -1,5 +1,6 @@
 import "@/app/globals.css";
 import Footer from "@/components/footer";
+import ExportGoogleSheetButton from "@/components/leads/export-google-sheet";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminEmails } from "@/utils/helper";

@@ -93,7 +93,7 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
           <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          Loading subscription data...
+          <p className="text-muted-foreground">Loading subscription data...</p>
         </div>
       </div>
     );
@@ -644,7 +644,7 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
       <ExportLeadDialog
         isOpen={isExportDialogOpen}
         onClose={() => setIsExportDialogOpen(false)}
-        leadData={lead}
+        leadData={lead ?? undefined}
       />
     </DashboardLayout>
   );

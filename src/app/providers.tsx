@@ -1,6 +1,7 @@
 'use client';
 
 import { ProgressProvider } from '@bprogress/next/app';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { usePathname } from 'next/navigation';
 
 const Providers = ({ children }: { children: React.ReactNode }) => {
@@ -9,11 +10,12 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
     <ProgressProvider
       key={pathname}
-      height="4px"
-      color="#0EA5E9"
-      options={{ showSpinner: false }}
+      height="5px"
+      color="#818cf8" options={{ showSpinner: false }}
     >
-      {children}
+      <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
+        {children}
+      </GoogleOAuthProvider>
     </ProgressProvider>
   );
 };

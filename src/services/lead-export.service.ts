@@ -53,16 +53,8 @@ export class LeadExportService {
     document.body.removeChild(link);
   }
 
-  // Export to Google Sheets (requires OAuth and Google Sheets API)
-  async exportToGoogleSheets(leads: Lead[], sheetId: string, accessToken: string): Promise<any> {
-    // This is a stub. You need to implement Google Sheets API integration here.
-    // See: https://developers.google.com/sheets/api/guides/write-data
-    throw new Error("Google Sheets export not implemented");
-  }
-
   // Send leads to Zapier or GHL webhook
   async exportToWebhook(leads: Lead[], webhookUrl: string): Promise<any> {
-    console.log("exportToWebhook");
     try {
       const headers = [
         "URL",
@@ -113,10 +105,6 @@ export class LeadExportService {
     switch (format) {
       case "csv":
         return this.exportToCSV(leads);
-      case "google_sheets":
-        if (!googleSheetId) throw new Error("Missing Google Sheet ID");
-        // You must provide OAuth access token for Google Sheets API
-        return this.exportToGoogleSheets(leads, googleSheetId, "YOUR_ACCESS_TOKEN");
       case "zapier":
       case "ghl":
         if (!webhookUrl) throw new Error("Missing webhook URL");
