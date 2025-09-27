@@ -63,7 +63,7 @@ export function ExportLeadDialog({ isOpen, onClose, leadData }: ExportLeadDialog
   const [isExporting, setIsExporting] = React.useState(false);
   const selectedFormat = watch("format");
   const { data: activeSubscription } = useUserActiveSubscription();
-  const { login: handleGoogleLogin, isLoading: isGoogleLoading, token: googleToken, isConnected: isGoogleConnected } = useGoogleAuth();
+  const { login: handleGoogleLogin, error: googleError, isLoading: isGoogleLoading, token: googleToken, isConnected: isGoogleConnected } = useGoogleAuth();
   const [googleSheetMode, setGoogleSheetMode] = useState<"select" | "create">("select");
   const exportLeadToSheet = useGoogleExport(googleToken ?? "");
   const createNewAndExportLeadToSheet = useGoogleCreateAndExport(googleToken ?? "");
@@ -215,6 +215,16 @@ export function ExportLeadDialog({ isOpen, onClose, leadData }: ExportLeadDialog
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Error</AlertTitle>
                 <AlertDescription>{submitError}</AlertDescription>
+              </Alert>
+            </div>
+          )}
+
+          {googleError && (
+            <div className="mb-4">
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{googleError}</AlertDescription>
               </Alert>
             </div>
           )}

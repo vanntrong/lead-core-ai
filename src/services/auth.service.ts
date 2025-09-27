@@ -56,6 +56,22 @@ export class AuthService {
 			throw error;
 		}
 	}
+
+	async forgotPassword(email: string) {
+		const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
+			redirectTo: typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined,
+		});
+		if (error) throw error;
+		return true;
+	}
+
+	async resetPassword(newPassword: string) {
+		const { error } = await this.supabase.auth.updateUser({
+			password: newPassword,
+		});
+		if (error) throw error;
+		return true;
+	}
 }
 
 export const authService = new AuthService();

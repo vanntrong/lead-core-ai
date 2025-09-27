@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { MIN_PASSWORD_LENGTH } from "@/constants";
 import { useSignUp } from "@/hooks/use-auth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, ArrowLeft, CheckCircle, Globe, Loader2, Shield, Star, Users, Zap } from "lucide-react";
+import { AlertCircle, ArrowLeft, CheckCircle, Globe, Loader2, Shield, Star, Users, Zap, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import z from "zod";
@@ -31,6 +32,7 @@ const signUpSchema = z.object({
 type SignUpFormData = z.infer<typeof signUpSchema>;
 
 export default function Signup() {
+  const [showPassword, setShowPassword] = React.useState(false);
   const { mutate: signUp, isPending, error, data: signUpData } = useSignUp();
 
   const {
@@ -222,14 +224,28 @@ export default function Signup() {
 
                         <div className="space-y-2">
                           <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password</Label>
-                          <Input
-                            className="h-11 border-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
-                            id="password"
-                            placeholder="Create a strong password"
-                            type="password"
-                            {...register("password")}
-                            errorMessage={errors.password?.message}
-                          />
+                          <div className="relative">
+                            <Input
+                              className="h-11 border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 pr-12"
+                              id="password"
+                              placeholder="Create a strong password"
+                              type={showPassword ? "text" : "password"}
+                              {...register("password")}
+                              errorMessage={errors.password?.message}
+                            />
+                            <button
+                              type="button"
+                              aria-label={showPassword ? "Hide password" : "Show password"}
+                              onClick={() => setShowPassword((prev: boolean) => !prev)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-600 focus:outline-none"
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-5 w-5" />
+                              ) : (
+                                <Eye className="h-5 w-5" />
+                              )}
+                            </button>
+                          </div>
                           <p className="text-xs text-gray-500">Must be at least 6 characters long</p>
                         </div>
 

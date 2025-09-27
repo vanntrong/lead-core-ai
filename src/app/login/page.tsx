@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { MIN_PASSWORD_LENGTH } from "@/constants";
 import { useSignIn } from "@/hooks/use-auth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, ArrowRight, Globe, Loader2, Shield, Star, TrendingUp, Users, Zap } from "lucide-react";
+import { AlertCircle, ArrowRight, Globe, Loader2, Shield, Star, TrendingUp, Users, Zap, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import z from "zod";
@@ -31,6 +32,7 @@ const signInSchema = z.object({
 type SignInFormData = z.infer<typeof signInSchema>;
 
 export default function Login() {
+
 	const { mutate: signIn, isPending, error } = useSignIn();
 
 	const {
@@ -40,6 +42,8 @@ export default function Login() {
 	} = useForm<SignInFormData>({
 		resolver: zodResolver(signInSchema),
 	});
+
+	const [showPassword, setShowPassword] = useState(false);
 
 	const onSubmit = (data: SignInFormData) => {
 		signIn(data);
@@ -158,14 +162,28 @@ export default function Login() {
 													Forgot password?
 												</Link>
 											</div>
-											<Input
-												className="h-11 border-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
-												id="password"
-												placeholder="Enter your password"
-												type="password"
-												{...register("password")}
-												errorMessage={errors.password?.message}
-											/>
+											<div className="relative">
+												<Input
+													className="h-11 border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 pr-12"
+													id="password"
+													placeholder="Enter your password"
+													type={showPassword ? "text" : "password"}
+													{...register("password")}
+													errorMessage={errors.password?.message}
+												/>
+												<button
+													type="button"
+													aria-label={showPassword ? "Hide password" : "Show password"}
+													onClick={() => setShowPassword((prev: boolean) => !prev)}
+													className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-600 focus:outline-none"
+												>
+													{showPassword ? (
+														<EyeOff className="h-5 w-5" />
+													) : (
+														<Eye className="h-5 w-5" />
+													)}
+												</button>
+											</div>
 										</div>
 
 										<Button

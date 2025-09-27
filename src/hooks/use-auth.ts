@@ -57,6 +57,7 @@ export const useSignIn = () => {
 	});
 };
 
+
 export const useSignOut = () => {
 	const queryClient = useQueryClient();
 	const router = useRouter();
@@ -66,6 +67,25 @@ export const useSignOut = () => {
 		onSuccess: () => {
 			queryClient.clear();
 			router.push("/");
+		},
+	});
+};
+
+export const useForgotPassword = () => {
+	return useMutation({
+		mutationFn: (email: string) => authService.forgotPassword(email),
+	});
+};
+
+export const useResetPassword = () => {
+	const queryClient = useQueryClient();
+	const router = useRouter();
+
+	return useMutation({
+		mutationFn: (newPassword: string) => authService.resetPassword(newPassword),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["auth"] });
+			router.push("/login");
 		},
 	});
 };

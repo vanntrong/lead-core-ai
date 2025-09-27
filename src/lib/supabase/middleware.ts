@@ -51,6 +51,8 @@ export async function updateSession(request: NextRequest) {
 		new Minimatch("/login"),
 		new Minimatch("/signup"),
 		new Minimatch("/auth"),
+		new Minimatch("/forgot-password"),
+		new Minimatch("/reset-password"),
 	];
 
 	// Check if current path is public

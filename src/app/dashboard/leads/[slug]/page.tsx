@@ -70,7 +70,7 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
   const { data: activeSubscription, isLoading, error } = useUserActiveSubscription();
   const router = useRouter();
 
-  if (leadError) {
+  if (leadError || (!lead && !isLoadingLead && !isFetchingLead)) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center min-h-screen">
