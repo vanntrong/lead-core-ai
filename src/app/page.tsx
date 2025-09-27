@@ -63,7 +63,7 @@ export default async function Home() {
 									</>
 								) : (
 									<Button asChild className="h-10 rounded-lg px-4 text-sm font-medium shadow-sm border border-gray-200 bg-white text-gray-900 hover:bg-gray-50 transition-all duration-200" size="sm" variant="outline">
-										<Link href={isAdmin ? `/admin/dashboard/scraper-logs` : `/dashboard/leads`}>Dashboard</Link>
+										<Link href={isAdmin ? `/admin/dashboard/scraper-logs` : `/dashboard`}>Dashboard</Link>
 									</Button>
 								)}
 							</div>

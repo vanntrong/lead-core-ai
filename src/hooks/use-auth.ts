@@ -51,7 +51,7 @@ export const useSignIn = () => {
 			if (email && getAdminEmails().includes(email)) {
 				router.push("/admin/dashboard/scraper-logs");
 			} else {
-				router.push("/dashboard/leads");
+				router.push("/dashboard");
 			}
 		},
 	});

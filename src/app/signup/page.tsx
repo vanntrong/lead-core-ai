@@ -158,9 +158,9 @@ export default function Signup() {
                         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 mx-auto mb-4">
                           <CheckCircle className="h-6 w-6 text-green-600" />
                         </div>
-                        <h2 className="text-xl font-bold text-green-700 mb-2">Account Created!</h2>
+                        <h2 className="text-xl font-bold text-green-700 mb-2">Check your email!</h2>
                         <p className="text-base text-gray-700 mb-4">
-                          Welcome to LeadCore AI. Please check your email to confirm your account and complete your subscription.
+                          We've sent you a confirmation email. Click the link in your email to verify your account.
                         </p>
                         <Button asChild className="w-full bg-green-600 hover:bg-green-700 text-white">
                           <Link href="/login">Continue to Sign In</Link>

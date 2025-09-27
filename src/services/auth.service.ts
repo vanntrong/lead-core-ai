@@ -32,6 +32,7 @@ export class AuthService {
 					first_name: profile.firstName,
 					last_name: profile.lastName,
 				},
+				emailRedirectTo: typeof window !== "undefined" ? `${window.location.origin}/auth/confirm` : undefined,
 			},
 		});
 		if (error) throw error;
