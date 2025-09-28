@@ -31,6 +31,7 @@ export class ScrapeService {
         headers: {
           'User-Agent': this.getRandomUserAgent(),
         },
+        timeout: 20000, // 20 seconds timeout
       };
       if (proxy?.host && proxy?.port) {
         let proxyUrl = `http://${proxy.host}:${proxy.port}`;
