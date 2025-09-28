@@ -68,7 +68,7 @@ export default function ExportGoogleSheetButton({ isExporting, accessToken, mode
                 </SelectTrigger>
                 <SelectContent>
                   <div className="max-h-[200px] overflow-y-auto">
-                    {spreadsheets?.map((sheet) => (
+                    {spreadsheets?.files?.map((sheet) => (
                       <SelectItem key={sheet.id} value={sheet.id}>
                         {sheet.name.length > 45 ? sheet.name.slice(0, 45) + "..." : sheet.name}
                       </SelectItem>
