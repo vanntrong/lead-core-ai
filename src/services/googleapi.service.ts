@@ -15,6 +15,8 @@ export class GoogleApiService {
   }
 
   async createNewSpreadsheet(token: string, name: string): Promise<{ id: string; name: string }> {
+    if (!token) throw new Error("No access token provided");
+    if (!name || name.trim() === "") throw new Error("Please enter a spreadsheet name");
     const res = await fetch("https://sheets.googleapis.com/v4/spreadsheets", {
       method: "POST",
       headers: {
@@ -38,6 +40,10 @@ export class GoogleApiService {
   }
 
   async exportLeadToSheet(token: string, sheetId: string, lead: Lead): Promise<void> {
+    if (!token) throw new Error("No access token provided");
+    if (!lead) throw new Error("No lead data to export");
+    if (!sheetId) throw new Error("Please select a spreadsheet");
+
     const leadRow = [
       lead.id,
       lead.url,

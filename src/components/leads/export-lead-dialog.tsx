@@ -150,7 +150,10 @@ export function ExportLeadDialog({ isOpen, onClose, leadData }: ExportLeadDialog
     }
     // Implement Google Sheets export
     // This would typically involve Google Sheets API integration
-    await exportLeadToSheet.mutateAsync({ lead: leadData, selectedSheet: spreadsheetId });
+    const result = await exportLeadToSheet.mutateAsync({ lead: leadData, selectedSheet: spreadsheetId });
+    if (!result.success) {
+      throw new Error(result.message || "Failed to export lead to Google Sheets");
+    }
     return true;
   };
 
@@ -162,7 +165,10 @@ export function ExportLeadDialog({ isOpen, onClose, leadData }: ExportLeadDialog
     }
     // Implement Google Sheets export
     // This would typically involve Google Sheets API integration
-    await createNewAndExportLeadToSheet.mutateAsync({ lead: leadData, spreadsheetName: spreadsheetNew });
+    const result = await createNewAndExportLeadToSheet.mutateAsync({ lead: leadData, spreadsheetName: spreadsheetNew });
+    if (!result.success) {
+      throw new Error(result.message || "Failed to create and export lead to Google Sheets");
+    }
     return true;
   };
 
@@ -193,7 +199,7 @@ export function ExportLeadDialog({ isOpen, onClose, leadData }: ExportLeadDialog
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
-        className="max-w-md mx-auto rounded-lg border-gray-200 bg-white shadow-2xl"
+        className="max-w-md mx-auto rounded-lg border-gray-200 bg-white shadow-2xl max-h-screen overflow-y-auto"
         onInteractOutside={e => e.preventDefault()}
       >
         <DialogHeader>
