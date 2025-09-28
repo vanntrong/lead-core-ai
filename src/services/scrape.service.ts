@@ -48,7 +48,7 @@ export class ScrapeService {
       const validationError = this.getValidationError(url, html, source);
       if (validationError) {
         shouldLogProxy = false;
-        return { title: '', desc: '', emails: [], error: validationError };
+        return { title: '', desc: '', emails: [], error: validationError, errorType: 'validation' } as any;
       }
       const $ = cheerio.load(html);
       const title = $('title').text() || '';
@@ -76,7 +76,8 @@ export class ScrapeService {
       }
       proxyResult.message = scrapError.error ?? null;
       console.error('Cheerio scrape error:', error);
-      return scrapError;
+      // Always return errorType if error
+      return { ...scrapError };
     } finally {
       if (shouldLogProxy && proxy?.host && proxy?.port) {
         const endTime = new Date();
@@ -161,7 +162,7 @@ export class ScrapeService {
 
   async scrape(url: string, source: string): Promise<{ title: string, desc: string, emails: string[], error?: string }> {
     if (!this.validateUrl(url, source)) {
-      return { title: '', desc: '', emails: [], error: 'Invalid URL for source: ' + source };
+      return { title: '', desc: '', emails: [], error: 'Invalid URL for source: ' + source, errorType: 'validation' } as any;
     }
     if (source === 'etsy') {
       return this.etsyShopScrape(url);
@@ -206,11 +207,11 @@ export class ScrapeService {
   private async etsyShopScrape(url: string): Promise<{ title: string, desc: string, emails: string[], error?: string }> {
     const match = url.match(/^https?:\/\/(www\.)?etsy\.com\/shop\/([\w-]+)/i);
     if (!match || match.length < 3) {
-      return Promise.resolve({ title: '', desc: '', emails: [], error: "Invalid Etsy shop URL" });
+      return Promise.resolve({ title: '', desc: '', emails: [], error: "Invalid Etsy shop URL", errorType: 'validation' } as any);
     }
     let shopName = match[2];
     if (!shopName) {
-      return Promise.resolve({ title: '', desc: '', emails: [], error: "Invalid Etsy shop name" });
+      return Promise.resolve({ title: '', desc: '', emails: [], error: "Invalid Etsy shop name", errorType: 'validation' } as any);
     }
     // Extract the first word from shopName (split by hyphen or space)
     const firstWord = shopName.split(/[-\s]/)[0];
@@ -227,21 +228,21 @@ export class ScrapeService {
         const item = resp[0];
         return { title: `${item?.shop_name} - ${item?.location}`, desc: item?.headline, emails: [] };
       } else {
-        return { title: '', desc: '', emails: [], error: 'Scrape failed' };
+        return { title: '', desc: '', emails: [], error: 'Scrape failed', errorType: 'scrape_failed' } as any;
       }
     } catch (error) {
       console.error('Etsy scrape error:', error);
-      return { title: '', desc: '', emails: [], error: 'Scrape failed' };
+      return { title: '', desc: '', emails: [], error: 'Scrape failed', errorType: 'scrape_failed' } as any;
     }
   }
   private async g2ProductScrape(url: string): Promise<{ title: string, desc: string, emails: string[], error?: string }> {
     const match = url.match(/^https?:\/\/(www\.)?g2\.com\/products\/([\w-]+)/i);
     if (!match || match.length < 3) {
-      return Promise.resolve({ title: '', desc: '', emails: [], error: "Invalid G2 product URL" });
+      return Promise.resolve({ title: '', desc: '', emails: [], error: "Invalid G2 product URL", errorType: 'validation' } as any);
     }
     let productSlug = match[2];
     if (!productSlug) {
-      return Promise.resolve({ title: '', desc: '', emails: [], error: "Invalid G2 product slug" });
+      return Promise.resolve({ title: '', desc: '', emails: [], error: "Invalid G2 product slug", errorType: 'validation' } as any);
     }
     // Extract the first word from productSlug (split by hyphen or space)
     const firstWord = productSlug.split(/[-\s]/)[0];
@@ -259,11 +260,11 @@ export class ScrapeService {
         const item = resp[0];
         return { title: item?.product_name || '', desc: item?.description || '', emails: [] };
       } else {
-        return { title: '', desc: '', emails: [], error: 'Scrape failed' };
+        return { title: '', desc: '', emails: [], error: 'Scrape failed', errorType: 'scrape_failed' } as any;
       }
     } catch (error) {
       console.error('G2 scrape error:', error);
-      return { title: '', desc: '', emails: [], error: 'Scrape failed' };
+      return { title: '', desc: '', emails: [], error: 'Scrape failed', errorType: 'scrape_failed' } as any;
     }
   }
 }

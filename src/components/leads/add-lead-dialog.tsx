@@ -48,6 +48,11 @@ export function AddLeadDialog({ isOpen, onClose }: AddLeadDialogProps) {
 	const { data: activeSubscription } = useUserActiveSubscription();
 
 	const [submitError, setSubmitError] = React.useState<string | null>(null);
+	const [isCreatingLead, setIsCreatingLead] = React.useState(false);
+
+	// Retry state: list of attempts with status and error
+	type RetryStatus = 'pending' | 'success' | 'error' | 'waiting';
+	const [retryAttempts, setRetryAttempts] = React.useState<Array<{ attempt: number; status: RetryStatus; error?: string }>>([]);
 
 	const sourceSelected = watch("source");
 
@@ -64,20 +69,59 @@ export function AddLeadDialog({ isOpen, onClose }: AddLeadDialogProps) {
 
 	const submitLead = async (data: CreateLeadData) => {
 		setSubmitError(null);
-		try {
-			await createLeadMutation.mutateAsync(data);
-			toast.success("Lead added successfully!");
-			onClose();
-		} catch (error: any) {
-			console.error("Error adding lead:", error);
-			setSubmitError(error?.message || "Something went wrong. Please try again or contact support.");
+		setIsCreatingLead(true);
+		setRetryAttempts([]);
+
+		let lastError: string | null = null;
+		let lastErrorType: string | undefined = undefined;
+		for (let attempt = 1; attempt <= 3; attempt++) {
+			setRetryAttempts((prev) => [...prev, { attempt, status: 'pending' }]);
+			try {
+				await createLeadMutation.mutateAsync(data);
+				setRetryAttempts((prev) => prev.map((r) => r.attempt === attempt ? { ...r, status: 'success' } : r));
+				toast.success("Lead added successfully!");
+				onClose();
+				lastError = null;
+				lastErrorType = undefined;
+				break;
+			} catch (error: any) {
+				console.error("Error adding lead:", error);
+
+				// Detect errorType and message from '[errorType] message' format
+				let errorMessage = error?.message || "Something went wrong during lead creation. Please try again.";
+				let detectedType: string | undefined = undefined;
+				const match = errorMessage.match(/^\[(.+?)\]\s*(.*)$/);
+				if (match) {
+					detectedType = match[1];
+					errorMessage = match[2] || errorMessage;
+				}
+				lastError = errorMessage;
+				lastErrorType = detectedType;
+				setRetryAttempts((prev) => prev.map((r) => r.attempt === attempt ? { ...r, status: 'error', error: lastError ?? undefined } : r));
+				// Only retry if errorType is not 'validation'
+				if (attempt < 3 && lastErrorType !== 'validation') {
+					setRetryAttempts((prev) => [...prev, { attempt: attempt + 1, status: 'waiting' }]);
+					await new Promise(resolve => setTimeout(resolve, 2000));
+					setRetryAttempts((prev) => prev.filter((r) => !(r.attempt === attempt + 1 && r.status === 'waiting')));
+				} else {
+					break;
+				}
+			}
 		}
+
+		// If all attempts failed, show final error message
+		if (lastError) {
+			setSubmitError(lastErrorType === "validation" ? lastError : "Lead creation failed after 3 attempts. Please check your URL and try again.");
+		}
+
+		setIsCreatingLead(false);
 	};
 
 	useEffect(() => {
 		if (isOpen) {
 			reset();
 			setSubmitError(null);
+			setRetryAttempts([]);
 		}
 	}, [isOpen]);
 
@@ -107,6 +151,49 @@ export function AddLeadDialog({ isOpen, onClose }: AddLeadDialogProps) {
 								<AlertTitle>Error</AlertTitle>
 								<AlertDescription>{submitError}</AlertDescription>
 							</Alert>
+						</div>
+					)}
+
+					{/* Retry Progress Display */}
+					{retryAttempts.length > 1 && (
+						<div className="mb-4">
+							<div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+								<h4 className="text-sm font-medium text-blue-800 mb-2">Creation Progress</h4>
+								<div className="space-y-2">
+									{retryAttempts.map((attempt) => (
+										<div key={attempt.attempt + '-' + attempt.status} className="flex items-center space-x-2 text-sm">
+											<span className="text-blue-700">Attempt {attempt.attempt}:</span>
+											{attempt.status === 'pending' && (
+												<>
+													<Loader2 className="h-3 w-3 animate-spin text-blue-600" />
+													<span className="text-blue-600">In progress...</span>
+												</>
+											)}
+											{attempt.status === 'waiting' && (
+												<>
+													<Loader2 className="h-3 w-3 animate-spin text-yellow-500" />
+													<span className="text-yellow-700">Waiting 2s before retry...</span>
+												</>
+											)}
+											{attempt.status === 'success' && (
+												<>
+													<span className="text-green-600">✓</span>
+													<span className="text-green-600">Success</span>
+												</>
+											)}
+											{attempt.status === 'error' && (
+												<>
+													<span className="text-red-600">✗</span>
+													<span className="text-red-600">Failed</span>
+													{attempt.error && (
+														<span className="text-red-500 text-xs">({attempt.error})</span>
+													)}
+												</>
+											)}
+										</div>
+									))}
+								</div>
+							</div>
 						</div>
 					)}
 					<form className="space-y-6" onSubmit={handleSubmit(submitLead)}>
@@ -158,7 +245,7 @@ export function AddLeadDialog({ isOpen, onClose }: AddLeadDialogProps) {
 							<DialogClose asChild>
 								<Button
 									className="flex-1"
-									disabled={createLeadMutation.isPending || isSubmitting}
+									disabled={isCreatingLead || createLeadMutation.isPending || isSubmitting}
 									type="button"
 									variant="outline"
 								>
@@ -178,10 +265,10 @@ export function AddLeadDialog({ isOpen, onClose }: AddLeadDialogProps) {
 								) : (
 									<Button
 										className="flex-1 bg-indigo-600 hover:bg-indigo-700"
-										disabled={createLeadMutation.isPending || isSubmitting}
+										disabled={isCreatingLead || createLeadMutation.isPending || isSubmitting}
 										type="submit"
 									>
-										{(createLeadMutation.isPending || isSubmitting) ? (
+										{(isCreatingLead || createLeadMutation.isPending || isSubmitting) ? (
 											<>
 												<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 												Creating Lead...
