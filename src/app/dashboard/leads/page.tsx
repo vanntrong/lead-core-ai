@@ -80,8 +80,12 @@ function LeadBoardPage() {
 
 	const handleGenerateMockData = async () => {
 		try {
-			await generateMockLeads.mutateAsync();
-			toast.success(`Generated 2 mock leads`);
+			const result = await generateMockLeads.mutateAsync();
+			if (result.success) {
+				toast.success(`Generated 2 mock leads`);
+			} else {
+				toast.error(result.message);
+			}
 		} catch {
 			toast.error("Failed to generate mock leads");
 		}

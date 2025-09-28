@@ -1,19 +1,18 @@
 import {
   createLeadAction,
   deleteLeadAction,
+  generateMockLeadsAction,
   getLeadByIdAction,
   getLeadsAction,
   getLeadsPaginatedAction,
   getLeadStatsAction,
   updateLeadAction,
-  generateMockLeadsAction,
 } from "@/lib/actions/lead.actions";
 
 import type {
   CreateLeadData,
-  Lead,
   LeadFilters,
-  UpdateLeadData,
+  UpdateLeadData
 } from "@/types/lead";
 import { fromSecondsToMilliseconds } from "@/utils/helper";
 import {
@@ -81,11 +80,13 @@ export function useCreateLead() {
 
   return useMutation({
     mutationFn: (data: CreateLeadData) => createLeadAction(data),
-    onSuccess: () => {
-      // Invalidate and refetch lead lists
-      queryClient.invalidateQueries({ queryKey: leadKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: leadKeys.paginatedLists() });
-      queryClient.invalidateQueries({ queryKey: leadKeys.stats() });
+    onSuccess: (result) => {
+      if (result.success) {
+        // Invalidate and refetch lead lists
+        queryClient.invalidateQueries({ queryKey: leadKeys.lists() });
+        queryClient.invalidateQueries({ queryKey: leadKeys.paginatedLists() });
+        queryClient.invalidateQueries({ queryKey: leadKeys.stats() });
+      }
     },
     onError: (error) => {
       console.error("Failed to create lead:", error);
@@ -101,18 +102,17 @@ export function useUpdateLead() {
     mutationFn: async (data: UpdateLeadData) => {
       const result = await updateLeadAction(data);
       // Convert result to Lead type
-      return {
-        ...result,
-        scrap_info: result.scrap_info as Lead["scrap_info"],
-      };
+      return result
     },
-    onSuccess: (updatedLead: Lead) => {
-      // Update the specific lead in cache
-      queryClient.setQueryData(leadKeys.detail(updatedLead.id), updatedLead);
+    onSuccess: (result) => {
+      if (result.success) {
+        // Update the specific lead in cache
+        queryClient.setQueryData(leadKeys.detail(result.lead.id), result.lead);
 
-      // Invalidate lists to ensure consistency
-      queryClient.invalidateQueries({ queryKey: leadKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: leadKeys.paginatedLists() });
+        // Invalidate lists to ensure consistency
+        queryClient.invalidateQueries({ queryKey: leadKeys.lists() });
+        queryClient.invalidateQueries({ queryKey: leadKeys.paginatedLists() });
+      }
     },
     onError: (error) => {
       console.error("Failed to update lead:", error);
@@ -126,13 +126,17 @@ export function useDeleteLead() {
 
   return useMutation({
     mutationFn: (id: string) => deleteLeadAction(id),
-    onSuccess: (_, deletedId) => {
-      // Remove from cache
-      queryClient.removeQueries({ queryKey: leadKeys.detail(deletedId) });
+    onSuccess: (result) => {
 
-      // Invalidate lists
-      queryClient.invalidateQueries({ queryKey: leadKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: leadKeys.paginatedLists() });
+      if (result.success) {
+        console.error("Failed to delete lead:", result.message);
+        // Remove from cache
+        queryClient.removeQueries({ queryKey: leadKeys.detail(result.leadId ?? "") });
+
+        // Invalidate lists
+        queryClient.invalidateQueries({ queryKey: leadKeys.lists() });
+        queryClient.invalidateQueries({ queryKey: leadKeys.paginatedLists() });
+      }
     },
     onError: (error) => {
       console.error("Failed to delete lead:", error);
@@ -152,10 +156,12 @@ export function useGenerateMockLeads() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () => generateMockLeadsAction(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: leadKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: leadKeys.paginatedLists() });
-      queryClient.invalidateQueries({ queryKey: leadKeys.stats() });
+    onSuccess: (result) => {
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: leadKeys.lists() });
+        queryClient.invalidateQueries({ queryKey: leadKeys.paginatedLists() });
+        queryClient.invalidateQueries({ queryKey: leadKeys.stats() });
+      }
     },
     onError: (error) => {
       console.error("Failed to generate mock leads:", error);

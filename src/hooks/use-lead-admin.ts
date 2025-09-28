@@ -40,8 +40,10 @@ export function useFlagLeadAdmin() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => flagLeadAdminAction(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: leadAdminKeys.lists() });
+    onSuccess: (result) => {
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: leadAdminKeys.lists() });
+      }
     },
     onError: (error) => {
       console.error("Failed to flag lead (admin):", error);
@@ -53,8 +55,11 @@ export function useDeleteLeadAdmin() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => deleteLeadAdminAction(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: leadAdminKeys.lists() });
+    onSuccess: (result) => {
+      if (result.success) {
+        // Invalidate and refetch lead lists
+        queryClient.invalidateQueries({ queryKey: leadAdminKeys.lists() });
+      }
     },
     onError: (error) => {
       console.error("Failed to delete lead (admin):", error);

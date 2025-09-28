@@ -39,10 +39,12 @@ export function useCancelSubscription() {
 		mutationFn: async () => {
 			return await cancelSubscriptionAction();
 		},
-		onSuccess: () => {
-			// Invalidate and reset active subscription query
-			queryClient.invalidateQueries({ queryKey: ["subscription", "user", "active"] });
-			queryClient.resetQueries({ queryKey: ["subscription", "user", "active"] });
+		onSuccess: (result) => {
+			if (result.success) {
+				// Invalidate and reset active subscription query
+				queryClient.invalidateQueries({ queryKey: ["subscription", "user", "active"] });
+				queryClient.resetQueries({ queryKey: ["subscription", "user", "active"] });
+			}
 		},
 		onError: (error) => {
 			console.error("Failed to cancel subscription:", error);

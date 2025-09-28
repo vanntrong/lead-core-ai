@@ -51,10 +51,17 @@ export async function updateLeadAction(data: UpdateLeadData) {
     const lead = await leadService.updateLead(data);
     revalidatePath("/dashboard/leads");
     revalidatePath(`/dashboard/leads/${data.id}`);
-    return lead;
-  } catch (error) {
+    return {
+      lead: lead,
+      success: true,
+      message: "Lead updated successfully"
+    };
+  } catch (error: any) {
     console.error("Error in updateLeadAction:", error);
-    throw error;
+    return {
+      success: false,
+      message: error?.message || "Failed to update lead"
+    }
   }
 }
 
@@ -62,10 +69,13 @@ export async function deleteLeadAction(id: string) {
   try {
     await leadService.deleteLead(id);
     revalidatePath("/dashboard/leads");
-    return { success: true };
-  } catch (error) {
+    return { success: true, leadId: id };
+  } catch (error: any) {
     console.error("Error in deleteLeadAction:", error);
-    throw error;
+    return {
+      success: false,
+      message: error?.message || "Failed to delete lead"
+    }
   }
 }
 
@@ -80,9 +90,16 @@ export async function getLeadStatsAction() {
 
 export async function generateMockLeadsAction() {
   try {
-    return await leadService.generateMockLeads();
-  } catch (error) {
+    await leadService.generateMockLeads();
+    return {
+      success: true,
+      message: "Mock leads generated successfully",
+    }
+  } catch (error: any) {
     console.error("Error in generateMockLeadsAction:", error);
-    throw error;
+    return {
+      success: false,
+      message: error?.message || "Failed to generate mock leads"
+    }
   }
 }
