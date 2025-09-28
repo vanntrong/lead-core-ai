@@ -279,7 +279,11 @@ export function ExportLeadDialog({ isOpen, onClose, leadData }: ExportLeadDialog
                 Export Format *
               </Label>
               <Select
-                onValueChange={(value) => setValue("format", value as ExportLeadData["format"], { shouldValidate: true })}
+                onValueChange={(value) => {
+                  setSubmitError(null);
+                  setRetryAttempts([]);
+                  setValue("format", value as ExportLeadData["format"], { shouldValidate: true })
+                }}
               >
                 <SelectTrigger className="mt-2">
                   <SelectValue placeholder="Select export format" >
