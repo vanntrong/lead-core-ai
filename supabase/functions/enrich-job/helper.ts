@@ -106,7 +106,7 @@ export async function processJobsForUser(user_id: string) {
   let enrichFailed = false;
   if (job.scrap_info) {
     try {
-      enriched = await enrichLead(job.scrap_info);
+      enriched = await enrichLead({ ...job.scrap_info, url: job.url });
     } catch (err) {
       enrichFailed = true;
       console.error(`Enrichment failed for job ${job.id}:`, err);

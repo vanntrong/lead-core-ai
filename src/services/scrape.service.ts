@@ -1,7 +1,7 @@
 import APIFY_ACTORS from '@/constants/apify';
 import * as cheerio from 'cheerio';
-import fetch from 'node-fetch';
 import { HttpsProxyAgent } from 'https-proxy-agent';
+import fetch from 'node-fetch';
 import { apifyService } from './apify.service';
 import { proxyAdminService } from './proxy-admin.service';
 import { proxyLogsService } from './proxy-logs.service';
@@ -246,21 +246,22 @@ export class ScrapeService {
     if (!productSlug) {
       return Promise.resolve({ title: '', desc: '', emails: [], error: "Invalid G2 product slug", errorType: 'validation' } as any);
     }
-    // Extract the first word from productSlug (split by hyphen or space)
-    const firstWord = productSlug.split(/[-\s]/)[0];
     try {
       const resp = await apifyService.runActorSyncGetDatasetItems({
         actorId: APIFY_ACTORS.G2_PRODUCT_SCRAPER,
         input: {
           g2ProductUrls: [
-            url
+            {
+              url: url,
+              method: "GET"
+            }
           ],
           limit: 1
         },
       });
       if (Array.isArray(resp) && resp.length > 0) {
         const item = resp[0];
-        return { title: item?.product_name || '', desc: item?.description || '', emails: [] };
+        return { title: item?.product_name || '', desc: item?.product_description || '', emails: [] };
       } else {
         return { title: '', desc: '', emails: [], error: 'Scrape failed', errorType: 'scrape_failed' } as any;
       }
