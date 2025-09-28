@@ -38,7 +38,7 @@ export function DeleteLeadButton({ leadId }: Readonly<{ leadId: string }>) {
           <XCircle className="h-4 w-4 text-red-500" aria-hidden="true" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md rounded-lg p-6">
+      <DialogContent className="max-w-md rounded-lg p-6" onInteractOutside={e => e.preventDefault()}>
         <DialogTitle>Delete Lead</DialogTitle>
         <DialogDescription>
           Are you sure you want to permanently delete this lead? This action cannot be undone.

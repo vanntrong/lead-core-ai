@@ -37,7 +37,7 @@ export function FlagLeadButton({ leadId }: Readonly<{ leadId: string }>) {
           <ShieldAlert className="h-4 w-4 text-orange-500" aria-hidden="true" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md rounded-lg p-6">
+      <DialogContent className="max-w-md rounded-lg p-6" onInteractOutside={e => e.preventDefault()}>
         <DialogTitle>Flag Lead</DialogTitle>
         <DialogDescription>
           Are you sure you want to flag this lead? Flagged leads are excluded from exports and marked for moderation.

@@ -39,7 +39,7 @@ export function CancelSubscriptionDialog() {
           Cancel Subscription
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent onInteractOutside={e => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Confirm Cancellation</DialogTitle>
           <DialogDescription>

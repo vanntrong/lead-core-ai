@@ -129,7 +129,7 @@ export function AddLeadDialog({ isOpen, onClose }: AddLeadDialogProps) {
 
 	return (
 		<Dialog open={isOpen} onOpenChange={handleClose}>
-			<DialogContent className="max-w-md mx-auto rounded-lg border-gray-200 bg-white shadow-2xl">
+			<DialogContent className="max-w-md mx-auto rounded-lg border-gray-200 bg-white shadow-2xl" onInteractOutside={e => e.preventDefault()}>
 				<DialogHeader>
 					<DialogTitle className="flex items-center space-x-3 text-xl">
 						<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100">
