@@ -1,6 +1,7 @@
 import APIFY_ACTORS from '@/constants/apify';
 import * as cheerio from 'cheerio';
 import fetch from 'node-fetch';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import { apifyService } from './apify.service';
 import { proxyAdminService } from './proxy-admin.service';
 import { proxyLogsService } from './proxy-logs.service';
@@ -26,11 +27,19 @@ export class ScrapeService {
     const startTime = new Date();
     try {
       // Use proxy if available
-      const fetchOptions = {
+      let fetchOptions: any = {
         headers: {
           'User-Agent': this.getRandomUserAgent(),
         },
       };
+      if (proxy?.host && proxy?.port) {
+        let proxyUrl = `http://${proxy.host}:${proxy.port}`;
+        if (proxy.username && proxy.password) {
+          // Add basic auth to proxy URL
+          proxyUrl = `http://${encodeURIComponent(proxy.username)}:${encodeURIComponent(proxy.password)}@${proxy.host}:${proxy.port}`;
+        }
+        fetchOptions.agent = new HttpsProxyAgent(proxyUrl);
+      }
       const response = await fetch(url, fetchOptions);
       if (!response.ok) {
         throw new Error(`Failed to fetch: ${response.status}`);
