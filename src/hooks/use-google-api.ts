@@ -1,11 +1,10 @@
 
-import { exportLeadToSheet, fetchSpreadsheets, createNewSpreadsheet } from "@/services/googleapi.service";
 import { Lead } from "@/types/lead";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-
+import { createNewSpreadsheetAction, exportLeadToSheetAction, fetchSpreadsheetsAction } from "@/lib/actions/googleapi.actions";
 export const googleApiKeys = {
   all: ["googleApi"] as const,
   spreadLists: () => [...googleApiKeys.all, "spreadList"] as const,
@@ -71,7 +70,7 @@ export function useGoogleAuth() {
 export function useGoogleSpreadsheetQuery(accessToken: string, enabled: boolean = true) {
   return useQuery({
     queryKey: [googleApiKeys.spreadLists(), accessToken],
-    queryFn: () => fetchSpreadsheets(accessToken),
+    queryFn: () => fetchSpreadsheetsAction(accessToken),
     enabled: !!accessToken && enabled,
     staleTime: TWO_MINUTES,
   });
@@ -83,7 +82,7 @@ export function useGoogleExport(accessToken: string) {
       if (!accessToken) throw new Error("No access token provided");
       if (!lead) throw new Error("No lead data to export");
       if (!selectedSheet) throw new Error("Please select a spreadsheet");
-      await exportLeadToSheet(accessToken, selectedSheet, lead);
+      await exportLeadToSheetAction(accessToken, selectedSheet, lead);
     },
     onSuccess: () => {
       toast.success("Data exported successfully!");
@@ -105,9 +104,12 @@ export function useGoogleCreateAndExport(accessToken: string) {
       if (!lead) throw new Error("No lead data to export");
       if (!spreadsheetName || spreadsheetName.trim() === "") throw new Error("Please enter a spreadsheet name");
       // Create new spreadsheet and export lead
-      const newSheet = await createNewSpreadsheet(accessToken, spreadsheetName);
-      await exportLeadToSheet(accessToken, newSheet.id, lead);
-      return newSheet;
+      const result = await createNewSpreadsheetAction(accessToken, spreadsheetName);
+      if (!result.sheet?.id) {
+        throw new Error("Failed to create spreadsheet or retrieve its ID");
+      }
+      await exportLeadToSheetAction(accessToken, result.sheet.id, lead);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [googleApiKeys.spreadLists(), accessToken] });
