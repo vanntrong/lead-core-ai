@@ -12,7 +12,10 @@ export function DeleteLeadButton({ leadId }: Readonly<{ leadId: string }>) {
 
   const handleDelete = async () => {
     try {
-      await mutateAsync(leadId);
+      const result = await mutateAsync(leadId);
+      if (!result.success) {
+        throw new Error(result.message);
+      }
       toast.success("Lead deleted successfully!");
       setOpen(false);
     } catch (error: any) {

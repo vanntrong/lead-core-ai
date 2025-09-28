@@ -25,9 +25,15 @@ export async function cancelSubscriptionAction() {
   try {
     const result = await subscriptionService.cancelSubscription();
     revalidatePath("/dashboard/usage-invoices");
-    return result;
-  } catch (error) {
+    return {
+      success: result,
+      message: "Subscription cancelled successfully"
+    };
+  } catch (error: any) {
     console.error("Error in cancelSubscriptionAction:", error);
-    throw error;
+    return {
+      success: false,
+      message: error?.message || "Failed to cancel subscription. Please try again.",
+    }
   }
 }

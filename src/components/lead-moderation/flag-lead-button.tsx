@@ -11,7 +11,10 @@ export function FlagLeadButton({ leadId }: Readonly<{ leadId: string }>) {
 
   const handleFlag = async () => {
     try {
-      await mutateAsync(leadId);
+      const result = await mutateAsync(leadId);
+      if (!result.success) {
+        throw new Error(result.message);
+      }
       toast.success("Lead flagged successfully!");
       setOpen(false);
     } catch (error: any) {

@@ -1,4 +1,4 @@
-import { deleteLeadAdminAction, getLeadsPaginatedAction, updateLeadAdminAction, flagLeadAdminAction } from "@/lib/actions/lead-admin.actions";
+import { deleteLeadAdminAction, flagLeadAdminAction, getLeadsPaginatedAction, updateLeadAdminAction } from "@/lib/actions/lead-admin.actions";
 import type { Lead, LeadFilters } from "@/types/lead";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -40,9 +40,8 @@ export function useFlagLeadAdmin() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => flagLeadAdminAction(id),
-    onSuccess: (updatedLead: Lead) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: leadAdminKeys.lists() });
-      queryClient.setQueryData(leadAdminKeys.detail(updatedLead.id), updatedLead);
     },
     onError: (error) => {
       console.error("Failed to flag lead (admin):", error);
@@ -54,9 +53,8 @@ export function useDeleteLeadAdmin() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => deleteLeadAdminAction(id),
-    onSuccess: (_, deletedId) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: leadAdminKeys.lists() });
-      queryClient.removeQueries({ queryKey: leadAdminKeys.detail(deletedId) });
     },
     onError: (error) => {
       console.error("Failed to delete lead (admin):", error);

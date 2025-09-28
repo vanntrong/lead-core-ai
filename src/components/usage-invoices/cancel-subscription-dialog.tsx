@@ -1,21 +1,30 @@
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogTrigger,
+  DialogClose,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-  DialogClose,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Loader2, XCircle } from "lucide-react";
 import { useCancelSubscription } from "@/hooks/use-subscription";
+import { Loader2, XCircle } from "lucide-react";
+import { toast } from "sonner";
 
 export function CancelSubscriptionDialog() {
   const cancelSubscriptionMutation = useCancelSubscription();
 
   const handleCancel = async () => {
-    await cancelSubscriptionMutation.mutateAsync();
+    try {
+      const result = await cancelSubscriptionMutation.mutateAsync();
+      if (!result.success) {
+        throw new Error(result.message || "Failed to cancel subscription. Please try again.");
+      }
+      toast.success("Subscription cancelled successfully.");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to cancel subscription. Please try again.");
+    }
   };
 
   return (

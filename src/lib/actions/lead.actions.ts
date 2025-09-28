@@ -35,10 +35,14 @@ export async function createLeadAction(data: CreateLeadData) {
   try {
     const lead = await leadService.createLead(data);
     revalidatePath("/dashboard/leads");
-    return lead;
-  } catch (error) {
+    return {
+      id: lead.id,
+      success: true,
+      message: "Lead created successfully"
+    };
+  } catch (error: any) {
     console.error("Error in createLeadAction:", error);
-    throw error;
+    return { success: false, message: error?.message || "Failed to create lead" };
   }
 }
 

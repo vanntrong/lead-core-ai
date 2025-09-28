@@ -77,7 +77,10 @@ export function AddLeadDialog({ isOpen, onClose }: AddLeadDialogProps) {
 		for (let attempt = 1; attempt <= 3; attempt++) {
 			setRetryAttempts((prev) => [...prev, { attempt, status: 'pending' }]);
 			try {
-				await createLeadMutation.mutateAsync(data);
+				const result = await createLeadMutation.mutateAsync(data);
+				if (!result.success) {
+					throw new Error(result.message || "Something went wrong during lead creation. Please try again.");
+				}
 				setRetryAttempts((prev) => prev.map((r) => r.attempt === attempt ? { ...r, status: 'success' } : r));
 				toast.success("Lead added successfully!");
 				onClose();
