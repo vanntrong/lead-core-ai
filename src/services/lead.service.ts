@@ -217,7 +217,6 @@ export class LeadService {
         const errorType = (scrapInfo as any)?.errorType || 'scrape_failed';
         const errorMessage = `[${errorType}] ${scrapInfo.error || "Failed to scrape URL"}`;
         const error = new Error(errorMessage);
-        (error as any).errorType = errorType;
         throw error;
       }
       scrapingSuccess = true;

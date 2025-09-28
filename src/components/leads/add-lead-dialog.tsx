@@ -86,7 +86,6 @@ export function AddLeadDialog({ isOpen, onClose }: AddLeadDialogProps) {
 				break;
 			} catch (error: any) {
 				console.error("Error adding lead:", error);
-
 				// Detect errorType and message from '[errorType] message' format
 				let errorMessage = error?.message || "Something went wrong during lead creation. Please try again.";
 				let detectedType: string | undefined = undefined;
