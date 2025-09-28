@@ -31,7 +31,7 @@ export class ScrapeService {
         headers: {
           'User-Agent': this.getRandomUserAgent(),
         },
-        timeout: 20000, // 20 seconds timeout
+        signal: AbortSignal.timeout(20000), // 20 seconds timeout
       };
       if (proxy?.host && proxy?.port) {
         let proxyUrl = `http://${proxy.host}:${proxy.port}`;
@@ -136,8 +136,9 @@ export class ScrapeService {
 
   private handleScrapeError(error: unknown): { title: string, desc: string, emails: string[], error: string, errorType: string } {
     const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorName = error instanceof Error ? error.name : '';
 
-    if (errorMessage.includes('net::ERR_TIMED_OUT') || errorMessage.includes('timeout')) {
+    if (errorName === 'TimeoutError' || errorMessage.includes('net::ERR_TIMED_OUT') || errorMessage.includes('timeout')) {
       return { title: '', desc: '', emails: [], error: 'Request timed out - website took too long to respond', errorType: 'timeout' } as any;
     }
     if (errorMessage.includes('net::ERR_NAME_NOT_RESOLVED')) {
