@@ -97,21 +97,21 @@ export function ScraperLogStatsCards({ stats, isLoading }: ScraperLogStatsProps)
           <div>
             <p className="font-medium text-gray-600 text-sm">Top Source</p>
             <p className="font-bold text-xl text-gray-900" title={(() => {
-              if (stats?.source_breakdown && stats.source_breakdown.length > 0) {
-                const topSource = stats.source_breakdown[0].source;
+              if (stats?.top_sources && stats.top_sources.length > 0) {
+                const topSource = stats.top_sources[0].source;
                 const label = leadSourceColorConfig[topSource]?.label || topSource;
-                return `${label} (${stats.source_breakdown[0].success_rate.toFixed(0)}%)`;
+                return `${label} (${stats.top_sources[0].percent.toFixed(0)}%)`;
               }
               return "-";
             })()}>
               {(() => {
-                if (stats?.source_breakdown && stats.source_breakdown.length > 0) {
-                  const topSource = stats.source_breakdown[0].source;
+                if (stats?.top_sources && stats.top_sources.length > 0) {
+                  const topSource = stats.top_sources[0].source;
                   const label = leadSourceColorConfig[topSource]?.label || topSource;
                   return (
                     <>
                       <span className="truncate max-w-[70px] inline-block align-bottom" title={label}>{label}</span>
-                      {` (${stats.source_breakdown[0].success_rate.toFixed(0)}%)`}
+                      {` (${stats.top_sources[0].percent.toFixed(0)}%)`}
                     </>
                   );
                 }

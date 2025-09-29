@@ -188,12 +188,23 @@ export class ScraperLogsAdminService {
       count: stats.total,
       success_rate: stats.total > 0 ? (stats.success / stats.total) * 100 : 0,
     }));
+
+    // Calculate top sources by count (top 3) and percent of total
+    const top_sources = [...source_breakdown]
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3)
+      .map((item) => ({
+        ...item,
+        percent: total > 0 ? Math.round((item.count / total) * 100) : 0,
+      }));
+
     return {
       total,
       success,
       failed,
       average_duration,
       source_breakdown,
+      top_sources,
     };
   }
 

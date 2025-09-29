@@ -48,4 +48,10 @@ export interface ScraperLogStats {
     count: number;
     success_rate: number;
   }>;
+  top_sources: Array<{
+    source: string;
+    count: number;
+    success_rate: number;
+    percent: number;
+  }>;
 }
