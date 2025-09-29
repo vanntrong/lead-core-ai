@@ -10,6 +10,7 @@ import { useLeadsPaginatedAdmin } from "@/hooks/use-lead-admin";
 import { cn } from "@/lib/utils";
 import { LeadFilters } from "@/types/lead";
 import { RefreshCw } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -108,9 +109,19 @@ export default function LeadModerationPage() {
           }}
           response={paginatedResponse!}
         />
-        <p className="text-center text-gray-500 text-sm">
-          © {new Date().getFullYear()} LeadCore AI. Powered by $TOWN.
-        </p>
+        <footer className="mt-12 border-t border-gray-200 pt-6">
+          <nav className="mb-4 flex flex-wrap justify-center gap-4 text-gray-600 text-sm font-medium">
+            <Link href="/">Product</Link>
+            <Link href="/pricing">Pricing</Link>
+            <Link href="/legal">Disclaimer</Link>
+            <Link href="/about">About</Link>
+            <Link href="/terms">Terms & Conditions</Link>
+            <Link href="/privacy">Privacy Policy</Link>
+          </nav>
+          <p className="text-center text-gray-500 text-sm">
+            © 2025 LeadCore AI. Powered by $TOWN.
+          </p>
+        </footer>
       </div>
     </DashboardLayout>
   );
