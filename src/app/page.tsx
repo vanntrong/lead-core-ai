@@ -41,12 +41,6 @@ export default async function Home() {
 						<div className="hidden items-center space-x-8 md:flex">
 							<Link
 								className="font-medium text-gray-600 hover:text-gray-900 transition-colors duration-200"
-								href="#features"
-							>
-								Features
-							</Link>
-							<Link
-								className="font-medium text-gray-600 hover:text-gray-900 transition-colors duration-200"
 								href="/pricing"
 							>
 								Pricing

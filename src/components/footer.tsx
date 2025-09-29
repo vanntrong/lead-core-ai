@@ -26,20 +26,12 @@ export default function Footer() {
             </h3>
             <ul className="space-y-3">
               <li>
-                <a
-                  className="text-gray-600 hover:text-gray-900"
-                  href="/#features"
-                >
-                  Features
-                </a>
-              </li>
-              <li>
-                <a
+                <Link
                   className="text-gray-600 hover:text-gray-900"
                   href="/pricing"
                 >
                   Pricing
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

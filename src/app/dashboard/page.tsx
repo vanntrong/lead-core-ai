@@ -7,22 +7,23 @@ import { Skeleton } from "@/components/ui/skeleton";
 import pricingPlans from "@/config/pricing-plans.json";
 import { useLeadStats } from "@/hooks/use-leads";
 import { useUserActiveSubscription } from "@/hooks/use-subscription";
+import { cn } from "@/lib/utils";
 import {
 	BarChart3,
-	Bell,
 	Brain,
 	CheckCircle2,
 	Globe,
 	Package,
-	Settings
+	RefreshCw
 } from "lucide-react";
-import Link from "next/link";
 
 export default function Dashboard() {
 	const { data: activeSubscription, isLoading, error } = useUserActiveSubscription();
 	const {
 		data: stats,
 		isLoading: statsLoading,
+		isFetching: statsFetching,
+		refetch: refetchStats,
 	} = useLeadStats();
 
 	if (isLoading) {
@@ -77,21 +78,20 @@ export default function Dashboard() {
 						</div>
 
 						<div className="flex items-center space-x-3">
-							<Button className="relative" size="sm" variant="ghost">
-								<Bell className="h-4 w-4" />
-								<span className="-right-1 -top-1 absolute h-2 w-2 rounded-full bg-red-500" />
+							<Button
+								className="h-9"
+								disabled={statsFetching || statsLoading}
+								onClick={() => refetchStats()}
+								size="sm"
+								variant="outline"
+							>
+								<RefreshCw
+									className={cn("mr-2 h-4 w-4", {
+										"animate-spin": statsFetching || statsLoading,
+									})}
+								/>
+								Refresh
 							</Button>
-
-							<Link href="/settings">
-								<Button
-									className="flex items-center gap-2"
-									size="sm"
-									variant="outline"
-								>
-									<Settings className="h-4 w-4" />
-									Settings
-								</Button>
-							</Link>
 						</div>
 					</div>
 				</div>
@@ -153,7 +153,7 @@ export default function Dashboard() {
 
 				{/* Stats Grid - Enhanced SaaS UI */}
 				<div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-					{statsLoading ? (
+					{statsLoading || statsFetching ? (
 						// Skeleton loading state
 						[...Array(4)].map((_, i) => (
 							<div key={i} className="relative overflow-hidden rounded-lg border border-gray-200 bg-white p-5">
@@ -232,7 +232,7 @@ export default function Dashboard() {
 							<h3 className="font-bold text-xl text-gray-900">Lead Sources</h3>
 							<p className="text-gray-500 text-sm">Breakdown by platform</p>
 						</div>
-						{statsLoading ? (
+						{statsLoading || statsFetching ? (
 							<Skeleton className="h-6 w-32" />
 						) : (
 							<Badge className="bg-indigo-50 text-indigo-700 border-indigo-200">
@@ -241,7 +241,7 @@ export default function Dashboard() {
 						)}
 					</div>
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-						{statsLoading ? (
+						{statsLoading || statsFetching ? (
 							// Skeleton for source breakdown
 							[...Array(4)].map((_, i) => (
 								<div key={i} className="relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 p-5 border border-gray-200">
@@ -269,7 +269,7 @@ export default function Dashboard() {
 												{item.source === "shopify" && <Globe className="h-6 w-6 text-indigo-600" />}
 												{item.source === "woocommerce" && <Package className="h-6 w-6 text-orange-600" />}
 												{item.source === "g2" && <BarChart3 className="h-6 w-6 text-emerald-600" />}
-												{item.source === "capterra" && <Brain className="h-6 w-6 text-purple-600" />}
+												{item.source === "etsy" && <Brain className="h-6 w-6 text-purple-600" />}
 											</div>
 											<div className="flex-1">
 												<div className="font-bold text-gray-900 text-lg capitalize group-hover:text-indigo-700 transition-colors duration-300">

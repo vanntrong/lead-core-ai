@@ -6,12 +6,11 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
+	DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { authService } from "@/services/auth.service";
+import { useRouter } from "@bprogress/next/app";
 import {
-	Bell,
 	ChevronDown,
 	ChevronLeft,
 	ChevronRight,
@@ -21,7 +20,6 @@ import {
 	LogOut,
 	ScrollText,
 	Server,
-	Settings,
 	Truck
 } from "lucide-react";
 import Link from "next/link";
@@ -112,10 +110,11 @@ export function DashboardSidebar({
 	onToggleCollapse,
 }: DashboardSidebarProps) {
 	const pathname = usePathname();
+	const router = useRouter()
 
 	const handleSignOut = async () => {
 		await authService.signOut();
-		window.location.href = "/";
+		router.push("/");
 	};
 
 	return (
@@ -260,15 +259,6 @@ export function DashboardSidebar({
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end" className="w-56">
-							<DropdownMenuItem>
-								<Settings className="mr-2 h-4 w-4" />
-								Account Settings
-							</DropdownMenuItem>
-							<DropdownMenuItem>
-								<Bell className="mr-2 h-4 w-4" />
-								Notifications
-							</DropdownMenuItem>
-							<DropdownMenuSeparator />
 							<DropdownMenuItem
 								className="text-red-600"
 								onClick={handleSignOut}

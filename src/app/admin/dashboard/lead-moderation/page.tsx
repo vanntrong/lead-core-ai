@@ -53,7 +53,7 @@ export default function LeadModerationPage() {
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout planName="Admin">
       <div className="border-gray-200 border-b bg-white">
         <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
