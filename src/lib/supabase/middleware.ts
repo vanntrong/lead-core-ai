@@ -46,6 +46,7 @@ export async function updateSession(request: NextRequest) {
 		new Minimatch("/pricing"),
 		new Minimatch("/checkout"),
 		new Minimatch("/api/heal-check"),
+		new Minimatch("/videos/**"),
 	];
 	const authRoutes = [
 		new Minimatch("/login"),

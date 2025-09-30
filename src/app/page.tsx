@@ -8,6 +8,7 @@ import {
 	CheckCircle,
 	Globe,
 	MessageSquare,
+	Play,
 	Shield,
 	Star,
 	Zap
@@ -15,6 +16,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import PricingPlants from "@/components/pricing-plants";
+import { DemoDialog } from "@/components/demo-dialog";
 
 export default async function Home() {
 	const supabase = await createClient();
@@ -99,15 +101,15 @@ export default async function Home() {
 											Start for $97&nbsp;&rarr;
 										</Link>
 									</Button>
-									<Button
-										asChild
-										className="h-12 bg-white border border-gray-300 text-indigo-600 px-8 text-lg font-semibold rounded-xl shadow-lg transition-all duration-200 hover:bg-gray-50 hover:shadow-xl hover:scale-105"
-										size="lg"
-									>
-										<Link className="flex items-center justify-center" href="#demo">
+									<DemoDialog>
+										<Button
+											className="h-12 bg-white border border-gray-300 text-indigo-600 px-8 text-lg font-semibold rounded-xl shadow-lg transition-all duration-200 hover:bg-gray-50 hover:shadow-xl hover:scale-105"
+											size="lg"
+										>
+											<Play className="mr-2 h-5 w-5" />
 											Watch Demo
-										</Link>
-									</Button>
+										</Button>
+									</DemoDialog>
 								</div>
 							</div>
 
