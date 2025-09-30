@@ -6,8 +6,11 @@ import { getAdminEmails } from "@/utils/helper";
 import {
 	ArrowRight,
 	CheckCircle,
+	Database,
+	Download,
 	Globe,
 	MessageSquare,
+	Search,
 	Shield,
 	Star,
 	Zap
@@ -78,8 +81,8 @@ export default async function Home() {
 				</div>
 
 				<div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-					<div className="pt-20 pb-16 text-center lg:pt-32 flex flex-col lg:flex-row items-center justify-center gap-16">
-						<div className="mx-auto max-w-2xl flex-1">
+					<div className="pt-20 pb-16 text-center lg:pt-32 flex flex-col items-center justify-center gap-12">
+						<div className="mx-auto max-w-5xl">
 							<h1 className="font-bold text-4xl text-gray-900 tracking-tight sm:text-6xl lg:text-7xl leading-tight animate-fade-in-up">
 								AI-powered lead generation made <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent animate-gradient">simple.</span>
 							</h1>
@@ -105,6 +108,91 @@ export default async function Home() {
 										Watch Demo
 									</Link>
 								</Button>
+							</div>
+
+							{/* Dashboard Screenshot Visual */}
+							<div className="mt-16 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+								<div className="relative mx-auto max-w-4xl">
+									{/* Main Dashboard Screenshot */}
+									<div className="relative bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+										<div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+											<div className="flex items-center gap-2">
+												<div className="w-3 h-3 bg-red-400 rounded-full"></div>
+												<div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+												<div className="w-3 h-3 bg-green-400 rounded-full"></div>
+												<div className="ml-4 text-sm text-gray-600">LeadCore AI Dashboard</div>
+											</div>
+										</div>
+										<div className="p-8">
+											{/* Workflow Steps */}
+											<div className="flex items-center justify-between mb-8">
+												<div className="flex items-center gap-4">
+													<div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+														<Search className="h-6 w-6 text-indigo-600" />
+													</div>
+													<div>
+														<div className="text-sm font-semibold text-gray-900">Scrape</div>
+														<div className="text-xs text-gray-500">Find leads</div>
+													</div>
+												</div>
+												<ArrowRight className="h-5 w-5 text-gray-400" />
+												<div className="flex items-center gap-4">
+													<div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+														<Database className="h-6 w-6 text-purple-600" />
+													</div>
+													<div>
+														<div className="text-sm font-semibold text-gray-900">Enrich</div>
+														<div className="text-xs text-gray-500">Add data</div>
+													</div>
+												</div>
+												<ArrowRight className="h-5 w-5 text-gray-400" />
+												<div className="flex items-center gap-4">
+													<div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+														<Download className="h-6 w-6 text-green-600" />
+													</div>
+													<div>
+														<div className="text-sm font-semibold text-gray-900">Export</div>
+														<div className="text-xs text-gray-500">Download CSV</div>
+													</div>
+												</div>
+											</div>
+
+											{/* Mock Data Table */}
+											<div className="bg-gray-50 rounded-xl p-6">
+												<div className="grid grid-cols-4 gap-4 text-xs font-medium text-gray-700 mb-4">
+													<div>Company</div>
+													<div>Contact</div>
+													<div>Industry</div>
+													<div>Status</div>
+												</div>
+												<div className="space-y-3">
+													<div className="grid grid-cols-4 gap-4 text-sm text-gray-900 bg-white p-3 rounded-lg">
+														<div>Shopify Store #1</div>
+														<div>john@example.com</div>
+														<div>E-commerce</div>
+														<div><span className="inline-flex px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Enriched</span></div>
+													</div>
+													<div className="grid grid-cols-4 gap-4 text-sm text-gray-900 bg-white p-3 rounded-lg">
+														<div>Tech Startup</div>
+														<div>sarah@startup.io</div>
+														<div>SaaS</div>
+														<div><span className="inline-flex px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Enriched</span></div>
+													</div>
+													<div className="grid grid-cols-4 gap-4 text-sm text-gray-900 bg-white p-3 rounded-lg">
+														<div>Local Business</div>
+														<div>mike@local.com</div>
+														<div>Retail</div>
+														<div><span className="inline-flex px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Processing</span></div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+
+									{/* Floating Elements */}
+									<div className="absolute -top-4 -right-4 w-8 h-8 bg-indigo-500 rounded-full animate-bounce"></div>
+									<div className="absolute -bottom-6 -left-6 w-6 h-6 bg-purple-500 rounded-full animate-pulse"></div>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -156,38 +244,76 @@ export default async function Home() {
 			</section>
 
 			{/* Feature Highlight Section (new session) */}
-			<section className="bg-gray-50 py-20">
+			<section className="bg-gradient-to-br from-gray-50 to-gray-100 py-24">
 				<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-						<div className="bg-white rounded-2xl shadow-2xl p-4 flex-1">
-							{/* Screenshot: Lead Table */}
-							<div className="bg-white rounded-xl relative aspect-25/12 w-full overflow-hidden flex items-center justify-center">
-								<Image
-									src="/images/lead-board.png"
-									alt="Lead Table Screenshot"
-									fill
-									className="object-cover rounded-xl"
-									priority
-								/>
-							</div>
-						</div>
-						<div className="bg-white rounded-2xl shadow-2xl p-4 flex-1">
-							{/* Screenshot: Dossier Page */}
-							<div className="bg-white rounded-xl relative aspect-25/12 w-full overflow-hidden flex items-center justify-center">
-								<Image
-									src="/images/lead-dossier.png"
-									alt="Dossier Screenshot"
-									fill
-									className="object-cover rounded-xl"
-									priority
-								/>
-							</div>
-						</div>
+					{/* Section Header */}
+					<div className="text-center mb-16">
+						<h2 className="text-3xl font-bold text-gray-900 mb-4">
+							From raw data to qualified leads in 60 seconds
+						</h2>
 					</div>
-					<div className="flex flex-col items-center mt-12">
-						<p className="text-center text-gray-600 text-3xl font-medium">
-							From raw data to qualified leads in 60 seconds.
-						</p>
+
+					{/* Screenshots Grid */}
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+						{/* Lead Table Screenshot */}
+						<div className="group">
+							<div className="relative">
+								{/* Browser Window Frame */}
+								<div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden transform group-hover:scale-[1.02] transition-all duration-300">
+									<div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+										<div className="flex items-center gap-2">
+											<div className="w-3 h-3 bg-red-400 rounded-full"></div>
+											<div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+											<div className="w-3 h-3 bg-green-400 rounded-full"></div>
+											<div className="ml-4 text-sm text-gray-600">Lead Dashboard</div>
+										</div>
+									</div>
+									<div className="relative aspect-video w-full overflow-hidden">
+										<Image
+											src="/images/lead-board.png"
+											alt="Lead Table Dashboard showing scraped and enriched leads"
+											fill
+											className="object-contain bg-white"
+											priority
+										/>
+									</div>
+								</div>
+								{/* Floating Badge */}
+								<div className="absolute -top-3 -right-3 bg-indigo-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+									Step 1: Scrape & View
+								</div>
+							</div>
+						</div>
+
+						{/* Dossier Screenshot */}
+						<div className="group">
+							<div className="relative">
+								{/* Browser Window Frame */}
+								<div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden transform group-hover:scale-[1.02] transition-all duration-300">
+									<div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+										<div className="flex items-center gap-2">
+											<div className="w-3 h-3 bg-red-400 rounded-full"></div>
+											<div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+											<div className="w-3 h-3 bg-green-400 rounded-full"></div>
+											<div className="ml-4 text-sm text-gray-600">Lead Dossier</div>
+										</div>
+									</div>
+									<div className="relative aspect-video w-full overflow-hidden">
+										<Image
+											src="/images/lead-dossier.png"
+											alt="Detailed lead dossier with AI-enriched contact information"
+											fill
+											className="object-contain bg-white"
+											priority
+										/>
+									</div>
+								</div>
+								{/* Floating Badge */}
+								<div className="absolute -top-3 -right-3 bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+									Step 2: Enrich & Export
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</section>
