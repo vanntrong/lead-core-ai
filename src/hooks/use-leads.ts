@@ -60,6 +60,7 @@ export function useLeadsPaginated(filters?: LeadFilters) {
     // lead action expects an object; pass filters inside
     queryFn: () => getLeadsPaginatedAction(filters),
     placeholderData: keepPreviousData,
+    refetchInterval: 15000, // Refetch every 15 seconds
     staleTime: TWO_MINUTES,
   });
 }

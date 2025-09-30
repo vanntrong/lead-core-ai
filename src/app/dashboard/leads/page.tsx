@@ -55,16 +55,16 @@ function LeadBoardPage() {
 		data: paginatedResponse,
 		isLoading: isLoadingLeads,
 		error: leadsError,
-		isFetching: isFetchingLeads,
 		refetch: refetchLeads,
 	} = useLeadsPaginated(paginatedFilters);
 	const {
 		data: stats,
-		isFetching: statsLoading,
+		isLoading: statsLoading,
 		refetch: refetchStats,
 	} = useLeadStats();
 	const generateMockLeads = useGenerateMockLeads();
 	const router = useRouter();
+	const [isRefetching, setIsRefetching] = useState(false);
 
 	// Calculate filtered count for display
 	const totalCount = paginatedResponse?.totalCount || 0;
@@ -75,8 +75,10 @@ function LeadBoardPage() {
 	};
 
 	const handleRefresh = async () => {
+		setIsRefetching(true);
 		await Promise.all([refetchLeads(), refetchStats()]);
 		toast.success("Lead board refreshed");
+		setIsRefetching(false);
 	};
 
 	const handleGenerateMockData = async () => {
@@ -142,14 +144,14 @@ function LeadBoardPage() {
 						<div className="flex items-center space-x-3">
 							<Button
 								className="h-9"
-								disabled={isFetchingLeads || isLoadingLeads}
+								disabled={isLoadingLeads || isRefetching}
 								onClick={handleRefresh}
 								size="sm"
 								variant="outline"
 							>
 								<RefreshCw
 									className={cn("mr-2 h-4 w-4", {
-										"animate-spin": isFetchingLeads || isLoadingLeads,
+										"animate-spin": isLoadingLeads || isRefetching,
 									})}
 								/>
 								Refresh
@@ -187,8 +189,9 @@ function LeadBoardPage() {
 						See, verify, and act on leads—fast.
 					</p>
 				</div>
+
 				{/* Stats Cards */}
-				<LeadStatsCards isLoading={statsLoading} stats={stats} />
+				<LeadStatsCards isLoading={statsLoading || isRefetching} stats={stats} />
 
 				{/* Filters */}
 				<LeadFiltersComponent
@@ -203,7 +206,7 @@ function LeadBoardPage() {
 					<LeadList
 						error={leadsError}
 						filters={filters ?? {}}
-						isFetching={isFetchingLeads}
+						isFetching={isLoadingLeads || isRefetching}
 						isLoading={isLoadingLeads}
 						isMockDataGenerating={generateMockLeads.isPending}
 						isShowUpgradeButton={!_subscription}
