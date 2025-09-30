@@ -2,9 +2,9 @@ import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import pricingPlans from "@/config/pricing-plans.json";
 import { createClient } from "@/lib/supabase/server";
-import { subscriptionService } from "@/services/subscription.service";
 import { ArrowRight, Check, Crown, Globe, Shield, Star, Zap } from "lucide-react";
 import Link from "next/link";
+import { subscriptionService } from "@/services/subscription.service"
 
 export default async function PricingPage() {
   const supabase = await createClient();
@@ -14,11 +14,8 @@ export default async function PricingPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const availablePlans = pricingPlans;
-
   const getButtonText = (tier: string) => {
     switch (tier) {
-      case 'trial': return 'Scrape 25 Leads for $7';
       case 'basic': return 'Start for $97';
       case 'pro': return 'Scale with Pro';
       case 'unlimited': return 'Go Unlimited';
@@ -27,7 +24,7 @@ export default async function PricingPage() {
   };
 
   const getCardStyles = (isPopular: boolean, isEnterprise: boolean) => {
-    if (isPopular) return 'border-indigo-500 ring-2 ring-indigo-100 bg-gradient-to-br from-indigo-50/50 to-white';
+    if (isPopular) return 'border-indigo-500 scale-105 ring-2 ring-indigo-100 bg-gradient-to-br from-indigo-50/50 to-white';
     if (isEnterprise) return 'border-purple-500 bg-gradient-to-br from-purple-50 to-white';
     return 'border-gray-200 hover:border-indigo-300';
   };
@@ -116,9 +113,9 @@ export default async function PricingPage() {
 
       {/* Pricing Cards */}
       <div className="pb-20 px-4">
-        <div className={availablePlans?.length === 3 ? "max-w-6xl mx-auto" : "max-w-3xl mx-auto"}>
-          <div className={`grid grid-cols-1 gap-8 ${availablePlans?.length === 3 ? 'lg:grid-cols-3' : 'md:grid-cols-2'}`}>
-            {availablePlans.map((plan) => {
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {pricingPlans.map((plan) => {
               const isPopular = plan.tier === 'pro';
               const isEnterprise = plan.tier === 'unlimited';
               const isCurrentPlan = activeSubscription?.plan_tier === plan.tier;
@@ -159,19 +156,13 @@ export default async function PricingPage() {
                       <span className="text-4xl font-bold text-gray-900">
                         ${(plan.priceMonthly / 100).toLocaleString()}
                       </span>
-                      {
-                        plan.tier === 'trial' ?
-                          <span className="text-gray-500 ml-1">/one-time</span> :
-                          <span className="text-gray-500 ml-1">/month</span>
-                      }
+                      <span className="text-gray-500 ml-1">/month</span>
                     </div>
                   </div>
 
                   <ul className="space-y-3 mb-6">
                     {plan.features.map((feature) => (
-                      <li key={feature} className={`flex items-center gap-2 group ${feature.startsWith(
-                        'Empty'
-                      ) ? 'invisible' : ''}`}>
+                      <li key={feature} className="flex items-start gap-2 group">
                         <div className="mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-green-100 group-hover:bg-green-200 transition-colors">
                           <Check className="h-2.5 w-2.5 text-green-600" />
                         </div>
@@ -213,9 +204,7 @@ export default async function PricingPage() {
                   <div className="mt-4 pt-4 border-t border-gray-100">
                     <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
                       <Shield className="h-3 w-3" />
-                      <span>
-                        {plan.tier === 'trial' ? 'Get a taste of AI-powered lead gen. Upgrade anytime for more volume' : '30-day money-back guarantee. Cancel anytime'}
-                      </span>
+                      <span>30-day money-back guarantee</span>
                     </div>
                   </div>
                 </div>

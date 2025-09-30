@@ -48,7 +48,7 @@ export default async function PricingPlants() {
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">Start today. Scale when you're ready. Cancel anytime.</p>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {pricingPlans.map((plan) => {
+            {pricingPlans?.filter((plan) => plan.tier !== 'trial')?.map((plan) => {
               const isPopular = plan.tier === 'pro';
               const isEnterprise = plan.tier === 'unlimited';
 
@@ -105,7 +105,7 @@ export default async function PricingPlants() {
                   <div className="mt-4 pt-4 border-t border-gray-100">
                     <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
                       <Shield className="h-3 w-3" />
-                      <span>30-day money-back guarantee</span>
+                      <span>30-day money-back guarantee. Cancel anytime</span>
                     </div>
                   </div>
                 </div>
