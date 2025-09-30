@@ -6,11 +6,8 @@ import { getAdminEmails } from "@/utils/helper";
 import {
 	ArrowRight,
 	CheckCircle,
-	Database,
-	Download,
 	Globe,
 	MessageSquare,
-	Search,
 	Shield,
 	Star,
 	Zap
@@ -123,69 +120,14 @@ export default async function Home() {
 												<div className="ml-4 text-sm text-gray-600">LeadCore AI Dashboard</div>
 											</div>
 										</div>
-										<div className="p-8">
-											{/* Workflow Steps */}
-											<div className="flex items-center justify-between mb-8">
-												<div className="flex items-center gap-4">
-													<div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
-														<Search className="h-6 w-6 text-indigo-600" />
-													</div>
-													<div>
-														<div className="text-sm font-semibold text-gray-900">Scrape</div>
-														<div className="text-xs text-gray-500">Find leads</div>
-													</div>
-												</div>
-												<ArrowRight className="h-5 w-5 text-gray-400" />
-												<div className="flex items-center gap-4">
-													<div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-														<Database className="h-6 w-6 text-purple-600" />
-													</div>
-													<div>
-														<div className="text-sm font-semibold text-gray-900">Enrich</div>
-														<div className="text-xs text-gray-500">Add data</div>
-													</div>
-												</div>
-												<ArrowRight className="h-5 w-5 text-gray-400" />
-												<div className="flex items-center gap-4">
-													<div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-														<Download className="h-6 w-6 text-green-600" />
-													</div>
-													<div>
-														<div className="text-sm font-semibold text-gray-900">Export</div>
-														<div className="text-xs text-gray-500">Download CSV</div>
-													</div>
-												</div>
-											</div>
-
-											{/* Mock Data Table */}
-											<div className="bg-gray-50 rounded-xl p-6">
-												<div className="grid grid-cols-4 gap-4 text-xs font-medium text-gray-700 mb-4">
-													<div>Company</div>
-													<div>Contact</div>
-													<div>Industry</div>
-													<div>Status</div>
-												</div>
-												<div className="space-y-3">
-													<div className="grid grid-cols-4 gap-4 text-sm text-gray-900 bg-white p-3 rounded-lg">
-														<div>Shopify Store #1</div>
-														<div>john@example.com</div>
-														<div>E-commerce</div>
-														<div><span className="inline-flex px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Enriched</span></div>
-													</div>
-													<div className="grid grid-cols-4 gap-4 text-sm text-gray-900 bg-white p-3 rounded-lg">
-														<div>Tech Startup</div>
-														<div>sarah@startup.io</div>
-														<div>SaaS</div>
-														<div><span className="inline-flex px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Enriched</span></div>
-													</div>
-													<div className="grid grid-cols-4 gap-4 text-sm text-gray-900 bg-white p-3 rounded-lg">
-														<div>Local Business</div>
-														<div>mike@local.com</div>
-														<div>Retail</div>
-														<div><span className="inline-flex px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Processing</span></div>
-													</div>
-												</div>
-											</div>
+										<div className="relative aspect-16/8 w-full overflow-hidden">
+											<Image
+												src="/images/dashboard.png"
+												alt="LeadCore AI Dashboard showing the complete workflow from scrape to export"
+												fill
+												className="object-contain bg-white"
+												priority
+											/>
 										</div>
 									</div>
 
@@ -268,7 +210,7 @@ export default async function Home() {
 											<div className="ml-4 text-sm text-gray-600">Lead Dashboard</div>
 										</div>
 									</div>
-									<div className="relative aspect-video w-full overflow-hidden">
+									<div className="relative aspect-16/8 w-full overflow-hidden">
 										<Image
 											src="/images/lead-board.png"
 											alt="Lead Table Dashboard showing scraped and enriched leads"
@@ -298,7 +240,7 @@ export default async function Home() {
 											<div className="ml-4 text-sm text-gray-600">Lead Dossier</div>
 										</div>
 									</div>
-									<div className="relative aspect-video w-full overflow-hidden">
+									<div className="relative aspect-16/8 w-full overflow-hidden">
 										<Image
 											src="/images/lead-dossier.png"
 											alt="Detailed lead dossier with AI-enriched contact information"
