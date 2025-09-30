@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const supabase = createClient(supabaseUrl, supabaseKey);
-import { pricingPlans } from "./utils.js";
+import { pricingPlans } from "./utils.ts";
 export async function handleSubscriptionUpdated({ subscription }) {
   try {
     const meta = subscription.metadata || {};
@@ -46,7 +46,8 @@ export async function handleSubscriptionUpdated({ subscription }) {
         ] : [],
         max_leads: plan.limits.leads_per_month === "unlimited" ? 9999999 : Number(plan.limits.leads_per_month),
         current_leads: 0,
-        export_enabled: plan.limits.export_enabled,
+        csv_export: plan.limits.csv_export,
+        sheets_export: plan.limits.sheets_export,
         zapier_export: plan.limits.zapier_export,
         period_start: subscription.current_period_start ? new Date(subscription.current_period_start * 1000).toISOString() : null,
         period_end: subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : null
@@ -135,7 +136,8 @@ export async function handleSubscriptionCreated({ subscription }) {
       ] : [],
       max_leads: plan.limits.leads_per_month === "unlimited" ? 9999999 : Number(plan.limits.leads_per_month),
       current_leads: 0,
-      export_enabled: plan.limits.export_enabled,
+      csv_export: plan.limits.csv_export,
+      sheets_export: plan.limits.sheets_export,
       zapier_export: plan.limits.zapier_export,
       period_start: subscription.current_period_start ? new Date(subscription.current_period_start * 1000).toISOString() : null,
       period_end: subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : null
@@ -191,14 +193,15 @@ export async function handleSubscriptionDeleted({ subscription }) {
     });
   }
 }
-async function createUsageLimit({ user_id = "", plan_tier = "", sources = [], max_leads = 0, current_leads = 0, export_enabled = false, zapier_export = false, period_start = null, period_end = null }) {
+async function createUsageLimit({ user_id = "", plan_tier = "", sources = [], max_leads = 0, current_leads = 0, csv_export = false, sheets_export = false, zapier_export = false, period_start = null, period_end = null }) {
   const { data, error } = await supabase.from("usage_limits").insert({
     plan_tier,
     sources,
     user_id,
     max_leads,
     current_leads,
-    export_enabled,
+    csv_export,
+    sheets_export,
     zapier_export,
     period_start,
     period_end
@@ -221,4 +224,87 @@ async function createSubscription({ user_id = "", plan_tier = "", subscription_s
     period_end
   });
   return sub;
+}
+export async function handleCheckoutSessionCompleted({ session }) {
+  try {
+    const mode = session.mode; // "subscription" hoặc "payment"
+    const meta = session.metadata || {};
+    const userId = meta.user_id;
+    const source = meta.source;
+    const priceId = session.line_items?.[0]?.price?.id || session.metadata?.plan_id;
+
+    if (!userId) {
+      console.error("Missing user_id in session metadata");
+      return new Response("Missing user_id", { status: 200 });
+    }
+    if (!priceId) {
+      console.error("Missing priceId");
+      return new Response("Missing priceId", { status: 200 });
+    }
+    const plan = pricingPlans.find((p) => p.priceId === priceId);
+    if (!plan) {
+      console.error("Invalid priceId", priceId);
+      return new Response("Invalid priceId", { status: 200 });
+    }
+
+    // Nếu là subscription, tạo như cũ
+    if (mode === "subscription" && session.subscription) {
+      return await handleSubscriptionCreated({ subscription: session.subscription });
+    }
+
+    // Nếu là trial (one-time payment)
+    if (mode === "payment") {
+      // Kiểm tra đã có trial chưa
+      const { data: trialExisting } = await supabase
+        .from("subscriptions")
+        .select()
+        .eq("user_id", userId)
+        .eq("plan_tier", plan.tier)
+        .eq("subscription_status", "active")
+        .maybeSingle();
+      if (trialExisting) {
+        console.warn(`User ${userId} already has active trial for plan ${plan.tier}`);
+        return new Response("Already trialed", { status: 200 });
+      }
+      // Tạo usage_limit cho trial
+      const usageLimit = await createUsageLimit({
+        user_id: userId,
+        plan_tier: plan.tier,
+        sources: plan.limits.sources === "unlimited"
+          ? ["etsy", "woocommerce", "shopify", "g2"]
+          : source ? [source] : [],
+        max_leads: plan.limits.leads_per_month === "unlimited"
+          ? 9999999
+          : Number(plan.limits.leads_per_month),
+        current_leads: 0,
+        csv_export: plan.limits.csv_export,
+        sheets_export: plan.limits.sheets_export,
+        zapier_export: plan.limits.zapier_export,
+        period_start: new Date().toISOString(),
+        period_end: new Date().toISOString()
+      });
+      if (!usageLimit) throw new Error(`Create usage_limits for trial error`);
+      // Insert trial record
+      const subResult = await createSubscription({
+        user_id: userId,
+        usage_limit_id: usageLimit?.id ?? null,
+        stripe_subscription_id: null,
+        plan_tier: plan.tier,
+        stripe_price_id: priceId,
+        subscription_status: "active",
+        period_start: new Date().toISOString(),
+        period_end: new Date().toISOString()
+      });
+      if (subResult.error) {
+        console.error("DB error:", subResult.error);
+        return new Response("DB insert error", { status: 200 });
+      }
+      return new Response("Trial processed", { status: 200 });
+    }
+
+    return new Response("Session processed", { status: 200 });
+  } catch (err) {
+    console.error("handleCheckoutSessionCompleted error:", err);
+    return new Response("Webhook error", { status: 200 });
+  }
 }

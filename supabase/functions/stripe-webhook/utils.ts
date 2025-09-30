@@ -18,12 +18,24 @@ export async function createSubscription({ user_id = "", plan_tier = "", stripe_
 }
 export const pricingPlans = [
   {
+    tier: "trial",
+    priceId: "price_1SD0M1G2cJrqXSBvymQCQBgv",
+    limits: {
+      sources: 1,
+      leads_per_month: 25,
+      csv_export: true,
+      sheets_export: false,
+      zapier_export: false
+    }
+  },
+  {
     tier: "basic",
     priceId: "price_1S9FJBG2cJrqXSBvC5Oyd5Km",
     limits: {
       sources: 1,
       leads_per_month: 100,
-      export_enabled: false,
+      csv_export: true,
+      sheets_export: false,
       zapier_export: false
     }
   },
@@ -33,7 +45,8 @@ export const pricingPlans = [
     limits: {
       sources: "unlimited",
       leads_per_month: 500,
-      export_enabled: true,
+      csv_export: true,
+      sheets_export: true,
       zapier_export: false
     }
   },
@@ -43,7 +56,8 @@ export const pricingPlans = [
     limits: {
       sources: "unlimited",
       leads_per_month: "unlimited",
-      export_enabled: true,
+      csv_export: true,
+      sheets_export: true,
       zapier_export: true
     }
   }

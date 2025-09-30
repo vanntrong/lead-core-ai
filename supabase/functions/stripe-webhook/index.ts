@@ -7,8 +7,8 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const stripeWebhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
 const supabase = createClient(supabaseUrl, supabaseKey);
-import { handleInvoicePaymentSucceeded } from "./invoice.js";
-import { handleSubscriptionCreated, handleSubscriptionUpdated, handleSubscriptionDeleted } from "./subscription.js";
+import { handleInvoicePaymentSucceeded } from "./invoice.ts";
+import { handleSubscriptionCreated, handleSubscriptionUpdated, handleSubscriptionDeleted, handleCheckoutSessionCompleted } from "./subscription.ts";
 Deno.serve(async (req) => {
   const signature = req.headers.get('Stripe-Signature');
   const body = await req.text();
@@ -64,6 +64,13 @@ Deno.serve(async (req) => {
           const subscription = object;
           return handleSubscriptionDeleted({
             subscription
+          });
+        }
+      case "checkout.session.completed":
+        {
+          const session = object;
+          return handleCheckoutSessionCompleted({
+            session
           });
         }
       case "customer.deleted":

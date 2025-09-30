@@ -5,7 +5,7 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const supabase = createClient(supabaseUrl, supabaseKey);
 const stripe = new Stripe(Deno.env.get('STRIPE_API_KEY'));
-import { pricingPlans } from "./utils.js";
+import { pricingPlans } from "./utils.ts";
 export async function handleInvoicePaymentSucceeded({ invoice }) {
   try {
     // Fetch subscription from Stripe

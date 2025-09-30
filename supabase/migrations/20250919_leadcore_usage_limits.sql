@@ -2,7 +2,7 @@
 
 -- 1. ENUM types
 DROP TYPE IF EXISTS plan_tier;
-CREATE TYPE plan_tier AS ENUM ('basic', 'pro', 'unlimited');
+CREATE TYPE plan_tier AS ENUM ('trial', 'basic', 'pro', 'unlimited');
 
 -- 2. ENUM type for sources
 DROP TYPE IF EXISTS source_type;
@@ -16,7 +16,8 @@ CREATE TABLE usage_limits (
     max_leads INTEGER NULL,
     user_id UUID NOT NULL,
     current_leads INTEGER NOT NULL DEFAULT 0,
-    export_enabled BOOLEAN NOT NULL DEFAULT false,
+    csv_export BOOLEAN NOT NULL DEFAULT false,
+    sheets_export BOOLEAN NOT NULL DEFAULT false,
     zapier_export BOOLEAN NOT NULL DEFAULT false,
     period_start TIMESTAMPTZ NULL,
     period_end TIMESTAMPTZ NULL,
