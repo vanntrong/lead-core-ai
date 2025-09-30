@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import pricingPlans from "@/config/pricing-plans.json";
 import { useRouter } from "@bprogress/next/app";
-import { ArrowLeft, Check, Crown, Globe, Loader2, Shield, Star, Zap } from "lucide-react";
+import { ArrowLeft, Check, Crown, Flame, Globe, Loader2, Shield, Star, Zap } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -29,6 +29,7 @@ export default function CheckoutPageClient() {
 
   const getPlanIcon = (tier: string) => {
     switch (tier) {
+      case 'trial': return <Flame className="h-6 w-6" />;
       case 'basic': return <Star className="h-6 w-6" />;
       case 'pro': return <Zap className="h-6 w-6" />;
       case 'unlimited': return <Crown className="h-6 w-6" />;
@@ -164,7 +165,13 @@ export default function CheckoutPageClient() {
                   <span className="text-3xl font-bold text-indigo-600">
                     ${(plan.priceMonthly / 100).toLocaleString()}
                   </span>
-                  <span className="text-gray-500">/month</span>
+                  {
+                    plan.tier === "trial" ? (
+                      <span className="text-sm text-gray-500">/one-time</span>
+                    ) : (
+                      <span className="text-sm text-gray-500">/month</span>
+                    )
+                  }
                 </div>
               </div>
             </div>
@@ -173,7 +180,7 @@ export default function CheckoutPageClient() {
               <h3 className="text-lg font-semibold text-gray-900">What's included:</h3>
               <ul className="space-y-3">
                 {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start space-x-3">
+                  <li key={feature} className={`flex items-start space-x-3 ${feature.startsWith("Empty") && "invisible"}`}>
                     <div className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100 mt-0.5">
                       <Check className="h-3 w-3 text-green-600" />
                     </div>
@@ -189,7 +196,7 @@ export default function CheckoutPageClient() {
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <h3 className="text-xl font-bold text-gray-900 mb-6">Configuration</h3>
 
-            {planParam === "basic" && (
+            {["basic", "trial"].includes(planParam) && (
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-3">
                   Select your data source{" "}
@@ -218,11 +225,19 @@ export default function CheckoutPageClient() {
               <h4 className="font-semibold text-gray-900 mb-4">Order Summary</h4>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-gray-600">{plan.name}</span>
-                <span className="font-medium text-gray-900">
-                  ${(plan.priceMonthly / 100).toLocaleString()}/month
-                </span>
+                {
+                  plan.tier === "trial" ? (
+                    <span className="font-medium text-gray-900">
+                      ${(plan.priceMonthly / 100).toLocaleString()}/one-time
+                    </span>
+                  ) : (
+                    <span className="font-medium text-gray-900">
+                      ${(plan.priceMonthly / 100).toLocaleString()}/month
+                    </span>
+                  )
+                }
               </div>
-              {planParam === "basic" && source && (
+              {["basic", "trial"].includes(planParam) && source && (
                 <div className="flex justify-between items-center mb-2 text-sm">
                   <span className="text-gray-600">Data Source: {SOURCES.find(s => s.value === source)?.label}</span>
                   <span className="text-green-600">Included</span>
@@ -231,9 +246,17 @@ export default function CheckoutPageClient() {
               <div className="border-t border-gray-200 pt-3 mt-3">
                 <div className="flex justify-between items-center font-semibold">
                   <span className="text-gray-900">Total</span>
-                  <span className="text-xl text-indigo-600">
-                    ${(plan.priceMonthly / 100).toLocaleString()}/month
-                  </span>
+                  {
+                    plan.tier === "trial" ? (
+                      <span className="text-xl text-indigo-600">
+                        ${(plan.priceMonthly / 100).toLocaleString()}/one-time
+                      </span>
+                    ) : (
+                      <span className="text-xl text-indigo-600">
+                        ${(plan.priceMonthly / 100).toLocaleString()}/month
+                      </span>
+                    )
+                  }
                 </div>
               </div>
             </div>
@@ -246,7 +269,13 @@ export default function CheckoutPageClient() {
               </div>
               <div className="flex items-center space-x-1">
                 <Shield className="h-4 w-4" />
-                <span>30-day Guarantee</span>
+                {
+                  plan.tier === "trial" ? (
+                    <span>Upgrade anytime</span>
+                  ) : (
+                    <span>30-day Guarantee</span>
+                  )
+                }
               </div>
             </div>
 

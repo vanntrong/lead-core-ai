@@ -358,13 +358,14 @@ export type Database = {
       usage_limits: {
         Row: {
           created_at: string
+          csv_export: boolean
           current_leads: number
-          export_enabled: boolean
           id: string
           max_leads: number | null
           period_end: string | null
           period_start: string | null
           plan_tier: Database["public"]["Enums"]["plan_tier"]
+          sheets_export: boolean
           sources: Database["public"]["Enums"]["source_type"][] | null
           updated_at: string
           user_id: string
@@ -372,13 +373,14 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          csv_export?: boolean
           current_leads?: number
-          export_enabled?: boolean
           id?: string
           max_leads?: number | null
           period_end?: string | null
           period_start?: string | null
           plan_tier: Database["public"]["Enums"]["plan_tier"]
+          sheets_export?: boolean
           sources?: Database["public"]["Enums"]["source_type"][] | null
           updated_at?: string
           user_id: string
@@ -386,13 +388,14 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          csv_export?: boolean
           current_leads?: number
-          export_enabled?: boolean
           id?: string
           max_leads?: number | null
           period_end?: string | null
           period_start?: string | null
           plan_tier?: Database["public"]["Enums"]["plan_tier"]
+          sheets_export?: boolean
           sources?: Database["public"]["Enums"]["source_type"][] | null
           updated_at?: string
           user_id?: string
@@ -422,7 +425,7 @@ export type Database = {
         | "enriched"
         | "failed"
         | "scrap_failed"
-      plan_tier: "basic" | "pro" | "unlimited"
+      plan_tier: "trial" | "basic" | "pro" | "unlimited"
       proxy_heal_check_log_status: "success" | "failed"
       proxy_log_status: "success" | "failed" | "banned" | "timeout"
       proxy_status: "active" | "inactive" | "error"
@@ -568,7 +571,7 @@ export const Constants = {
         "failed",
         "scrap_failed",
       ],
-      plan_tier: ["basic", "pro", "unlimited"],
+      plan_tier: ["trial", "basic", "pro", "unlimited"],
       proxy_heal_check_log_status: ["success", "failed"],
       proxy_log_status: ["success", "failed", "banned", "timeout"],
       proxy_status: ["active", "inactive", "error"],

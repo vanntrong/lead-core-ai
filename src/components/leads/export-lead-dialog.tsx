@@ -350,7 +350,7 @@ export function ExportLeadDialog({ isOpen, onClose, leadData }: ExportLeadDialog
                   className="mt-2 w-full"
                   placeholder="https://hooks.zapier.com/..."
                   {...register("webhookUrl")}
-                  disabled={activeSubscription?.plan_tier === "pro" && selectedFormat === "zapier"}
+                  disabled={!activeSubscription?.usage_limits?.zapier_export && selectedFormat === "zapier"}
                   required
                 />
               </div>
@@ -363,6 +363,10 @@ export function ExportLeadDialog({ isOpen, onClose, leadData }: ExportLeadDialog
                   handleLogin={handleGoogleLogin}
                   isLoading={isGoogleLoading}
                   isConnected={isGoogleConnected}
+                  disabled={
+                    isExporting ||
+                    isSubmitting ||
+                    !activeSubscription?.usage_limits?.sheets_export}
                 />
                 {leadData && (
                   <ExportGoogleSheetButton
@@ -418,7 +422,10 @@ export function ExportLeadDialog({ isOpen, onClose, leadData }: ExportLeadDialog
                 </Button>
               </DialogClose>
               {
-                (activeSubscription?.plan_tier === "pro" && selectedFormat === "zapier") ? (
+                (
+                  (!activeSubscription?.usage_limits?.zapier_export && selectedFormat === "zapier") ||
+                  (!activeSubscription?.usage_limits?.sheets_export && selectedFormat === "google-sheets")
+                ) ? (
                   <Button
                     className="flex-1 from-indigo-600 to-purple-600"
                     disabled={isExporting || isSubmitting}

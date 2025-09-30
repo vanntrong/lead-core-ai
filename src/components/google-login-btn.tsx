@@ -5,15 +5,16 @@ interface GoogleLoginBtnProps {
   readonly handleLogin?: () => void;
   readonly isLoading: boolean;
   readonly isConnected: boolean;
+  readonly disabled?: boolean;
 }
 
-export function GoogleLoginBtn({ handleLogin, isLoading, isConnected }: GoogleLoginBtnProps) {
+export function GoogleLoginBtn({ handleLogin, isLoading, isConnected, disabled }: GoogleLoginBtnProps) {
   return (
     <>
       {!isConnected ? (
         <Button
           onClick={handleLogin}
-          disabled={isLoading}
+          disabled={isLoading || disabled}
           className="w-full"
           variant="outline"
           type="button"
@@ -39,7 +40,7 @@ export function GoogleLoginBtn({ handleLogin, isLoading, isConnected }: GoogleLo
       ) : (
         <Button
           onClick={handleLogin}
-          disabled={isLoading}
+          disabled={isLoading || disabled}
           className="w-full"
           variant="outline"
           type="button"

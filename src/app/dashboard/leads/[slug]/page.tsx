@@ -157,7 +157,7 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
                 Refresh
               </Button>
               {
-                ["pro", "unlimited"].includes(_subscription?.plan_tier ?? "basic") ? (<Button
+                _subscription ? (<Button
                   className="h-9 bg-indigo-600 hover:bg-indigo-700"
                   size="sm"
                   disabled={!lead}

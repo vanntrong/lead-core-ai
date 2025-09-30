@@ -2,16 +2,19 @@ import pricingPlans from '@/config/pricing-plans.json';
 import { stripe } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase/server";
 import { type NextRequest, NextResponse } from "next/server";
+import Stripe from 'stripe';
 
 export async function POST(req: NextRequest) {
 	try {
-		const { planId, source, referral } = await req.json();
+		const { planId, source, referral, upgrade = false } = await req.json();
 
 		// Check if planId matches any priceId in pricing-plans.json
 		const matchedPlan = pricingPlans.find(plan => plan.priceId === planId);
 		if (!matchedPlan) {
 			return NextResponse.json({ error: "Invalid plan ID" }, { status: 400 });
 		}
+
+		const isTrialPlan = matchedPlan.tier === 'trial';
 
 		// Get current user
 		const supabase = await createClient();
@@ -31,7 +34,7 @@ export async function POST(req: NextRequest) {
 			.eq("status", "active")
 			.single();
 
-		if (existingSubscription && existingSubscription.plan_tier === matchedPlan.tier) {
+		if (existingSubscription && !upgrade) {
 			return NextResponse.json(
 				{ error: "You are already subscribed to this plan" },
 				{ status: 400 }
@@ -72,27 +75,39 @@ export async function POST(req: NextRequest) {
 			});
 		}
 
-		const session = await stripe.checkout.sessions.create({
+		const sessionConfig: Stripe.Checkout.SessionCreateParams = {
 			customer: customerId,
 			payment_method_types: ["card"],
+			metadata: {
+				user_id: user.id,
+				source,
+				plan_id: planId,
+				upgrade
+			},
 			line_items: [
 				{
 					price: planId,
 					quantity: 1,
 				},
 			],
-			mode: "subscription",
-			subscription_data: {
-				metadata: {
-					user_id: user.id,
-					source,
-					plan_id: planId
-				},
-			},
+			mode: isTrialPlan ? "payment" : "subscription",
 			...(referral ? { client_reference_id: referral } : {}),
 			success_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout-success?session_id={CHECKOUT_SESSION_ID}`,
 			cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout?plan=${matchedPlan.tier}`,
-		});
+		};
+
+		if (!isTrialPlan) {
+			sessionConfig.subscription_data = {
+				metadata: {
+					user_id: user.id,
+					source,
+					plan_id: planId,
+					upgrade
+				},
+			};
+		}
+
+		const session = await stripe.checkout.sessions.create(sessionConfig);
 
 		return NextResponse.json({ url: session.url });
 	} catch (error) {

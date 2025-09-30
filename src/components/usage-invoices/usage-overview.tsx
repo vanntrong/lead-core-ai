@@ -30,8 +30,9 @@ export const UsageOverview: React.FC<UsageOverviewProps> = ({
   else if (mappedPlan?.tier === "pro") planColor = "text-indigo-500";
   else if (mappedPlan?.tier === "unlimited") planColor = "text-purple-500";
 
-  const isExportEnabled = _subscription?.usage_limits?.export_enabled ?? false;
   const isZapierExport = _subscription?.usage_limits?.zapier_export ?? false;
+  const isExportCSV = _subscription?.usage_limits?.csv_export ?? false;
+  const isSheetsExport = _subscription?.usage_limits?.sheets_export ?? false;
 
   if (!activeSubscription) {
     return (
@@ -79,7 +80,9 @@ export const UsageOverview: React.FC<UsageOverviewProps> = ({
                 <p className="font-medium text-gray-600 text-sm">Plan Price</p>
                 <p className="font-bold text-xl text-gray-900">
                   ${((mappedPlan?.priceMonthly ?? 0) / 100).toLocaleString()}
-                  <span className="text-gray-500 text-base font-medium">/mo</span>
+                  {
+                    mappedPlan?.tier !== 'trial' && <span className="text-gray-500 text-base font-medium">/mo</span>
+                  }
                 </p>
               </div>
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50">
@@ -91,10 +94,14 @@ export const UsageOverview: React.FC<UsageOverviewProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-gray-600 text-sm">Export Enabled</p>
-                <p className={`font-bold text-xl ${isExportEnabled ? 'text-gray-900' : 'text-gray-400'}`}>{isExportEnabled ? "Enabled" : "Disabled"}</p>
+                <p className={`font-bold text-xl ${isExportCSV || isSheetsExport ? 'text-gray-900' : 'text-gray-400'}`}>
+                  {
+                    (isExportCSV || isSheetsExport) ? `(${isExportCSV ? "CSV" : ""}${isSheetsExport ? "Sheets" : ""})` : "Disabled"
+                  }
+                </p>
               </div>
-              <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${isExportEnabled ? 'bg-indigo-50' : 'bg-gray-100'}`}>
-                <CheckCircle className={`h-5 w-5 ${isExportEnabled ? 'text-indigo-600' : 'text-gray-400'}`} />
+              <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${(isExportCSV || isSheetsExport) ? 'bg-indigo-50' : 'bg-gray-100'}`}>
+                <CheckCircle className={`h-5 w-5 ${(isExportCSV || isSheetsExport) ? 'text-indigo-600' : 'text-gray-400'}`} />
               </div>
             </div>
           </Card>
@@ -122,19 +129,23 @@ export const UsageOverview: React.FC<UsageOverviewProps> = ({
               </div>
               <h3 className="text-lg font-semibold text-gray-900">Usage Overview</h3>
             </div>
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <Calendar className="h-4 w-4" />
-              <span className="font-medium">
-                {new Date(activeSubscription?.period_start ?? "").toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric'
-                })} - {new Date(activeSubscription?.period_end ?? "").toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric'
-                })}
-              </span>
-            </div>
+            {
+              mappedPlan?.tier !== 'trial' && (
+                <div className="flex items-center space-x-2 text-sm text-gray-600">
+                  <Calendar className="h-4 w-4" />
+                  <span className="font-medium">
+                    {new Date(activeSubscription?.period_start ?? "").toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric'
+                    })} - {new Date(activeSubscription?.period_end ?? "").toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
+                  </span>
+                </div>
+              )
+            }
           </div>
           <div>
             {/* Usage percentage logic */}

@@ -100,7 +100,7 @@ export default function UsageAndInvoicesPage() {
             </div>
             <div className="flex items-center space-x-3">
               {
-                activeSubscription && ["basic", "pro"].includes(activeSubscription?.plan_tier ?? "basic") && (
+                activeSubscription && ["trial", "basic", "pro"].includes(activeSubscription?.plan_tier ?? "basic") && (
                   <Button
                     className="h-9 from-indigo-600 to-purple-600"
                     size="sm"
@@ -112,7 +112,7 @@ export default function UsageAndInvoicesPage() {
                 )
               }
               {
-                activeSubscription && <CancelSubscriptionDialog />
+                activeSubscription && mappedPlan?.tier !== 'trial' && <CancelSubscriptionDialog />
               }
             </div>
           </div>
