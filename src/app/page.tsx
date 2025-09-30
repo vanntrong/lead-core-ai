@@ -351,7 +351,17 @@ export default async function Home() {
 			</section>
 
 			{/* Pricing Section */}
-			<PricingPlants />
+			<section className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-24">
+				<div className="px-4">
+					<div className="max-w-6xl mx-auto">
+						<div className="text-center mb-10">
+							<h2 className="text-3xl font-bold text-gray-900 mb-4">Simple, transparent pricing — built for growth</h2>
+							<p className="text-gray-600 text-lg max-w-2xl mx-auto">Start today. Scale when you're ready. Cancel anytime.</p>
+						</div>
+						<PricingPlants />
+					</div>
+				</div>
+			</section>
 
 			{/* Guarantee Section */}
 			<section className="bg-green-50 py-16" >
