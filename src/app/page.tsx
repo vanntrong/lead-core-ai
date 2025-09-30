@@ -79,38 +79,41 @@ export default async function Home() {
 				</div>
 
 				<div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-					<div className="pt-20 pb-16 text-center lg:pt-32 flex flex-col items-center justify-center gap-12">
-						<div className="mx-auto max-w-5xl">
-							<h1 className="font-bold text-4xl text-gray-900 tracking-tight sm:text-6xl lg:text-7xl leading-tight animate-fade-in-up">
-								AI-powered lead generation made <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent animate-gradient">simple.</span>
-							</h1>
-							<p className="mx-auto mt-6 max-w-2xl text-gray-600 text-lg leading-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-								Find, enrich, and export leads from Shopify, G2, Etsy & more — in seconds.
-							</p>
-							<div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-								<Button
-									asChild
-									className="h-12 bg-indigo-600 hover:bg-indigo-700 text-white px-8 text-lg font-semibold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105"
-									size="lg"
-								>
-									<Link className="flex items-center" href="/signup">
-										Start for $97&nbsp;&rarr;
-									</Link>
-								</Button>
-								<Button
-									asChild
-									className="h-12 bg-white border border-gray-300 text-indigo-600 px-8 text-lg font-semibold rounded-xl shadow-lg transition-all duration-200 hover:bg-gray-50 hover:shadow-xl hover:scale-105"
-									size="lg"
-								>
-									<Link className="flex items-center" href="#demo">
-										Watch Demo
-									</Link>
-								</Button>
+					<div className="pt-16 pb-12 lg:pt-20 lg:pb-16">
+						<div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+							{/* Content Section */}
+							<div className="text-left animate-fade-in-up">
+								<h1 className="font-bold text-4xl text-gray-900 tracking-tight sm:text-5xl lg:text-6xl leading-tight">
+									AI-powered lead generation made <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent animate-gradient">simple.</span>
+								</h1>
+								<p className="mt-6 text-gray-600 text-lg leading-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+									Find, enrich, and export leads from Shopify, G2, Etsy & more — in seconds.
+								</p>
+								<div className="mt-8 flex flex-col sm:flex-row gap-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+									<Button
+										asChild
+										className="h-12 bg-indigo-600 hover:bg-indigo-700 text-white px-8 text-lg font-semibold rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105"
+										size="lg"
+									>
+										<Link className="flex items-center justify-center" href="/signup">
+											Start for $97&nbsp;&rarr;
+										</Link>
+									</Button>
+									<Button
+										asChild
+										className="h-12 bg-white border border-gray-300 text-indigo-600 px-8 text-lg font-semibold rounded-xl shadow-lg transition-all duration-200 hover:bg-gray-50 hover:shadow-xl hover:scale-105"
+										size="lg"
+									>
+										<Link className="flex items-center justify-center" href="#demo">
+											Watch Demo
+										</Link>
+									</Button>
+								</div>
 							</div>
 
 							{/* Dashboard Screenshot Visual */}
-							<div className="mt-16 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-								<div className="relative mx-auto max-w-4xl">
+							<div className="animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+								<div className="relative">
 									{/* Main Dashboard Screenshot */}
 									<div className="relative bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
 										<div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
