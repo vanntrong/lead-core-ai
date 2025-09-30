@@ -5,9 +5,9 @@
     "priceId": "price_1S9FJBG2cJrqXSBvC5Oyd5Km",
     "priceMonthly": 9700,
       "features": [
-        "Connect 1 SaaS data source",
-        "Automated lead scraping & enrichment",
-        "Email verification included",
+        "Choose Shopify, G2, Woo, or Etsy",
+        "Real-time enrichment + verification",
+        "CSV Export",
         "Up to 100 qualified leads/month",
         "Basic support"
       ],
@@ -26,9 +26,9 @@
     "features": [
       "Unlimited data sources",
       "Advanced lead enrichment",
-      "Export to CSV",
-      "Advanced filters & segmentation",
-      "Up to 500 qualified leads/month"
+      "Export to CSV + Sheets",
+      "Up to 500 qualified leads/month",
+      "Advanced support"
     ],
     "limits": {
       "sources": "unlimited",
@@ -46,8 +46,8 @@
       "Unlimited data sources",
       "Advanced lead enrichment",
       "Unlimited leads per month",
-      "Zapier & webhook integration",
-      "Advanced support"
+      "Zapier & Webhooks",
+      "Priority support"
     ],
     "limits": {
       "sources": "unlimited",

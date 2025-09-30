@@ -16,9 +16,9 @@ export default async function PricingPage() {
 
   const getButtonText = (tier: string) => {
     switch (tier) {
-      case 'basic': return 'Start Basic';
-      case 'pro': return 'Go Pro';
-      case 'unlimited': return 'Get Unlimited';
+      case 'basic': return 'Start for $97';
+      case 'pro': return 'Scale with Pro';
+      case 'unlimited': return 'Go Unlimited';
       default: return 'Get Started';
     }
   };
@@ -107,7 +107,7 @@ export default async function PricingPage() {
           </span>
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-gray-600 text-lg leading-8">
-          Choose the perfect plan to scale your lead generation. Start free, upgrade when you're ready.
+          Start today. Scale when you're ready. Cancel anytime.
         </p>
       </div>
 
@@ -210,41 +210,6 @@ export default async function PricingPage() {
                 </div>
               );
             })}
-          </div>
-        </div>
-      </div>
-
-      {/* FAQ Section */}
-      <div className="py-16 px-4">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-            Frequently asked questions
-          </h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Can I change plans anytime?
-              </h3>
-              <p className="text-gray-600">
-                Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                What payment methods do you accept?
-              </h3>
-              <p className="text-gray-600">
-                We accept all major credit cards, PayPal, and bank transfers for annual plans.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                What happens if I exceed my limits?
-              </h3>
-              <p className="text-gray-600">
-                We'll notify you when you're approaching your limits and help you upgrade to continue.
-              </p>
-            </div>
           </div>
         </div>
       </div>

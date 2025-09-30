@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import PricingPlants from "@/components/pricing-plants";
 
 export default async function Home() {
 	const supabase = await createClient();
@@ -83,7 +84,7 @@ export default async function Home() {
 							<h1 className="font-bold text-4xl text-gray-900 tracking-tight sm:text-6xl lg:text-7xl leading-tight animate-fade-in-up">
 								AI-powered lead generation made <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent animate-gradient">simple.</span>
 							</h1>
-							<p className="mx-auto mt-6 max-w-xl text-gray-600 text-lg leading-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+							<p className="mx-auto mt-6 max-w-2xl text-gray-600 text-lg leading-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
 								Find, enrich, and export leads from Shopify, G2, Etsy & more — in seconds.
 							</p>
 							<div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
@@ -185,84 +186,13 @@ export default async function Home() {
 				</div>
 			</section>
 
-			{/* Feature Highlight Section (new session) */}
-			<section className="bg-gradient-to-br from-gray-50 to-gray-100 py-24">
-				<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-					{/* Section Header */}
-					<div className="text-center mb-16">
-						<h2 className="text-3xl font-bold text-gray-900 mb-4">
-							From raw data to qualified leads in 60 seconds
-						</h2>
-					</div>
-
-					{/* Screenshots Grid */}
-					<div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-						{/* Lead Table Screenshot */}
-						<div className="group">
-							<div className="relative">
-								{/* Browser Window Frame */}
-								<div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden transform group-hover:scale-[1.02] transition-all duration-300">
-									<div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-										<div className="flex items-center gap-2">
-											<div className="w-3 h-3 bg-red-400 rounded-full"></div>
-											<div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-											<div className="w-3 h-3 bg-green-400 rounded-full"></div>
-											<div className="ml-4 text-sm text-gray-600">Lead Dashboard</div>
-										</div>
-									</div>
-									<div className="relative aspect-16/8 w-full overflow-hidden">
-										<Image
-											src="/images/lead-board.png"
-											alt="Lead Table Dashboard showing scraped and enriched leads"
-											fill
-											className="object-contain bg-white"
-											priority
-										/>
-									</div>
-								</div>
-								{/* Floating Badge */}
-								<div className="absolute -top-3 -right-3 bg-indigo-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
-									Step 1: Scrape & View
-								</div>
-							</div>
-						</div>
-
-						{/* Dossier Screenshot */}
-						<div className="group">
-							<div className="relative">
-								{/* Browser Window Frame */}
-								<div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden transform group-hover:scale-[1.02] transition-all duration-300">
-									<div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-										<div className="flex items-center gap-2">
-											<div className="w-3 h-3 bg-red-400 rounded-full"></div>
-											<div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-											<div className="w-3 h-3 bg-green-400 rounded-full"></div>
-											<div className="ml-4 text-sm text-gray-600">Lead Dossier</div>
-										</div>
-									</div>
-									<div className="relative aspect-16/8 w-full overflow-hidden">
-										<Image
-											src="/images/lead-dossier.png"
-											alt="Detailed lead dossier with AI-enriched contact information"
-											fill
-											className="object-contain bg-white"
-											priority
-										/>
-									</div>
-								</div>
-								{/* Floating Badge */}
-								<div className="absolute -top-3 -right-3 bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
-									Step 2: Enrich & Export
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</section>
-
 			{ /* Benefits Section */}
-			<div className="bg-white py-24" id="features" >
+			<div className="bg-gradient-to-br from-gray-50 to-gray-100 py-24" id="features" >
 				<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+					<div className="text-center mb-10">
+						<h2 className="text-3xl font-bold text-gray-900 mb-4">Benefits</h2>
+						<p className="text-gray-600 text-lg max-w-2xl mx-auto">All-in-one platform to find, enrich, and export high-quality leads—fast, accurate, and easy for everyone.</p>
+					</div>
 					<div className="flex justify-center">
 						<div className="max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 justify-center items-stretch">
 							{/* Scrape Leads in Seconds */}
@@ -338,25 +268,108 @@ export default async function Home() {
 						</div>
 					</div>
 				</div>
-			</div >
+			</div>
+
+			{/* Feature Highlight Section (new session) */}
+			<section className="bg-white  py-24">
+				<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+					{/* Section Header */}
+					<div className="text-center mb-16">
+						<h2 className="text-3xl font-bold text-gray-900 mb-4">
+							From raw data to qualified leads in 60 seconds
+						</h2>
+					</div>
+
+					{/* Screenshots Grid */}
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+						{/* Lead Table Screenshot */}
+						<div className="group">
+							<div className="relative">
+								{/* Browser Window Frame */}
+								<div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden transform group-hover:scale-[1.02] transition-all duration-300">
+									<div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+										<div className="flex items-center gap-2">
+											<div className="w-3 h-3 bg-red-400 rounded-full"></div>
+											<div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+											<div className="w-3 h-3 bg-green-400 rounded-full"></div>
+											<div className="ml-4 text-sm text-gray-600">Lead Dashboard</div>
+										</div>
+									</div>
+									<div className="relative aspect-16/8 w-full overflow-hidden">
+										<Image
+											src="/images/lead-board.png"
+											alt="Lead Table Dashboard showing scraped and enriched leads"
+											fill
+											className="object-contain bg-white"
+											priority
+										/>
+									</div>
+								</div>
+								{/* Floating Badge */}
+								<div className="absolute -top-3 -right-3 bg-indigo-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+									Step 1: Scrape & View
+								</div>
+							</div>
+						</div>
+
+						{/* Dossier Screenshot */}
+						<div className="group">
+							<div className="relative">
+								{/* Browser Window Frame */}
+								<div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden transform group-hover:scale-[1.02] transition-all duration-300">
+									<div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+										<div className="flex items-center gap-2">
+											<div className="w-3 h-3 bg-red-400 rounded-full"></div>
+											<div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+											<div className="w-3 h-3 bg-green-400 rounded-full"></div>
+											<div className="ml-4 text-sm text-gray-600">Lead Dossier</div>
+										</div>
+									</div>
+									<div className="relative aspect-16/8 w-full overflow-hidden">
+										<Image
+											src="/images/lead-dossier.png"
+											alt="Detailed lead dossier with AI-enriched contact information"
+											fill
+											className="object-contain bg-white"
+											priority
+										/>
+									</div>
+								</div>
+								{/* Floating Badge */}
+								<div className="absolute -top-3 -right-3 bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+									Step 2: Enrich & Export
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			{/* Pricing Section */}
+			<PricingPlants />
 
 			{/* Guarantee Section */}
 			<section className="bg-green-50 py-16" >
 				<div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-					<div className="flex flex-col items-center justify-center gap-4">
+					<div className="flex flex-col items-center justify-center">
 						<div className="bg-green-100 rounded-full p-3 shadow-sm mb-3">
-							<CheckCircle className="h-7 w-7 text-green-600" />
+							<CheckCircle className="h-7 w-7 text-green-700" />
 						</div>
-						<p className="text-gray-800 text-lg max-w-xl">
-							Not sure if LeadCore AI is right for you? Try it risk-free with our 30-day money-back guarantee.
+						<h2 className="text-2xl font-bold text-gray-900 mb-2">30-Day Money-Back Guarantee</h2>
+						<p className="text-gray-700 text-xl max-w-xl">
+							Not sure if LeadCore AI is right for you? <span className="text-green-600 font-medium">Try it risk-free with our 30-day money-back guarantee.</span>
 						</p>
 					</div>
 				</div>
-			</section >
+			</section>
 
 			{/* FAQ Section */}
 			<section className="bg-white py-20" >
 				<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+					<div className="text-center mb-10">
+						<h2 className="text-3xl font-bold text-gray-900 mb-2">Frequently Asked Questions</h2>
+						<p className="text-gray-600 text-base max-w-2xl mx-auto">Everything you need to know about LeadCore AI plans, payments, and support.</p>
+					</div>
 					<div className="space-y-6">
 						<div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
 							<h3 className="text-lg font-semibold text-gray-900 mb-2">
