@@ -1,6 +1,5 @@
 import "@/app/globals.css";
 import Footer from "@/components/footer";
-import ExportGoogleSheetButton from "@/components/leads/export-google-sheet";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminEmails } from "@/utils/helper";
@@ -14,6 +13,7 @@ import {
 	Zap
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default async function Home() {
 	const supabase = await createClient();
@@ -78,20 +78,13 @@ export default async function Home() {
 				</div>
 
 				<div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-					<div className="pt-20 pb-16 text-center lg:pt-32">
-						<div className="mx-auto max-w-4xl">
-							<div className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-600 px-4 py-2 rounded-full text-sm font-medium mb-6">
-								<Star className="mr-2 h-4 w-4 fill-current" />
-								Trusted by 1000+ marketers & sales teams
-							</div>
+					<div className="pt-20 pb-16 text-center lg:pt-32 flex flex-col lg:flex-row items-center justify-center gap-16">
+						<div className="mx-auto max-w-2xl flex-1">
 							<h1 className="font-bold text-4xl text-gray-900 tracking-tight sm:text-6xl lg:text-7xl leading-tight animate-fade-in-up">
-								AI-powered lead generation made{" "}
-								<span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent animate-gradient">
-									simple
-								</span>
+								AI-powered lead generation made <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent animate-gradient">simple.</span>
 							</h1>
-							<p className="mx-auto mt-6 max-w-2xl text-gray-600 text-lg leading-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-								LeadCore AI finds, enriches, and exports leads from Shopify, Etsy, G2, and more. Automate your workflow and export results instantly.
+							<p className="mx-auto mt-6 max-w-xl text-gray-600 text-lg leading-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+								Find, enrich, and export leads from Shopify, G2, Etsy & more — in seconds.
 							</p>
 							<div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
 								<Button
@@ -100,8 +93,16 @@ export default async function Home() {
 									size="lg"
 								>
 									<Link className="flex items-center" href="/signup">
-										Get more leads now
-										<ArrowRight className="ml-2 h-5 w-5" />
+										Start for $97&nbsp;&rarr;
+									</Link>
+								</Button>
+								<Button
+									asChild
+									className="h-12 bg-white border border-gray-300 text-indigo-600 px-8 text-lg font-semibold rounded-xl shadow-lg transition-all duration-200 hover:bg-gray-50 hover:shadow-xl hover:scale-105"
+									size="lg"
+								>
+									<Link className="flex items-center" href="#demo">
+										Watch Demo
 									</Link>
 								</Button>
 							</div>
@@ -110,21 +111,93 @@ export default async function Home() {
 				</div>
 			</div>
 
-			{/* Features Section */}
-			<div className="bg-white py-24" id="features">
+			{ /* Social Proof Section */}
+			<section className="bg-white py-24">
 				<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 					<div className="text-center">
-						<h2 className="font-bold text-3xl text-gray-900 tracking-tight sm:text-4xl">
-							Everything you need to grow your pipeline
-						</h2>
-						<p className="mx-auto mt-4 max-w-2xl text-gray-600 text-lg">
-							LeadCore AI automates lead generation, enrichment, verification, and export—so you can focus on closing deals.
+						<div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-full text-sm font-medium mb-10">
+							<Star className="h-4 w-4" />
+							Trusted by 10,000+ founders & agencies.
+						</div>
+						<div className="flex flex-wrap justify-center items-center gap-8 mb-12">
+							{/* Placeholder logos - increased size */}
+							<div className="w-32 h-14 bg-gray-100 rounded-lg flex items-center justify-center">
+								<svg width="80" height="32" viewBox="0 0 80 32" fill="none"><rect width="80" height="32" rx="8" fill="#e5e7eb" /><text x="50%" y="50%" textAnchor="middle" dy=".3em" fontSize="16" fill="#9ca3af">Logo</text></svg>
+							</div>
+							<div className="w-32 h-14 bg-gray-100 rounded-lg flex items-center justify-center">
+								<svg width="80" height="32" viewBox="0 0 80 32" fill="none"><rect width="80" height="32" rx="8" fill="#e5e7eb" /><text x="50%" y="50%" textAnchor="middle" dy=".3em" fontSize="16" fill="#9ca3af">Logo</text></svg>
+							</div>
+							<div className="w-32 h-14 bg-gray-100 rounded-lg flex items-center justify-center">
+								<svg width="80" height="32" viewBox="0 0 80 32" fill="none"><rect width="80" height="32" rx="8" fill="#e5e7eb" /><text x="50%" y="50%" textAnchor="middle" dy=".3em" fontSize="16" fill="#9ca3af">Logo</text></svg>
+							</div>
+							<div className="w-32 h-14 bg-gray-100 rounded-lg flex items-center justify-center">
+								<svg width="80" height="32" viewBox="0 0 80 32" fill="none"><rect width="80" height="32" rx="8" fill="#e5e7eb" /><text x="50%" y="50%" textAnchor="middle" dy=".3em" fontSize="16" fill="#9ca3af">Logo</text></svg>
+							</div>
+							<div className="w-32 h-14 bg-gray-100 rounded-lg flex items-center justify-center">
+								<svg width="80" height="32" viewBox="0 0 80 32" fill="none"><rect width="80" height="32" rx="8" fill="#e5e7eb" /><text x="50%" y="50%" textAnchor="middle" dy=".3em" fontSize="16" fill="#9ca3af">Logo</text></svg>
+							</div>
+						</div>
+						<div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+							<div className="text-center">
+								<div className="text-3xl font-bold text-indigo-600 mb-2">50M+</div>
+								<div className="text-gray-600 text-sm">Leads generated</div>
+							</div>
+							<div className="text-center">
+								<div className="text-3xl font-bold text-green-600 mb-2">95%</div>
+								<div className="text-gray-600 text-sm">Verified accuracy</div>
+							</div>
+							<div className="text-center">
+								<div className="text-3xl font-bold text-purple-600 mb-2">98%</div>
+								<div className="text-gray-600 text-sm">Customer satisfaction</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			{/* Feature Highlight Section (new session) */}
+			<section className="bg-gray-50 py-20">
+				<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+						<div className="bg-white rounded-2xl shadow-2xl p-4 flex-1">
+							{/* Screenshot: Lead Table */}
+							<div className="bg-white rounded-xl relative aspect-25/12 w-full overflow-hidden flex items-center justify-center">
+								<Image
+									src="/images/lead-board.png"
+									alt="Lead Table Screenshot"
+									fill
+									className="object-cover rounded-xl"
+									priority
+								/>
+							</div>
+						</div>
+						<div className="bg-white rounded-2xl shadow-2xl p-4 flex-1">
+							{/* Screenshot: Dossier Page */}
+							<div className="bg-white rounded-xl relative aspect-25/12 w-full overflow-hidden flex items-center justify-center">
+								<Image
+									src="/images/lead-dossier.png"
+									alt="Dossier Screenshot"
+									fill
+									className="object-cover rounded-xl"
+									priority
+								/>
+							</div>
+						</div>
+					</div>
+					<div className="flex flex-col items-center mt-12">
+						<p className="text-center text-gray-600 text-3xl font-medium">
+							From raw data to qualified leads in 60 seconds.
 						</p>
 					</div>
+				</div>
+			</section>
 
+			{ /* Benefits Section */}
+			<div className="bg-white py-24" id="features" >
+				<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 					<div className="flex justify-center">
-						<div className="mt-16 max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 justify-center items-stretch">
-							{/* Lead Scraping */}
+						<div className="max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 justify-center items-stretch">
+							{/* Scrape Leads in Seconds */}
 							<div className="group">
 								<div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-8 shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
 									<div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -133,20 +206,16 @@ export default async function Home() {
 											<Globe className="h-7 w-7 text-indigo-600" />
 										</div>
 										<h3 className="mb-4 font-bold text-gray-900 text-xl text-center">
-											Lead Scraping
+											Scrape Leads in Seconds
 										</h3>
 										<p className="text-gray-600 leading-relaxed text-center mb-4">
-											Instantly collect leads from Shopify, Etsy, G2, Capterra, and more—no manual research needed.
+											Shopify, G2, Woo, Etsy, and more.
 										</p>
-										<div className="flex items-center justify-center">
-											<CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-											<span className="text-sm text-gray-500">10,000+ sources supported</span>
-										</div>
 									</div>
 								</div>
 							</div>
 
-							{/* AI Enrichment */}
+							{/* Enrich with AI Precision */}
 							<div className="group">
 								<div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-8 shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
 									<div className="absolute inset-0 bg-gradient-to-br from-green-50 to-emerald-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -155,20 +224,15 @@ export default async function Home() {
 											<Zap className="h-7 w-7 text-green-600" />
 										</div>
 										<h3 className="mb-4 font-bold text-gray-900 text-xl text-center">
-											AI Enrichment
+											Enrich with AI Precision
 										</h3>
 										<p className="text-gray-600 leading-relaxed text-center mb-4">
-											Enrich leads with company info, contacts, and insights using Claude and advanced AI models.
-										</p>
-										<div className="flex items-center justify-center">
-											<CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-											<span className="text-sm text-gray-500">95% accuracy rate</span>
-										</div>
+											Claude enrichment (ICP fit, tech stack, contacts)										</p>
 									</div>
 								</div>
 							</div>
 
-							{/* Email Verification */}
+							{/* Verify Before You Send */}
 							<div className="group">
 								<div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-8 shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
 									<div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-cyan-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -177,20 +241,16 @@ export default async function Home() {
 											<Shield className="h-7 w-7 text-blue-600" />
 										</div>
 										<h3 className="mb-4 font-bold text-gray-900 text-xl text-center">
-											Email Verification
+											Verify Before You Send
 										</h3>
 										<p className="text-gray-600 leading-relaxed text-center mb-4">
-											Verify emails for deliverability and accuracy—no more wasted outreach.
+											Real-time email validation
 										</p>
-										<div className="flex items-center justify-center">
-											<CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-											<span className="text-sm text-gray-500">Real-time verification</span>
-										</div>
 									</div>
 								</div>
 							</div>
 
-							{/* Export & Integrations */}
+							{/* Export Anywhere */}
 							<div className="group">
 								<div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-8 shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
 									<div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-amber-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -199,25 +259,67 @@ export default async function Home() {
 											<MessageSquare className="h-7 w-7 text-orange-600" />
 										</div>
 										<h3 className="mb-4 font-bold text-gray-900 text-xl text-center">
-											Export & Integrations
+											Export Anywhere
 										</h3>
 										<p className="text-gray-600 leading-relaxed text-center mb-4">
-											Export leads to CSV, Google Sheets, or Zapier. Integrate with your favorite tools in one click.
+											CSV, Google Sheets, Zapier, CRM
 										</p>
-										<div className="flex items-center justify-center">
-											<CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-											<span className="text-sm text-gray-500">50+ integrations</span>
-										</div>
 									</div>
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-			</div>
+			</div >
 
-			{/* CTA Section */}
-			<div className="relative bg-gradient-to-r from-indigo-600 to-purple-600 overflow-hidden">
+			{/* Guarantee Section */}
+			<section className="bg-green-50 py-16" >
+				<div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+					<div className="flex flex-col items-center justify-center gap-4">
+						<div className="bg-green-100 rounded-full p-3 shadow-sm mb-3">
+							<CheckCircle className="h-7 w-7 text-green-600" />
+						</div>
+						<p className="text-gray-800 text-lg max-w-xl">
+							Not sure if LeadCore AI is right for you? Try it risk-free with our 30-day money-back guarantee.
+						</p>
+					</div>
+				</div>
+			</section >
+
+			{/* FAQ Section */}
+			<section className="bg-white py-20" >
+				<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+					<div className="space-y-6">
+						<div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+							<h3 className="text-lg font-semibold text-gray-900 mb-2">
+								Can I change plans anytime?
+							</h3>
+							<p className="text-sm text-gray-600">
+								Yes — upgrades and downgrades take effect immediately.
+							</p>
+						</div>
+						<div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+							<h3 className="text-lg font-semibold text-gray-900 mb-2">
+								What payment methods do you accept?
+							</h3>
+							<p className="text-sm text-gray-600">
+								All major credit cards, PayPal, and bank transfers for annual plans.
+							</p>
+						</div>
+						<div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+							<h3 className="text-lg font-semibold text-gray-900 mb-2">
+								What happens if I exceed my limits?
+							</h3>
+							<p className="text-sm text-gray-600">
+								We'll notify you and provide a one-click upgrade path so you never miss opportunities.
+							</p>
+						</div>
+					</div>
+				</div>
+			</section >
+
+			{/* Final CTA Section */}
+			<section className="relative bg-gradient-to-r from-indigo-600 to-purple-600 overflow-hidden" >
 				<div className="absolute inset-0 bg-black opacity-20" />
 				<div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-30" />
 
@@ -226,10 +328,6 @@ export default async function Home() {
 						<h2 className="font-bold text-3xl text-white sm:text-4xl">
 							Ready to grow your pipeline with AI?
 						</h2>
-						<p className="mt-4 text-indigo-100 text-lg">
-							Join thousands of companies already using LeadCore AI to
-							optimize their operations and increase profitability.
-						</p>
 						<div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
 							<Button
 								asChild
@@ -237,33 +335,17 @@ export default async function Home() {
 								size="lg"
 							>
 								<Link className="flex items-center" href="/signup">
-									Get started now
+									Get Started Now
 									<ArrowRight className="ml-2 h-5 w-5" />
 								</Link>
 							</Button>
 						</div>
-
-						{/* Trust indicators */}
-						<div className="mt-12 grid grid-cols-3 gap-6 text-center">
-							<div>
-								<div className="text-2xl font-bold text-white">10K+</div>
-								<div className="text-indigo-200 text-sm">Happy customers</div>
-							</div>
-							<div>
-								<div className="text-2xl font-bold text-white">50M+</div>
-								<div className="text-indigo-200 text-sm">Leads generated</div>
-							</div>
-							<div>
-								<div className="text-2xl font-bold text-white">98%</div>
-								<div className="text-indigo-200 text-sm">Customer satisfaction</div>
-							</div>
-						</div>
 					</div>
 				</div>
-			</div>
+			</section >
 
 			{/* Footer */}
-			<Footer />
-		</div>
+			< Footer />
+		</div >
 	);
 }
