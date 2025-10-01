@@ -31,9 +31,10 @@ import { ErrorLimitMessage } from "./error-limit-message";
 interface AddLeadDialogProps {
 	isOpen: boolean;
 	onClose: () => void;
+	onLeadAdded?: () => void;
 }
 
-export function AddLeadDialog({ isOpen, onClose }: AddLeadDialogProps) {
+export function AddLeadDialog({ isOpen, onClose, onLeadAdded }: AddLeadDialogProps) {
 	const {
 		register,
 		handleSubmit,
@@ -79,6 +80,7 @@ export function AddLeadDialog({ isOpen, onClose }: AddLeadDialogProps) {
 				}
 				setRetryAttempts((prev) => prev.map((r) => r.attempt === attempt ? { ...r, status: 'success' } : r));
 				toast.success("Lead added successfully!");
+				onLeadAdded?.();
 				onClose();
 				lastError = null;
 				lastErrorType = undefined;

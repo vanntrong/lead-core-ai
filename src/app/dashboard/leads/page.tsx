@@ -241,7 +241,7 @@ function LeadBoardPage() {
 			<AddLeadDialog
 				isOpen={isAddLeadDialogOpen}
 				onClose={() => setIsAddLeadDialogOpen(false)}
-
+				onLeadAdded={handleRefresh}
 			/>
 		</DashboardLayout>
 	);
