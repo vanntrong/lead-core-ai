@@ -127,8 +127,7 @@ export default async function PricingPage() {
               ) : (
                 <Link
                   href={user ? `/checkout?plan=${plan.tier}` : "/login"}
-                  className={`w-full py-3 px-5 rounded-xl font-semibold text-base transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 ${getButtonStyles(isPopular, isEnterprise)} block text-center no-underline ${activeSubscription ? 'pointer-events-none opacity-50' : ''}`}
-                  aria-disabled={!!activeSubscription}
+                  className={`w-full py-3 px-5 rounded-xl font-semibold text-base transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 ${getButtonStyles(isPopular, isEnterprise)} block text-center no-underline`}
                 >
                   <span className="flex items-center justify-center gap-2">
                     {(() => {

@@ -96,7 +96,7 @@ export const UsageOverview: React.FC<UsageOverviewProps> = ({
                 <p className="font-medium text-gray-600 text-sm">Export Enabled</p>
                 <p className={`font-bold text-xl ${isExportCSV || isSheetsExport ? 'text-gray-900' : 'text-gray-400'}`}>
                   {
-                    (isExportCSV || isSheetsExport) ? `(${isExportCSV ? "CSV" : ""}${isSheetsExport ? "Sheets" : ""})` : "Disabled"
+                    (isExportCSV || isSheetsExport) ? `(${isExportCSV ? "CSV" : ""}${isSheetsExport ? " & Sheets" : ""})` : "Disabled"
                   }
                 </p>
               </div>

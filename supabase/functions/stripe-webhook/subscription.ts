@@ -1,7 +1,9 @@
 // @ts-nocheck
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
+import Stripe from "https://esm.sh/stripe@13.10.0?target=deno";
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const stripeKey = Deno.env.get("STRIPE_API_KEY");
 const supabase = createClient(supabaseUrl, supabaseKey);
 import { pricingPlans } from "./utils.ts";
 export async function handleSubscriptionUpdated({ subscription }) {
@@ -115,16 +117,10 @@ export async function handleSubscriptionCreated({ subscription }) {
         status: 200
       });
     }
-    // Get existing active subscription
-    const { data: subscriptionExisting } = await supabase.from("subscriptions").select().eq("user_id", userId).eq("plan_tier", plan.tier).eq("subscription_status", "active").maybeSingle();
 
-    // If existing and not upgrade, error
-    if (subscriptionExisting && !upgrade) {
-      console.warn(`User ${userId} already has active subscription for plan ${plan.tier}`);
-      return new Response("Already subscribed", {
-        status: 200
-      });
-    }
+    // Get existing active subscription
+    const { data: subscriptionExisting } = await supabase.from("subscriptions").select().eq("user_id", userId).eq("subscription_status", "active").maybeSingle();
+
     // Create usage_limit record
     const usageLimit = await createUsageLimit({
       user_id: userId,
@@ -163,8 +159,19 @@ export async function handleSubscriptionCreated({ subscription }) {
         status: 200
       });
     }
-    if (subscriptionExisting && upgrade) {
-      // Cancel existing subscription
+    if (subscriptionExisting) {
+      // Cancel existing subscription in Stripe first
+      if (subscriptionExisting.stripe_subscription_id) {
+        try {
+          const stripe = Stripe(stripeKey);
+          await stripe.subscriptions.cancel(subscriptionExisting.stripe_subscription_id);
+          console.log("Canceled Stripe subscription:", subscriptionExisting.stripe_subscription_id);
+        } catch (stripeError) {
+          console.error("Failed to cancel Stripe subscription:", subscriptionExisting.stripe_subscription_id, stripeError);
+        }
+      }
+
+      // Update subscription status in database
       const { error } = await supabase.from("subscriptions").update({
         subscription_status: "canceled",
         updated_at: new Date().toISOString()

@@ -197,7 +197,7 @@ export class LeadService {
       activeSubscription.usage_limits.max_leads !== null &&
       activeSubscription.usage_limits.current_leads >= activeSubscription.usage_limits.max_leads
     ) {
-      throw new Error("Lead limit exceeded. Please upgrade your plan.");
+      throw new Error("Lead limit exceeded");
     }
 
     if (activeSubscription.usage_limits?.sources?.includes(data.source) === false) {
