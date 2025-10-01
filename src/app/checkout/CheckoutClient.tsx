@@ -22,6 +22,7 @@ export default function CheckoutPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const planParam = searchParams.get("plan")?.toLowerCase() || "";
+  const upgradeParam = searchParams.get("upgrade")?.toLowerCase() || "";
   const plan = pricingPlans.find(p => p.tier === planParam);
   const [source, setSource] = useState("");
   const [referral, setReferral] = useState(null)
@@ -75,6 +76,7 @@ export default function CheckoutPageClient() {
           planId: plan?.priceId,
           source: source ?? null,
           referral,
+          upgrade: upgradeParam === "true",
         }),
       });
       const data = await res.json();

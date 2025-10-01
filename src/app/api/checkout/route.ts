@@ -26,6 +26,22 @@ export async function POST(req: NextRequest) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
+		if (isTrialPlan) {
+			const { data: existingTrialSubscription } = await supabase
+				.from("subscriptions")
+				.select("*")
+				.eq("user_id", user.id)
+				.eq("plan_tier", "trial")
+				.single();
+
+			if (existingTrialSubscription && !upgrade) {
+				return NextResponse.json(
+					{ error: "You are already on the trial plan" },
+					{ status: 400 }
+				);
+			}
+		}
+
 		// Check if company already has an active subscription
 		const { data: existingSubscription } = await supabase
 			.from("subscriptions")
@@ -75,6 +91,12 @@ export async function POST(req: NextRequest) {
 			});
 		}
 
+		let cancelUrl = `${process.env.NEXT_PUBLIC_APP_URL}/checkout?plan=${matchedPlan.tier}`
+
+		if (upgrade) {
+			cancelUrl = cancelUrl + "&upgrade=true"
+		}
+
 		const sessionConfig: Stripe.Checkout.SessionCreateParams = {
 			customer: customerId,
 			payment_method_types: ["card"],
@@ -93,7 +115,7 @@ export async function POST(req: NextRequest) {
 			mode: isTrialPlan ? "payment" : "subscription",
 			...(referral ? { client_reference_id: referral } : {}),
 			success_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout-success?session_id={CHECKOUT_SESSION_ID}`,
-			cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout?plan=${matchedPlan.tier}`,
+			cancel_url: cancelUrl,
 		};
 
 		if (!isTrialPlan) {

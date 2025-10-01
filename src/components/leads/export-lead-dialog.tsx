@@ -22,12 +22,13 @@ import { useGoogleAuth, useGoogleCreateAndExport, useGoogleExport } from "@/hook
 import { useUserActiveSubscription } from "@/hooks/use-subscription";
 import { leadExportService } from "@/services/lead-export.service";
 import { Lead } from "@/types/lead";
-import { AlertCircle, Crown, Download, Loader2 } from "lucide-react";
+import { AlertCircle, Download, Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { GoogleLoginBtn } from "../google-login-btn";
+import { UpgradeButton } from "../upgrade-btn";
 import ExportGoogleSheetButton from "./export-google-sheet";
 
 interface ExportLeadData {
@@ -426,14 +427,11 @@ export function ExportLeadDialog({ isOpen, onClose, leadData }: ExportLeadDialog
                   (!activeSubscription?.usage_limits?.zapier_export && selectedFormat === "zapier") ||
                   (!activeSubscription?.usage_limits?.sheets_export && selectedFormat === "google-sheets")
                 ) ? (
-                  <Button
-                    className="flex-1 from-indigo-600 to-purple-600"
-                    disabled={isExporting || isSubmitting}
-                    type="button"
-                  >
-                    <Crown className="mr-2 h-4 w-4 text-yellow-300" />
-                    Upgrade to export
-                  </Button>
+                  <UpgradeButton
+                    className="flex-1"
+                    currentPlan={selectedFormat === "zapier" ? "pro" : activeSubscription?.plan_tier ?? "trial"}
+                    title="Upgrade to export"
+                  />
                 ) : (
                   <Button
                     className="flex-1 bg-indigo-600 hover:bg-indigo-700"

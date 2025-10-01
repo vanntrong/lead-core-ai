@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { usePagination } from "@/components/ui/pagination";
+import { UpgradeButton } from "@/components/upgrade-btn";
 import { CancelSubscriptionDialog } from "@/components/usage-invoices/cancel-subscription-dialog";
 import InvoiceList from "@/components/usage-invoices/invoice-list";
 import { UsageOverview } from "@/components/usage-invoices/usage-overview";
@@ -101,14 +102,11 @@ export default function UsageAndInvoicesPage() {
             <div className="flex items-center space-x-3">
               {
                 activeSubscription && ["trial", "basic", "pro"].includes(activeSubscription?.plan_tier ?? "basic") && (
-                  <Button
-                    className="h-9 from-indigo-600 to-purple-600"
-                    size="sm"
-                    onClick={() => setShowUpdateDialog(true)}
-                  >
-                    <Crown className="mr-2 h-4 w-4 text-yellow-300" />
-                    Update Usage
-                  </Button>
+                  <UpgradeButton
+                    className="flex-1"
+                    currentPlan={activeSubscription?.plan_tier ?? "trial"}
+                    title="Upgrade usage"
+                  />
                 )
               }
               {

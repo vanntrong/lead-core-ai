@@ -22,10 +22,11 @@ import { useCreateLead } from "@/hooks/use-leads";
 import { useUserActiveSubscription } from "@/hooks/use-subscription";
 import type { CreateLeadData, LeadSource } from "@/types/lead";
 import { useRouter } from "@bprogress/next/app";
-import { AlertCircle, Crown, Globe, Loader2 } from "lucide-react";
+import { AlertCircle, Globe, Loader2 } from "lucide-react";
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { UpgradeButton } from "../upgrade-btn";
 
 interface AddLeadDialogProps {
 	isOpen: boolean;
@@ -58,10 +59,6 @@ export function AddLeadDialog({ isOpen, onClose }: AddLeadDialogProps) {
 
 	// Disable source if no active subscription or no sources available
 	const isSourceDisabled = sourceSelected && !activeSubscription?.usage_limits?.sources?.includes(sourceSelected);
-
-	const isNeedUpgrade =
-		!activeSubscription ||
-		(activeSubscription?.usage_limits?.current_leads ?? 0) >= (activeSubscription?.usage_limits?.max_leads ?? 0);
 
 	const handleClose = () => {
 		onClose();
@@ -255,15 +252,12 @@ export function AddLeadDialog({ isOpen, onClose }: AddLeadDialogProps) {
 								</Button>
 							</DialogClose>
 							{
-								(isSourceDisabled || isNeedUpgrade) ? (
-									<Button
-										className="flex-1 from-indigo-600 to-purple-600"
-										type="button"
-										onClick={() => router.push(activeSubscription ? '/dashboard/usage-invoices' : '/pricing')}
-									>
-										<Crown className="mr-2 h-4 w-4 text-yellow-300" />
-										Upgrade to add lead
-									</Button>
+								(isSourceDisabled) ? (
+									<UpgradeButton
+										className="flex-1"
+										currentPlan={activeSubscription?.plan_tier ?? "trial"}
+										title="Upgrade to add lead"
+									/>
 								) : (
 									<Button
 										className="flex-1 bg-indigo-600 hover:bg-indigo-700"
