@@ -26,22 +26,6 @@ export async function POST(req: NextRequest) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		if (isTrialPlan) {
-			const { data: existingTrialSubscription } = await supabase
-				.from("subscriptions")
-				.select("*")
-				.eq("user_id", user.id)
-				.eq("plan_tier", "trial")
-				.single();
-
-			if (existingTrialSubscription && !upgrade) {
-				return NextResponse.json(
-					{ error: "You are already on the trial plan" },
-					{ status: 400 }
-				);
-			}
-		}
-
 		// Check if company already has an active subscription
 		const { data: existingSubscription } = await supabase
 			.from("subscriptions")

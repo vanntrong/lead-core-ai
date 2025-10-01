@@ -94,6 +94,7 @@ export async function handleSubscriptionCreated({ subscription }) {
     const meta = subscription.metadata || {};
     const userId = meta.user_id;
     const source = meta.source;
+    const upgrade = meta.upgrade === "true";
     if (!userId) {
       console.error("Missing user_id in subscription metadata");
       return new Response("Missing user_id", {
@@ -114,15 +115,17 @@ export async function handleSubscriptionCreated({ subscription }) {
         status: 200
       });
     }
-    // Kiểm tra đã có active subscription chưa
+    // Get existing active subscription
     const { data: subscriptionExisting } = await supabase.from("subscriptions").select().eq("user_id", userId).eq("plan_tier", plan.tier).eq("subscription_status", "active").maybeSingle();
-    if (subscriptionExisting) {
+
+    // If existing and not upgrade, error
+    if (subscriptionExisting && !upgrade) {
       console.warn(`User ${userId} already has active subscription for plan ${plan.tier}`);
       return new Response("Already subscribed", {
         status: 200
       });
     }
-    // Tạo usage_limit
+    // Create usage_limit record
     const usageLimit = await createUsageLimit({
       user_id: userId,
       plan_tier: plan.tier,
@@ -159,6 +162,16 @@ export async function handleSubscriptionCreated({ subscription }) {
       return new Response("DB insert error", {
         status: 200
       });
+    }
+    if (subscriptionExisting && upgrade) {
+      // Cancel existing subscription
+      const { error } = await supabase.from("subscriptions").update({
+        subscription_status: "canceled",
+        updated_at: new Date().toISOString()
+      }).eq("id", subscriptionExisting.id);
+      if (error) {
+        console.error("Failed to cancel existing subscription:", subscriptionExisting.id, error);
+      }
     }
     return new Response("Webhook processed", {
       status: 200
