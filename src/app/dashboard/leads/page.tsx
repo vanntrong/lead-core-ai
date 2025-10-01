@@ -64,7 +64,8 @@ function LeadBoardPage() {
 	} = useLeadStats();
 	const generateMockLeads = useGenerateMockLeads();
 	const router = useRouter();
-	const [isRefetching, setIsRefetching] = useState(false);
+	const [isRefreshingLeads, setIsRefreshingLeads] = useState(false);
+	const [isRefetchingStats, setIsRefetchingStats] = useState(false);
 
 	// Calculate filtered count for display
 	const totalCount = paginatedResponse?.totalCount || 0;
@@ -75,10 +76,15 @@ function LeadBoardPage() {
 	};
 
 	const handleRefresh = async () => {
-		setIsRefetching(true);
-		await Promise.all([refetchLeads(), refetchStats()]);
+		setIsRefreshingLeads(true);
+		setIsRefetchingStats(true);
+		// Refetch leads and stats in parallel
+		await Promise.all([
+			refetchLeads().then(() => setIsRefreshingLeads(false)),
+			refetchStats().then(() => setIsRefetchingStats(false))
+		]);
+		// Wait for both refetches to complete
 		toast.success("Lead board refreshed");
-		setIsRefetching(false);
 	};
 
 	const handleGenerateMockData = async () => {
@@ -144,14 +150,14 @@ function LeadBoardPage() {
 						<div className="flex items-center space-x-3">
 							<Button
 								className="h-9"
-								disabled={isLoadingLeads || isRefetching}
+								disabled={isLoadingLeads || isRefreshingLeads || isRefetchingStats}
 								onClick={handleRefresh}
 								size="sm"
 								variant="outline"
 							>
 								<RefreshCw
 									className={cn("mr-2 h-4 w-4", {
-										"animate-spin": isLoadingLeads || isRefetching,
+										"animate-spin": isLoadingLeads || isRefreshingLeads || isRefetchingStats,
 									})}
 								/>
 								Refresh
@@ -191,7 +197,7 @@ function LeadBoardPage() {
 				</div>
 
 				{/* Stats Cards */}
-				<LeadStatsCards isLoading={statsLoading || isRefetching} stats={stats} />
+				<LeadStatsCards isLoading={statsLoading || isRefetchingStats} stats={stats} />
 
 				{/* Filters */}
 				<LeadFiltersComponent
@@ -206,7 +212,7 @@ function LeadBoardPage() {
 					<LeadList
 						error={leadsError}
 						filters={filters ?? {}}
-						isFetching={isLoadingLeads || isRefetching}
+						isFetching={isLoadingLeads || isRefreshingLeads}
 						isLoading={isLoadingLeads}
 						isMockDataGenerating={generateMockLeads.isPending}
 						isShowUpgradeButton={!_subscription}
