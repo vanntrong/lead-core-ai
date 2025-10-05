@@ -12,7 +12,7 @@ CREATE TABLE proxies (
   status proxy_status DEFAULT 'inactive' NOT NULL,
   avg_response_ms FLOAT,
   error_count_24h INT DEFAULT 0,
-  total_count_24h INT DEFAULT 0
+  total_count_24h INT DEFAULT 0,
   last_checked_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
