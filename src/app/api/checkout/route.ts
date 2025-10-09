@@ -1,20 +1,20 @@
-import pricingPlans from '@/config/pricing-plans.json';
+import pricingPlans from "@/config/pricing-plans.json" with { type: "json" };
 import { stripe } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase/server";
 import { type NextRequest, NextResponse } from "next/server";
-import Stripe from 'stripe';
+import type Stripe from "stripe";
 
 export async function POST(req: NextRequest) {
 	try {
 		const { planId, source, referral, upgrade = false } = await req.json();
 
 		// Check if planId matches any priceId in pricing-plans.json
-		const matchedPlan = pricingPlans.find(plan => plan.priceId === planId);
+		const matchedPlan = pricingPlans.find((plan) => plan.priceId === planId);
 		if (!matchedPlan) {
 			return NextResponse.json({ error: "Invalid plan ID" }, { status: 400 });
 		}
 
-		const isTrialPlan = matchedPlan.tier === 'trial';
+		const isTrialPlan = matchedPlan.tier === "trial";
 
 		// Get current user
 		const supabase = await createClient();
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
 			.eq("status", "active")
 			.single();
 
-		let customerId: string = "";
+		let customerId = "";
 
 		if (existingCustomer) {
 			customerId = existingCustomer.stripe_customer_id;
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
 				name: `${user.user_metadata.first_name} ${user.user_metadata.last_name}`,
 				metadata: {
 					user_id: user.id,
-					referral: referral,
+					referral,
 					app: "leadcoreai",
 				},
 			});
@@ -75,10 +75,10 @@ export async function POST(req: NextRequest) {
 			});
 		}
 
-		let cancelUrl = `${process.env.NEXT_PUBLIC_APP_URL}/checkout?plan=${matchedPlan.tier}`
+		let cancelUrl = `${process.env.NEXT_PUBLIC_APP_URL}/checkout?plan=${matchedPlan.tier}`;
 
 		if (upgrade) {
-			cancelUrl = cancelUrl + "&upgrade=true"
+			cancelUrl += "&upgrade=true";
 		}
 
 		const sessionConfig: Stripe.Checkout.SessionCreateParams = {
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
 				user_id: user.id,
 				source,
 				plan_id: planId,
-				upgrade
+				upgrade,
 			},
 			line_items: [
 				{
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
 					user_id: user.id,
 					source,
 					plan_id: planId,
-					upgrade
+					upgrade,
 				},
 			};
 		}

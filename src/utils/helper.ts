@@ -5,16 +5,16 @@ export const fromSecondsToMilliseconds = (seconds: number) => {
 };
 
 export const formatDuration = (ms?: number | null) => {
-	if (typeof ms !== "number" || isNaN(ms)) return "-";
+	if (typeof ms !== "number" || Number.isNaN(ms)) { return "-"; }
 	return `${(ms / 1000).toFixed(2)}s`;
 };
 
 export const getAdminEmails = (): string[] => {
 	return (process.env.NEXT_PUBLIC_ADMIN_EMAILS || "")
 		.split(",")
-		.map(e => e.trim().toLowerCase())
+		.map((e) => e.trim().toLowerCase())
 		.filter(Boolean);
-}
+};
 
 export const formatDate = (dateString: string) => {
 	return new Date(dateString).toLocaleString("en-US", {

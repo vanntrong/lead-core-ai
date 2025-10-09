@@ -197,10 +197,11 @@ export function Pagination({
 
 								return (
 									<Button
-										className={`h-8 w-8 p-0 text-sm ${currentPage === page
+										className={`h-8 w-8 p-0 text-sm ${
+											currentPage === page
 												? "bg-indigo-600 text-white hover:bg-indigo-700"
 												: "hover:bg-gray-50"
-											}`}
+										}`}
 										disabled={disabled}
 										key={page}
 										onClick={() => handlePageChange(page)}

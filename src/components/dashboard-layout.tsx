@@ -44,8 +44,9 @@ export function DashboardLayout({ children, planName }: DashboardLayoutProps) {
 		return () => document.removeEventListener("keydown", handleKeyDown);
 	}, [toggleSidebarCollapse]);
 
-	const userName = `${user?.user_metadata?.first_name || ""} ${user?.user_metadata?.last_name || ""
-		}`.trim();
+	const userName = `${user?.user_metadata?.first_name || ""} ${
+		user?.user_metadata?.last_name || ""
+	}`.trim();
 
 	return (
 		<div className="flex h-screen bg-gray-50">
@@ -63,7 +64,11 @@ export function DashboardLayout({ children, planName }: DashboardLayoutProps) {
 			{/* Mobile Sidebar */}
 			<Sheet onOpenChange={setSidebarOpen} open={sidebarOpen}>
 				<SheetContent className="w-64 p-0" side="left">
-					<DashboardSidebar userName={userName} isAdmin={user?.is_admin} planName={planName} />
+					<DashboardSidebar
+						userName={userName}
+						isAdmin={user?.is_admin}
+						planName={planName}
+					/>
 				</SheetContent>
 			</Sheet>
 

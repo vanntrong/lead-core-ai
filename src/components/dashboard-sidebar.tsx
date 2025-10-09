@@ -6,7 +6,7 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuTrigger
+	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authService } from "@/services/auth.service";
 import { useRouter } from "@bprogress/next/app";
@@ -20,7 +20,7 @@ import {
 	LogOut,
 	ScrollText,
 	Server,
-	Truck
+	Truck,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -110,7 +110,7 @@ export function DashboardSidebar({
 	onToggleCollapse,
 }: DashboardSidebarProps) {
 	const pathname = usePathname();
-	const router = useRouter()
+	const router = useRouter();
 
 	const handleSignOut = async () => {
 		await authService.signOut();
@@ -119,8 +119,9 @@ export function DashboardSidebar({
 
 	return (
 		<div
-			className={`flex h-screen flex-col border-gray-200 border-r bg-white transition-all duration-300 ${isCollapsed ? "w-16" : "w-64"
-				}`}
+			className={`flex h-screen flex-col border-gray-200 border-r bg-white transition-all duration-300 ${
+				isCollapsed ? "w-16" : "w-64"
+			}`}
 		>
 			{/* Header */}
 			<div className="flex h-16 items-center justify-between border-gray-200 border-b px-4">
@@ -162,70 +163,78 @@ export function DashboardSidebar({
 			{/* Navigation */}
 			<div className="flex-1 overflow-y-auto px-3 py-4">
 				<nav className="space-y-6">
-					{((isAdmin ? navigationAdminSections : navigationSections)).map((section) => (
-						<div key={section.title}>
-							{!isCollapsed && (
-								<h3 className="mb-3 px-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">
-									{section.title}
-								</h3>
-							)}
-							<ul className="space-y-1">
-								{section.items.map((item) => {
-									// Highlight if current path is the item route or a subroute, but avoid /dashboard matching /dashboard/leads
-									let isActive = false;
-									if (pathname === item.href) {
-										isActive = true;
-									} else if (pathname.startsWith(item.href + "/")) {
-										// Only match subroutes if item.href is not /dashboard
-										isActive = item.href !== "/dashboard";
-									}
-									return (
-										<li key={item.name}>
-											<Link
-												className={`group relative flex items-center rounded-xl px-3 py-2.5 font-medium text-sm transition-all hover:bg-gray-50 ${isActive
-													? "bg-indigo-50 text-indigo-700"
-													: "text-gray-700 hover:text-gray-900"
+					{(isAdmin ? navigationAdminSections : navigationSections).map(
+						(section) => (
+							<div key={section.title}>
+								{!isCollapsed && (
+									<h3 className="mb-3 px-3 font-semibold text-gray-500 text-xs uppercase tracking-wide">
+										{section.title}
+									</h3>
+								)}
+								<ul className="space-y-1">
+									{section.items.map((item) => {
+										// Highlight if current path is the item route or a subroute, but avoid /dashboard matching /dashboard/leads
+										let isActive = false;
+										if (pathname === item.href) {
+											isActive = true;
+										} else if (pathname.startsWith(`${item.href}/`)) {
+											// Only match subroutes if item.href is not /dashboard
+											isActive = item.href !== "/dashboard";
+										}
+										return (
+											<li key={item.name}>
+												<Link
+													className={`group relative flex items-center rounded-xl px-3 py-2.5 font-medium text-sm transition-all hover:bg-gray-50 ${
+														isActive
+															? "bg-indigo-50 text-indigo-700"
+															: "text-gray-700 hover:text-gray-900"
 													} ${isCollapsed ? "justify-center" : ""}`}
-												href={item.href}
-												title={
-													isCollapsed
-														? `${item.name}${item.description ? ` - ${item.description}` : ""}`
-														: undefined
-												}
-											>
-												<item.icon
-													className={`h-5 w-5 flex-shrink-0 ${isActive
-														? "text-indigo-600"
-														: "text-gray-400 group-hover:text-gray-500"
+													href={item.href}
+													title={
+														isCollapsed
+															? `${item.name}${item.description ? ` - ${item.description}` : ""}`
+															: undefined
+													}
+												>
+													<item.icon
+														className={`h-5 w-5 flex-shrink-0 ${
+															isActive
+																? "text-indigo-600"
+																: "text-gray-400 group-hover:text-gray-500"
 														} ${isCollapsed ? "" : "mr-3"}`}
-												/>
-												{!isCollapsed && (
-													<>
-														<span className="flex-1 truncate">{item.name}</span>
-														{item.badge && (
-															<Badge
-																className="ml-2 h-5 px-2 text-xs"
-																variant={
-																	item.badge === "New" ? "default" : "secondary"
-																}
-															>
-																{item.badge}
-															</Badge>
-														)}
-													</>
-												)}
-												{isCollapsed && item.badge && (
-													<div className="-right-1 -top-1 absolute flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 text-white text-xs">
-														{item.badge === "New" ? "!" : item.badge}
-													</div>
-												)}
-											</Link>
-										</li>
-									);
-								})}
-							</ul>
-						</div>
-					))}
+													/>
+													{!isCollapsed && (
+														<>
+															<span className="flex-1 truncate">
+																{item.name}
+															</span>
+															{item.badge && (
+																<Badge
+																	className="ml-2 h-5 px-2 text-xs"
+																	variant={
+																		item.badge === "New"
+																			? "default"
+																			: "secondary"
+																	}
+																>
+																	{item.badge}
+																</Badge>
+															)}
+														</>
+													)}
+													{isCollapsed && item.badge && (
+														<div className="-right-1 -top-1 absolute flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 text-white text-xs">
+															{item.badge === "New" ? "!" : item.badge}
+														</div>
+													)}
+												</Link>
+											</li>
+										);
+									})}
+								</ul>
+							</div>
+						)
+					)}
 				</nav>
 			</div>
 

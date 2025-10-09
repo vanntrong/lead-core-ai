@@ -9,7 +9,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { LeadFilters, LeadStatus } from "@/types/lead";
+import type { LeadFilters, LeadStatus } from "@/types/lead";
 import { ArrowDown, ArrowUp, Filter, Search, X } from "lucide-react";
 import { useState } from "react";
 
@@ -78,7 +78,7 @@ export function LeadFiltersComponent({
 
 			{/* Always visible: Search and Status */}
 			<div className="flex items-center justify-between gap-3">
-				<div className="flex-1 grid grid-cols-1 gap-3 sm:grid-cols-4 2xl:grid-cols-4">
+				<div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-4 2xl:grid-cols-4">
 					{/* Search */}
 					<div className="relative">
 						<Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-gray-400" />
@@ -102,7 +102,9 @@ export function LeadFiltersComponent({
 						}
 						value={
 							typeof filters.flagged === "boolean"
-								? filters.flagged ? "true" : "false"
+								? filters.flagged
+									? "true"
+									: "false"
 								: "all"
 						}
 					>
@@ -126,7 +128,7 @@ export function LeadFiltersComponent({
 						value={
 							Array.isArray(filters.status)
 								? filters.status[0] || "all"
-								: filters.status ?? "all"
+								: (filters.status ?? "all")
 						}
 					>
 						<SelectTrigger className="h-9">
@@ -151,7 +153,7 @@ export function LeadFiltersComponent({
 						value={
 							Array.isArray(filters.verify_email_status)
 								? filters.verify_email_status[0] || "all"
-								: filters.verify_email_status ?? "all"
+								: (filters.verify_email_status ?? "all")
 						}
 					>
 						<SelectTrigger className="h-9">

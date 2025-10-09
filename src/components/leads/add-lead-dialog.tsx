@@ -7,7 +7,7 @@ import {
 	DialogClose,
 	DialogContent,
 	DialogHeader,
-	DialogTitle
+	DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,7 +34,11 @@ interface AddLeadDialogProps {
 	onLeadAdded?: () => void;
 }
 
-export function AddLeadDialog({ isOpen, onClose, onLeadAdded }: AddLeadDialogProps) {
+export function AddLeadDialog({
+	isOpen,
+	onClose,
+	onLeadAdded,
+}: AddLeadDialogProps) {
 	const {
 		register,
 		handleSubmit,
@@ -52,13 +56,17 @@ export function AddLeadDialog({ isOpen, onClose, onLeadAdded }: AddLeadDialogPro
 	const [errorUpgrade, setErrorUpgrade] = useState<string | null>(null);
 
 	// Retry state: list of attempts with status and error
-	type RetryStatus = 'pending' | 'success' | 'error' | 'waiting';
-	const [retryAttempts, setRetryAttempts] = React.useState<Array<{ attempt: number; status: RetryStatus; error?: string }>>([]);
+	type RetryStatus = "pending" | "success" | "error" | "waiting";
+	const [retryAttempts, setRetryAttempts] = React.useState<
+		Array<{ attempt: number; status: RetryStatus; error?: string }>
+	>([]);
 
 	const sourceSelected = watch("source");
 
 	// Disable source if no active subscription or no sources available
-	const isSourceDisabled = sourceSelected && !activeSubscription?.usage_limits?.sources?.includes(sourceSelected);
+	const isSourceDisabled =
+		sourceSelected &&
+		!activeSubscription?.usage_limits?.sources?.includes(sourceSelected);
 
 	const handleClose = () => {
 		onClose();
@@ -70,15 +78,22 @@ export function AddLeadDialog({ isOpen, onClose, onLeadAdded }: AddLeadDialogPro
 		setRetryAttempts([]);
 
 		let lastError: string | null = null;
-		let lastErrorType: string | undefined = undefined;
+		let lastErrorType: string | undefined ;
 		for (let attempt = 1; attempt <= 3; attempt++) {
-			setRetryAttempts((prev) => [...prev, { attempt, status: 'pending' }]);
+			setRetryAttempts((prev) => [...prev, { attempt, status: "pending" }]);
 			try {
 				const result = await createLeadMutation.mutateAsync(data);
 				if (!result.success) {
-					throw new Error(result.message || "Something went wrong during lead creation. Please try again.");
+					throw new Error(
+						result.message ||
+							"Something went wrong during lead creation. Please try again."
+					);
 				}
-				setRetryAttempts((prev) => prev.map((r) => r.attempt === attempt ? { ...r, status: 'success' } : r));
+				setRetryAttempts((prev) =>
+					prev.map((r) =>
+						r.attempt === attempt ? { ...r, status: "success" } : r
+					)
+				);
 				toast.success("Lead added successfully!");
 				onLeadAdded?.();
 				onClose();
@@ -92,8 +107,10 @@ export function AddLeadDialog({ isOpen, onClose, onLeadAdded }: AddLeadDialogPro
 					break;
 				}
 				// Detect errorType and message from '[errorType] message' format
-				let errorMessage = error?.message || "Something went wrong during lead creation. Please try again.";
-				let detectedType: string | undefined = undefined;
+				let errorMessage =
+					error?.message ||
+					"Something went wrong during lead creation. Please try again.";
+				let detectedType: string | undefined ;
 				const match = errorMessage.match(/^\[(.+?)\]\s*(.*)$/);
 				if (match) {
 					detectedType = match[1];
@@ -101,12 +118,25 @@ export function AddLeadDialog({ isOpen, onClose, onLeadAdded }: AddLeadDialogPro
 				}
 				lastError = errorMessage;
 				lastErrorType = detectedType;
-				setRetryAttempts((prev) => prev.map((r) => r.attempt === attempt ? { ...r, status: 'error', error: lastError ?? undefined } : r));
+				setRetryAttempts((prev) =>
+					prev.map((r) =>
+						r.attempt === attempt
+							? { ...r, status: "error", error: lastError ?? undefined }
+							: r
+					)
+				);
 				// Only retry if errorType is not 'validation'
-				if (attempt < 3 && lastErrorType !== 'validation') {
-					setRetryAttempts((prev) => [...prev, { attempt: attempt + 1, status: 'waiting' }]);
-					await new Promise(resolve => setTimeout(resolve, 2000));
-					setRetryAttempts((prev) => prev.filter((r) => !(r.attempt === attempt + 1 && r.status === 'waiting')));
+				if (attempt < 3 && lastErrorType !== "validation") {
+					setRetryAttempts((prev) => [
+						...prev,
+						{ attempt: attempt + 1, status: "waiting" },
+					]);
+					await new Promise((resolve) => setTimeout(resolve, 2000));
+					setRetryAttempts((prev) =>
+						prev.filter(
+							(r) => !(r.attempt === attempt + 1 && r.status === "waiting")
+						)
+					);
 				} else {
 					break;
 				}
@@ -115,7 +145,11 @@ export function AddLeadDialog({ isOpen, onClose, onLeadAdded }: AddLeadDialogPro
 
 		// If all attempts failed, show final error message
 		if (lastError) {
-			setSubmitError(lastErrorType === "validation" ? lastError : "Lead creation failed after 3 attempts. Please check your URL and try again.");
+			setSubmitError(
+				lastErrorType === "validation"
+					? lastError
+					: "Lead creation failed after 3 attempts. Please check your URL and try again."
+			);
 		}
 
 		setIsCreatingLead(false);
@@ -127,12 +161,15 @@ export function AddLeadDialog({ isOpen, onClose, onLeadAdded }: AddLeadDialogPro
 			setSubmitError(null);
 			setRetryAttempts([]);
 		}
-	}, [isOpen]);
+	}, [isOpen, reset]);
 
 	return (
 		<>
 			<Dialog open={isOpen} onOpenChange={handleClose}>
-				<DialogContent className="max-w-md mx-auto rounded-lg border-gray-200 bg-white shadow-2xl" onInteractOutside={e => e.preventDefault()}>
+				<DialogContent
+					className="mx-auto max-w-md rounded-lg border-gray-200 bg-white shadow-2xl"
+					onInteractOutside={(e) => e.preventDefault()}
+				>
 					<DialogHeader>
 						<DialogTitle className="flex items-center space-x-3 text-xl">
 							<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100">
@@ -162,36 +199,49 @@ export function AddLeadDialog({ isOpen, onClose, onLeadAdded }: AddLeadDialogPro
 						{/* Retry Progress Display */}
 						{retryAttempts.length > 1 && (
 							<div className="mb-4">
-								<div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-									<h4 className="text-sm font-medium text-blue-800 mb-2">Creation Progress</h4>
+								<div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
+									<h4 className="mb-2 font-medium text-blue-800 text-sm">
+										Creation Progress
+									</h4>
 									<div className="space-y-2">
 										{retryAttempts.map((attempt) => (
-											<div key={attempt.attempt + '-' + attempt.status} className="flex items-center space-x-2 text-sm">
-												<span className="text-blue-700">Attempt {attempt.attempt}:</span>
-												{attempt.status === 'pending' && (
+											<div
+												key={`${attempt.attempt}-${attempt.status}`}
+												className="flex items-center space-x-2 text-sm"
+											>
+												<span className="text-blue-700">
+													Attempt {attempt.attempt}:
+												</span>
+												{attempt.status === "pending" && (
 													<>
 														<Loader2 className="h-3 w-3 animate-spin text-blue-600" />
-														<span className="text-blue-600">In progress...</span>
+														<span className="text-blue-600">
+															In progress...
+														</span>
 													</>
 												)}
-												{attempt.status === 'waiting' && (
+												{attempt.status === "waiting" && (
 													<>
 														<Loader2 className="h-3 w-3 animate-spin text-yellow-500" />
-														<span className="text-yellow-700">Waiting 2s before retry...</span>
+														<span className="text-yellow-700">
+															Waiting 2s before retry...
+														</span>
 													</>
 												)}
-												{attempt.status === 'success' && (
+												{attempt.status === "success" && (
 													<>
 														<span className="text-green-600">✓</span>
 														<span className="text-green-600">Success</span>
 													</>
 												)}
-												{attempt.status === 'error' && (
+												{attempt.status === "error" && (
 													<>
 														<span className="text-red-600">✗</span>
 														<span className="text-red-600">Failed</span>
 														{attempt.error && (
-															<span className="text-red-500 text-xs">({attempt.error})</span>
+															<span className="text-red-500 text-xs">
+																({attempt.error})
+															</span>
 														)}
 													</>
 												)}
@@ -204,7 +254,10 @@ export function AddLeadDialog({ isOpen, onClose, onLeadAdded }: AddLeadDialogPro
 						<form className="space-y-6" onSubmit={handleSubmit(submitLead)}>
 							{/* URL Field */}
 							<div>
-								<Label className="font-semibold text-gray-700 text-sm" htmlFor="url">
+								<Label
+									className="font-semibold text-gray-700 text-sm"
+									htmlFor="url"
+								>
 									Lead URL *
 								</Label>
 								<Input
@@ -223,11 +276,18 @@ export function AddLeadDialog({ isOpen, onClose, onLeadAdded }: AddLeadDialogPro
 
 							{/* Source Field */}
 							<div>
-								<Label className="font-semibold text-gray-700 text-sm" htmlFor="source">
+								<Label
+									className="font-semibold text-gray-700 text-sm"
+									htmlFor="source"
+								>
 									Source
 								</Label>
 								<Select
-									onValueChange={(value) => setValue("source", value as unknown as LeadSource, { shouldValidate: true })}
+									onValueChange={(value) =>
+										setValue("source", value as unknown as LeadSource, {
+											shouldValidate: true,
+										})
+									}
 									{...register("source", { required: "Source is required" })}
 								>
 									<SelectTrigger className="mt-2">
@@ -246,49 +306,58 @@ export function AddLeadDialog({ isOpen, onClose, onLeadAdded }: AddLeadDialogPro
 									</p>
 								)}
 							</div>
-							<div className="flex space-x-3 border-gray-200 border-t pt-6 mt-2">
+							<div className="mt-2 flex space-x-3 border-gray-200 border-t pt-6">
 								<DialogClose asChild>
 									<Button
 										className="flex-1"
-										disabled={isCreatingLead || createLeadMutation.isPending || isSubmitting}
+										disabled={
+											isCreatingLead ||
+											createLeadMutation.isPending ||
+											isSubmitting
+										}
 										type="button"
 										variant="outline"
 									>
 										Cancel
 									</Button>
 								</DialogClose>
-								{
-									(isSourceDisabled) ? (
-										<UpgradeButton
-											className="flex-1"
-											currentPlan={activeSubscription?.plan_tier ?? "trial"}
-											title="Upgrade to add lead"
-										/>
-									) : (
-										<Button
-											className="flex-1 bg-indigo-600 hover:bg-indigo-700"
-											disabled={isCreatingLead || createLeadMutation.isPending || isSubmitting}
-											type="submit"
-										>
-											{(isCreatingLead || createLeadMutation.isPending || isSubmitting) ? (
-												<>
-													<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-													Creating Lead...
-												</>
-											) : (
-												<>
-													Add Lead
-												</>
-											)}
-										</Button>
-									)
-								}
+								{isSourceDisabled ? (
+									<UpgradeButton
+										className="flex-1"
+										currentPlan={activeSubscription?.plan_tier ?? "trial"}
+										title="Upgrade to add lead"
+									/>
+								) : (
+									<Button
+										className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+										disabled={
+											isCreatingLead ||
+											createLeadMutation.isPending ||
+											isSubmitting
+										}
+										type="submit"
+									>
+										{isCreatingLead ||
+										createLeadMutation.isPending ||
+										isSubmitting ? (
+											<>
+												<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+												Creating Lead...
+											</>
+										) : (
+											"Add Lead"
+										)}
+									</Button>
+								)}
 							</div>
 						</form>
 					</div>
 				</DialogContent>
 			</Dialog>
-			<ErrorLimitMessage message={errorUpgrade} onClose={() => setErrorUpgrade(null)} />
+			<ErrorLimitMessage
+				message={errorUpgrade}
+				onClose={() => setErrorUpgrade(null)}
+			/>
 		</>
 	);
 }

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase";
-import { User } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
 
 export class AuthService {
 	private readonly supabase = createClient();
@@ -23,7 +23,6 @@ export class AuthService {
 			lastName: string;
 		}
 	) {
-
 		const { data, error } = await this.supabase.auth.signUp({
 			email,
 			password,
@@ -32,10 +31,13 @@ export class AuthService {
 					first_name: profile.firstName,
 					last_name: profile.lastName,
 				},
-				emailRedirectTo: typeof window !== "undefined" ? `${window.location.origin}/auth/confirm` : undefined,
+				emailRedirectTo:
+					typeof window !== "undefined"
+						? `${window.location.origin}/auth/confirm`
+						: undefined,
 			},
 		});
-		if (error) throw error;
+		if (error) { throw error; }
 		return data;
 	}
 
@@ -60,9 +62,12 @@ export class AuthService {
 
 	async forgotPassword(email: string) {
 		const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
-			redirectTo: typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined,
+			redirectTo:
+				typeof window !== "undefined"
+					? `${window.location.origin}/reset-password`
+					: undefined,
 		});
-		if (error) throw error;
+		if (error) { throw error; }
 		return true;
 	}
 
@@ -70,7 +75,7 @@ export class AuthService {
 		const { error } = await this.supabase.auth.updateUser({
 			password: newPassword,
 		});
-		if (error) throw error;
+		if (error) { throw error; }
 		return true;
 	}
 }

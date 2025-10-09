@@ -11,8 +11,10 @@ export const useCurrentUser = () => {
 			const user = await authService.getCurrentUser();
 			return {
 				...user,
-				is_admin: user?.email ? getAdminEmails().includes(user.email.toLowerCase()) : false
-			}
+				is_admin: user?.email
+					? getAdminEmails().includes(user.email.toLowerCase())
+					: false,
+			};
 		},
 		staleTime: 60 * 60 * 1000, // 1 hour
 	});
@@ -56,7 +58,6 @@ export const useSignIn = () => {
 		},
 	});
 };
-
 
 export const useSignOut = () => {
 	const queryClient = useQueryClient();

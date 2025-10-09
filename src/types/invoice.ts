@@ -8,18 +8,17 @@ export type InvoiceRow = Database["public"]["Tables"]["invoices"]["Row"];
 export type InvoiceInsert = Database["public"]["Tables"]["invoices"]["Insert"];
 export type InvoiceUpdate = Database["public"]["Tables"]["invoices"]["Update"];
 
-export interface Invoice extends InvoiceRow {
-}
+export interface Invoice extends InvoiceRow {}
 
 export interface PaginatedInvoiceResponse {
-  data: Invoice[];
-  totalCount: number;
-  currentPage: number;
-  totalPages: number;
-  itemsPerPage: number;
+	data: Invoice[];
+	totalCount: number;
+	currentPage: number;
+	totalPages: number;
+	itemsPerPage: number;
 }
 
 export interface InvoiceFilters {
-  page?: number;
-  limit?: number;
+	page?: number;
+	limit?: number;
 }

@@ -8,11 +8,15 @@ import { LeadStatsCards } from "@/components/leads/lead-stats";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { usePagination } from "@/components/ui/pagination";
-import pricingPlans from "@/config/pricing-plans.json";
-import { useGenerateMockLeads, useLeadsPaginated, useLeadStats } from "@/hooks/use-leads";
+import pricingPlans from "@/config/pricing-plans.json" with { type: "json" };
+import {
+	useGenerateMockLeads,
+	useLeadsPaginated,
+	useLeadStats,
+} from "@/hooks/use-leads";
 import { useUserActiveSubscription } from "@/hooks/use-subscription";
 import { cn } from "@/lib/utils";
-import { LeadFilters } from "@/types/lead";
+import type { LeadFilters } from "@/types/lead";
 import { useRouter } from "@bprogress/next/app";
 import { Crown, Plus, RefreshCw } from "lucide-react";
 import Link from "next/link";
@@ -30,7 +34,11 @@ export default function Page() {
 function LeadBoardPage() {
 	const [filters, setFilters] = useState<LeadFilters>();
 	const [isAddLeadDialogOpen, setIsAddLeadDialogOpen] = useState(false);
-	const { data: activeSubscription, isLoading, error } = useUserActiveSubscription();
+	const {
+		data: activeSubscription,
+		isLoading,
+		error,
+	} = useUserActiveSubscription();
 
 	const {
 		currentPage,
@@ -81,7 +89,7 @@ function LeadBoardPage() {
 		// Refetch leads and stats in parallel
 		await Promise.all([
 			refetchLeads().then(() => setIsRefreshingLeads(false)),
-			refetchStats().then(() => setIsRefetchingStats(false))
+			refetchStats().then(() => setIsRefetchingStats(false)),
 		]);
 		// Wait for both refetches to complete
 		toast.success("Lead board refreshed");
@@ -91,7 +99,7 @@ function LeadBoardPage() {
 		try {
 			const result = await generateMockLeads.mutateAsync();
 			if (result.success) {
-				toast.success(`Generated 2 mock leads`);
+				toast.success("Generated 2 mock leads");
 			} else {
 				toast.error(result.message);
 			}
@@ -128,10 +136,7 @@ function LeadBoardPage() {
 	const _subscription = activeSubscription;
 	// Map subscription to plan from pricingPlans
 	const mappedPlan = _subscription
-		? pricingPlans.find(
-			(plan) =>
-				plan.tier === _subscription.plan_tier
-		)
+		? pricingPlans.find((plan) => plan.tier === _subscription.plan_tier)
 		: null;
 
 	return (
@@ -140,7 +145,9 @@ function LeadBoardPage() {
 				<div className="mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="flex h-16 items-center justify-between">
 						<div className="flex items-center space-x-4">
-							<h1 className="font-bold text-gray-900 text-xl">Lead Management</h1>
+							<h1 className="font-bold text-gray-900 text-xl">
+								Lead Management
+							</h1>
 							{_subscription && (
 								<Badge className="border-indigo-200 bg-indigo-50 text-indigo-700">
 									{mappedPlan?.name}
@@ -150,14 +157,17 @@ function LeadBoardPage() {
 						<div className="flex items-center space-x-3">
 							<Button
 								className="h-9"
-								disabled={isLoadingLeads || isRefreshingLeads || isRefetchingStats}
+								disabled={
+									isLoadingLeads || isRefreshingLeads || isRefetchingStats
+								}
 								onClick={handleRefresh}
 								size="sm"
 								variant="outline"
 							>
 								<RefreshCw
 									className={cn("mr-2 h-4 w-4", {
-										"animate-spin": isLoadingLeads || isRefreshingLeads || isRefetchingStats,
+										"animate-spin":
+											isLoadingLeads || isRefreshingLeads || isRefetchingStats,
 									})}
 								/>
 								Refresh
@@ -174,7 +184,7 @@ function LeadBoardPage() {
 							) : (
 								<Button
 									className="h-9 from-indigo-600 to-purple-600"
-									onClick={() => router.push('/pricing')}
+									onClick={() => router.push("/pricing")}
 									size="sm"
 								>
 									<Crown className="mr-2 h-4 w-4 text-yellow-300" />
@@ -197,7 +207,10 @@ function LeadBoardPage() {
 				</div>
 
 				{/* Stats Cards */}
-				<LeadStatsCards isLoading={statsLoading || isRefetchingStats} stats={stats} />
+				<LeadStatsCards
+					isLoading={statsLoading || isRefetchingStats}
+					stats={stats}
+				/>
 
 				{/* Filters */}
 				<LeadFiltersComponent
@@ -228,8 +241,8 @@ function LeadBoardPage() {
 					/>
 				</div>
 
-				<footer className="mt-12 border-t border-gray-200 pt-6">
-					<nav className="mb-4 flex flex-wrap justify-center gap-4 text-gray-600 text-sm font-medium">
+				<footer className="mt-12 border-gray-200 border-t pt-6">
+					<nav className="mb-4 flex flex-wrap justify-center gap-4 font-medium text-gray-600 text-sm">
 						<Link href="/">Product</Link>
 						<Link href="/pricing">Pricing</Link>
 						<Link href="/legal">Disclaimer</Link>

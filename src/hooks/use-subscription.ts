@@ -1,7 +1,15 @@
-
 import { TWO_MINUTES } from "@/constants";
-import { cancelSubscriptionAction, getActiveSubscriptionAction, getSubscriptionsAction } from "@/lib/actions/subscription.actions";
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+	cancelSubscriptionAction,
+	getActiveSubscriptionAction,
+	getSubscriptionsAction,
+} from "@/lib/actions/subscription.actions";
+import {
+	keepPreviousData,
+	useMutation,
+	useQuery,
+	useQueryClient,
+} from "@tanstack/react-query";
 
 /**
  * Hook to get user's active subscription
@@ -28,7 +36,6 @@ export function useUserActiveSubscription() {
 	});
 }
 
-
 /**
  * Hook to cancel user's active subscription
  */
@@ -42,8 +49,12 @@ export function useCancelSubscription() {
 		onSuccess: (result) => {
 			if (result.success) {
 				// Invalidate and reset active subscription query
-				queryClient.invalidateQueries({ queryKey: ["subscription", "user", "active"] });
-				queryClient.resetQueries({ queryKey: ["subscription", "user", "active"] });
+				queryClient.invalidateQueries({
+					queryKey: ["subscription", "user", "active"],
+				});
+				queryClient.resetQueries({
+					queryKey: ["subscription", "user", "active"],
+				});
 			}
 		},
 		onError: (error) => {
@@ -51,4 +62,3 @@ export function useCancelSubscription() {
 		},
 	});
 }
-
