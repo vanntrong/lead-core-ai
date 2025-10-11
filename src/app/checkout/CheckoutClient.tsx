@@ -1,15 +1,4 @@
 "use client";
-import Footer from "@/components/footer";
-import RewardfulScript from "@/components/rewardfull-script";
-import { Button } from "@/components/ui/button";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import pricingPlans from "@/config/pricing-plans.json" with { type: "json" };
 import { useRouter } from "@bprogress/next/app";
 import {
 	ArrowLeft,
@@ -26,12 +15,26 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import Footer from "@/components/footer";
+import RewardfulScript from "@/components/rewardfull-script";
+import { Button } from "@/components/ui/button";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import pricingPlans from "@/config/pricing-plans";
 
 const SOURCES = [
 	{ value: "woocommerce", label: "WooCommerce" },
 	{ value: "shopify", label: "Shopify" },
 	{ value: "etsy", label: "Etsy" },
 	{ value: "g2", label: "G2" },
+	{ value: "google_places", label: "Google Places" },
+	{ value: "npi_registry", label: "NPI Registry" },
+	{ value: "fmcsa", label: "FMCSA" },
 ];
 
 export default function CheckoutPageClient() {
@@ -214,8 +217,8 @@ export default function CheckoutPageClient() {
 							<ul className="space-y-3">
 								{plan.features.map((feature) => (
 									<li
-										key={feature}
 										className={`flex items-start space-x-3 ${feature.startsWith("Empty") && "invisible"}`}
+										key={feature}
 									>
 										<div className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-green-100">
 											<Check className="h-3 w-3 text-green-600" />
@@ -241,7 +244,7 @@ export default function CheckoutPageClient() {
 									Select your data source{" "}
 									<span className="ml-1 text-red-500">*</span>
 								</label>
-								<Select value={source} onValueChange={setSource}>
+								<Select onValueChange={setSource} value={source}>
 									<SelectTrigger className="w-full">
 										<SelectValue placeholder="Choose a source..." />
 									</SelectTrigger>

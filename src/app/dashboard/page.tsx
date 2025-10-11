@@ -1,13 +1,5 @@
 "use client";
 
-import { DashboardLayout } from "@/components/dashboard-layout";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import pricingPlans from "@/config/pricing-plans.json" with { type: "json" };
-import { useLeadStats } from "@/hooks/use-leads";
-import { useUserActiveSubscription } from "@/hooks/use-subscription";
-import { cn } from "@/lib/utils";
 import {
 	BarChart3,
 	Brain,
@@ -17,6 +9,14 @@ import {
 	RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
+import { DashboardLayout } from "@/components/dashboard-layout";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import pricingPlans from "@/config/pricing-plans";
+import { useLeadStats } from "@/hooks/use-leads";
+import { useUserActiveSubscription } from "@/hooks/use-subscription";
+import { cn } from "@/lib/utils";
 
 export default function Dashboard() {
 	const {
@@ -30,6 +30,7 @@ export default function Dashboard() {
 		isFetching: statsFetching,
 		refetch: refetchStats,
 	} = useLeadStats();
+
 
 	if (isLoading) {
 		return (
@@ -169,90 +170,90 @@ export default function Dashboard() {
 				<div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
 					{statsLoading || statsFetching
 						? // Skeleton loading state
-							[...new Array(4)].map((_, i) => (
-								<div
-									key={i}
-									className="relative overflow-hidden rounded-lg border border-gray-200 bg-white p-5"
-								>
-									<div className="mb-3 flex items-start justify-between">
-										<Skeleton className="h-10 w-10 rounded-lg" />
-										<Skeleton className="h-4 w-16" />
-									</div>
-									<Skeleton className="mb-1 h-8 w-20" />
-									<Skeleton className="h-4 w-24" />
+						[...new Array(4)].map((_, i) => (
+							<div
+								className="relative overflow-hidden rounded-lg border border-gray-200 bg-white p-5"
+								key={i}
+							>
+								<div className="mb-3 flex items-start justify-between">
+									<Skeleton className="h-10 w-10 rounded-lg" />
+									<Skeleton className="h-4 w-16" />
 								</div>
-							))
+								<Skeleton className="mb-1 h-8 w-20" />
+								<Skeleton className="h-4 w-24" />
+							</div>
+						))
 						: // Actual stats content
-							[
-								{
-									icon: Globe,
-									label: "LEADS",
-									value: stats?.total || 0,
-									title: "Total Leads",
-									colors: "from-indigo-500 to-purple-600",
-									hoverColor: "text-indigo-700",
-									bgGradient: "from-indigo-50 to-purple-50",
-								},
-								{
-									icon: Brain,
-									label: "AI",
-									value: stats?.enriched || 0,
-									title: "AI Enriched",
-									colors: "from-emerald-500 to-green-600",
-									hoverColor: "text-emerald-700",
-									bgGradient: "from-emerald-50 to-green-50",
-								},
-								{
-									icon: CheckCircle2,
-									label: "VERIFIED",
-									value: stats?.verified_email || 0,
-									title: "Verified Emails",
-									colors: "from-purple-500 to-violet-600",
-									hoverColor: "text-purple-700",
-									bgGradient: "from-purple-50 to-violet-50",
-								},
-								{
-									icon: Package,
-									label: "QUALITY",
-									value: stats?.score_70_plus || 0,
-									title: "High Quality (≥70)",
-									colors: "from-orange-500 to-amber-600",
-									hoverColor: "text-orange-700",
-									bgGradient: "from-orange-50 to-amber-50",
-								},
-							].map((stat, i) => {
-								const Icon = stat.icon;
-								return (
+						[
+							{
+								icon: Globe,
+								label: "LEADS",
+								value: stats?.total || 0,
+								title: "Total Leads",
+								colors: "from-indigo-500 to-purple-600",
+								hoverColor: "text-indigo-700",
+								bgGradient: "from-indigo-50 to-purple-50",
+							},
+							{
+								icon: Brain,
+								label: "AI",
+								value: stats?.enriched || 0,
+								title: "AI Enriched",
+								colors: "from-emerald-500 to-green-600",
+								hoverColor: "text-emerald-700",
+								bgGradient: "from-emerald-50 to-green-50",
+							},
+							{
+								icon: CheckCircle2,
+								label: "VERIFIED",
+								value: stats?.verified_email || 0,
+								title: "Verified Emails",
+								colors: "from-purple-500 to-violet-600",
+								hoverColor: "text-purple-700",
+								bgGradient: "from-purple-50 to-violet-50",
+							},
+							{
+								icon: Package,
+								label: "QUALITY",
+								value: stats?.score_70_plus || 0,
+								title: "High Quality (≥70)",
+								colors: "from-orange-500 to-amber-600",
+								hoverColor: "text-orange-700",
+								bgGradient: "from-orange-50 to-amber-50",
+							},
+						].map((stat, i) => {
+							const Icon = stat.icon;
+							return (
+								<div
+									className="group hover:-translate-y-0.5 relative overflow-hidden rounded-lg border border-gray-200 bg-white p-5 transition-all duration-300 hover:shadow-md"
+									key={i}
+								>
 									<div
-										key={i}
-										className="group hover:-translate-y-0.5 relative overflow-hidden rounded-lg border border-gray-200 bg-white p-5 transition-all duration-300 hover:shadow-md"
-									>
-										<div
-											className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} opacity-0 transition-opacity duration-300 group-hover:opacity-100`}
-										/>
-										<div className="relative">
-											<div className="mb-3 flex items-start justify-between">
-												<div
-													className={`flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br ${stat.colors} shadow-sm`}
-												>
-													<Icon className="h-5 w-5 text-white" />
-												</div>
-												<div className="font-medium text-gray-500 text-xs uppercase tracking-wide">
-													{stat.label}
-												</div>
-											</div>
+										className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} opacity-0 transition-opacity duration-300 group-hover:opacity-100`}
+									/>
+									<div className="relative">
+										<div className="mb-3 flex items-start justify-between">
 											<div
-												className={`mb-1 font-bold text-2xl text-gray-900 group-hover:${stat.hoverColor} transition-colors duration-300`}
+												className={`flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br ${stat.colors} shadow-sm`}
 											>
-												{stat.value}
+												<Icon className="h-5 w-5 text-white" />
 											</div>
-											<p className="font-medium text-gray-600 text-sm">
-												{stat.title}
-											</p>
+											<div className="font-medium text-gray-500 text-xs uppercase tracking-wide">
+												{stat.label}
+											</div>
 										</div>
+										<div
+											className={`mb-1 font-bold text-2xl text-gray-900 group-hover:${stat.hoverColor} transition-colors duration-300`}
+										>
+											{stat.value}
+										</div>
+										<p className="font-medium text-gray-600 text-sm">
+											{stat.title}
+										</p>
 									</div>
-								);
-							})}
+								</div>
+							);
+						})}
 				</div>
 
 				{/* Lead Source Breakdown - Enhanced SaaS UI */}
@@ -275,8 +276,8 @@ export default function Dashboard() {
 							// Skeleton for source breakdown
 							[...new Array(4)].map((_, i) => (
 								<div
-									key={i}
 									className="relative overflow-hidden rounded-xl border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 p-5"
+									key={i}
 								>
 									<div className="flex items-center gap-4">
 										<Skeleton className="h-12 w-12 rounded-xl" />
@@ -296,8 +297,8 @@ export default function Dashboard() {
 							<>
 								{(stats?.source_breakdown ?? []).map((item) => (
 									<div
-										key={item.source}
 										className="group hover:-translate-y-1 relative overflow-hidden rounded-xl border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 p-5 transition-all duration-300 hover:border-indigo-200 hover:shadow-lg"
+										key={item.source}
 									>
 										<div className="absolute inset-0 bg-gradient-to-br from-white to-gray-50 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 										<div className="relative flex items-center gap-4">

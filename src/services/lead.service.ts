@@ -225,7 +225,7 @@ export class LeadService {
 			typeof activeSubscription.usage_limits.max_leads === "number" &&
 			activeSubscription.usage_limits.max_leads !== null &&
 			activeSubscription.usage_limits.current_leads >=
-				activeSubscription.usage_limits.max_leads
+			activeSubscription.usage_limits.max_leads
 		) {
 			throw new Error("Lead limit exceeded");
 		}
@@ -240,7 +240,7 @@ export class LeadService {
 
 		// Track scraping operation
 		const startTime = new Date();
-		let scrapInfo;
+		let scrapInfo: any;
 		let scrapingSuccess = false;
 		let scrapingError: string | undefined;
 

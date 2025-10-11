@@ -1,14 +1,5 @@
 "use client";
 
-import { DashboardLayout } from "@/components/dashboard-layout";
-import { ExportLeadDialog } from "@/components/leads/export-lead-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import pricingPlans from "@/config/pricing-plans.json" with { type: "json" };
-import { useLead } from "@/hooks/use-leads";
-import { useUserActiveSubscription } from "@/hooks/use-subscription";
-import { cn } from "@/lib/utils";
-import { leadScoringService } from "@/services/lead-scoring.service";
 import { useRouter } from "@bprogress/next/app";
 import {
 	ArrowLeft,
@@ -24,12 +15,22 @@ import {
 	Info,
 	Link as LinkIcon,
 	Mail,
+	Phone,
 	RefreshCw,
 	TrendingUp,
 	XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { Suspense, use as usePromise, useState } from "react";
+import { DashboardLayout } from "@/components/dashboard-layout";
+import { ExportLeadDialog } from "@/components/leads/export-lead-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import pricingPlans from "@/config/pricing-plans";
+import { useLead } from "@/hooks/use-leads";
+import { useUserActiveSubscription } from "@/hooks/use-subscription";
+import { cn } from "@/lib/utils";
+import { leadScoringService } from "@/services/lead-scoring.service";
 
 const SOURCE_MAP: Record<string, { label: string; badge: string }> = {
 	shopify: {
@@ -48,6 +49,18 @@ const SOURCE_MAP: Record<string, { label: string; badge: string }> = {
 		label: "WooCommerce",
 		badge: "bg-indigo-100 text-indigo-800 border-indigo-200",
 	},
+	google_places: {
+		label: "Google Places",
+		badge: "bg-blue-100 text-blue-800 border-blue-200", // Google Places: blue
+	},
+	npi_registry: {
+		label: "NPI Registry",
+		badge: "bg-teal-100 text-teal-800 border-teal-200", // NPI Registry: teal
+	},
+	fmcsa: {
+		label: "FMCSA",
+		badge: "bg-amber-100 text-amber-800 border-amber-200", // FMCSA: amber
+	},
 	unknown: {
 		label: "Unknown Source",
 		badge: "bg-gray-100 text-gray-800 border-gray-200",
@@ -58,8 +71,8 @@ export default function DossierPage({ params }: { params: { slug: string } }) {
 	const maybePromise = usePromise(params as any);
 	const resolvedParams =
 		typeof maybePromise === "object" &&
-		maybePromise !== null &&
-		"slug" in maybePromise
+			maybePromise !== null &&
+			"slug" in maybePromise
 			? maybePromise
 			: params;
 	return (
@@ -85,7 +98,7 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
 	} = useUserActiveSubscription();
 	const router = useRouter();
 
-	if (leadError || (!((lead || isLoadingLead ) || isFetchingLead))) {
+	if (leadError || !(lead || isLoadingLead || isFetchingLead)) {
 		return (
 			<DashboardLayout>
 				<div className="flex min-h-screen items-center justify-center">
@@ -156,10 +169,10 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
 							</Button>
 							<Button
 								className="h-9"
+								disabled={isFetchingLead || isLoadingLead}
+								onClick={() => refetchLead()}
 								size="sm"
 								variant="outline"
-								onClick={() => refetchLead()}
-								disabled={isFetchingLead || isLoadingLead}
 							>
 								<RefreshCw
 									className={cn("mr-2 h-4 w-4", {
@@ -171,9 +184,9 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
 							{_subscription ? (
 								<Button
 									className="h-9 bg-indigo-600 hover:bg-indigo-700"
-									size="sm"
 									disabled={!lead}
 									onClick={() => setIsExportDialogOpen(true)}
+									size="sm"
 								>
 									<Download className="mr-2 h-4 w-4" />
 									Export Lead
@@ -385,19 +398,18 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
 										</div>
 										<div className="min-w-0 flex-1">
 											<a
-												href={lead.url}
-												target="_blank"
-												rel="noopener noreferrer"
 												className="block truncate font-semibold text-gray-900 text-lg transition-colors hover:text-indigo-700"
+												href={lead.url}
+												rel="noopener noreferrer"
+												target="_blank"
 											>
 												{lead.url}
 											</a>
 											<div className="mt-1.5 flex items-center gap-4">
 												<span
-													className={`inline-flex items-center rounded-full border px-3 py-1 font-medium text-xs shadow-sm ${
-														SOURCE_MAP[lead.source]?.badge ??
+													className={`inline-flex items-center rounded-full border px-3 py-1 font-medium text-xs shadow-sm ${SOURCE_MAP[lead.source]?.badge ??
 														"border-gray-200 bg-gray-100 text-gray-800"
-													}`}
+														}`}
 												>
 													{SOURCE_MAP[lead.source]?.label ?? lead.source}
 												</span>
@@ -520,18 +532,16 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
 
 														return (
 															<div
-																className={`flex items-center gap-4 rounded-lg border p-4 ${
-																	isVerified
-																		? "border-green-100 bg-green-50"
-																		: "border-orange-100 bg-orange-50"
-																}`}
+																className={`flex items-center gap-4 rounded-lg border p-4 ${isVerified
+																	? "border-green-100 bg-green-50"
+																	: "border-orange-100 bg-orange-50"
+																	}`}
 															>
 																<div
-																	className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-																		isVerified
-																			? "bg-green-100"
-																			: "bg-orange-100"
-																	}`}
+																	className={`flex h-10 w-10 items-center justify-center rounded-lg ${isVerified
+																		? "bg-green-100"
+																		: "bg-orange-100"
+																		}`}
 																>
 																	{isVerified ? (
 																		<CheckCircle2 className="h-5 w-5 text-green-500" />
@@ -541,21 +551,19 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
 																</div>
 																<div className="min-w-0 flex-1">
 																	<div
-																		className={`truncate font-semibold text-sm ${
-																			isVerified
-																				? "text-green-800"
-																				: "text-orange-800"
-																		}`}
+																		className={`truncate font-semibold text-sm ${isVerified
+																			? "text-green-800"
+																			: "text-orange-800"
+																			}`}
 																	>
 																		{email || "N/A"}
 																	</div>
 																	<div className="mt-0.5 flex items-center gap-2">
 																		<span
-																			className={`inline-flex items-center rounded-full px-2 py-0.5 font-medium text-xs ${
-																				isVerified
-																					? "bg-green-100 text-green-700"
-																					: "bg-orange-100 text-orange-700"
-																			}`}
+																			className={`inline-flex items-center rounded-full px-2 py-0.5 font-medium text-xs ${isVerified
+																				? "bg-green-100 text-green-700"
+																				: "bg-orange-100 text-orange-700"
+																				}`}
 																		>
 																			{firstInfo?.status ||
 																				(isVerified ? "verified" : "pending")}
@@ -631,7 +639,7 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
 											<div className="flex min-w-0 flex-1 items-center gap-2">
 												<Globe className="h-4 w-4 flex-shrink-0 text-gray-400" />
 												<dt className="flex-shrink-0 font-medium text-gray-700 text-sm">
-													Page Title
+													{lead.source === "npi_registry" ? "Entity Name" : "Page Title"}
 												</dt>
 											</div>
 											<dd
@@ -646,7 +654,7 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
 										{(() => {
 											const emails =
 												Array.isArray(lead.scrap_info?.emails) &&
-												lead.scrap_info?.emails.length > 0
+													lead.scrap_info?.emails.length > 0
 													? lead.scrap_info.emails
 													: [];
 											const firstEmail = emails.length > 0 ? emails[0] : "N/A";
@@ -666,6 +674,21 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
 												</div>
 											);
 										})()}
+
+										{/* Phone Numbers Found */}
+										{lead.scrap_info?.phone && <div className="border-gray-100 border-b py-3 last:border-b-0">
+											<div className="flex items-start gap-3">
+												<div className="flex min-w-0 flex-1 items-center gap-2">
+													<Phone className="h-4 w-4 flex-shrink-0 text-gray-400" />
+													<dt className="flex-shrink-0 font-medium text-gray-700 text-sm">
+														Phone Numbers Found
+													</dt>
+												</div>
+												<dd className="max-w-xs break-all text-right text-gray-900 text-sm">
+													{lead.scrap_info?.phone}
+												</dd>
+											</div>
+										</div>}
 
 										{/* About */}
 										{lead.scrap_info?.desc && (
@@ -688,10 +711,10 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
 																	viewBox="0 0 24 24"
 																>
 																	<path
+																		d="M19 9l-7 7-7-7"
 																		strokeLinecap="round"
 																		strokeLinejoin="round"
 																		strokeWidth={2}
-																		d="M19 9l-7 7-7-7"
 																	/>
 																</svg>
 															</summary>
@@ -741,8 +764,8 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
 			{/* Export Lead Dialog */}
 			<ExportLeadDialog
 				isOpen={isExportDialogOpen}
-				onClose={() => setIsExportDialogOpen(false)}
 				leadData={lead ?? undefined}
+				onClose={() => setIsExportDialogOpen(false)}
 			/>
 		</DashboardLayout>
 	);

@@ -1,3 +1,6 @@
+import { Crown, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -7,12 +10,9 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import pricingPlans from "@/config/pricing-plans.json" with { type: "json" };
+import pricingPlans from "@/config/pricing-plans";
 import { useUserActiveSubscription } from "@/hooks/use-subscription";
 import type { PlanTier } from "@/types/subscription";
-import { Crown, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import RewardfulScript from "../rewardfull-script";
 
 interface ErrorLimitMessageProps {
@@ -35,8 +35,12 @@ export function ErrorLimitMessage({
 	};
 
 	const getNextPlan = (plan: PlanTier): PlanTier | null => {
-		if (plan === "basic" || plan === "trial") { return "pro"; }
-		if (plan === "pro") { return "unlimited"; }
+		if (plan === "basic" || plan === "trial") {
+			return "pro";
+		}
+		if (plan === "pro") {
+			return "unlimited";
+		}
 		return null;
 	};
 
@@ -91,7 +95,7 @@ export function ErrorLimitMessage({
 	return (
 		<>
 			<RewardfulScript />
-			<Dialog open={!!message} onOpenChange={handleClose}>
+			<Dialog onOpenChange={handleClose} open={!!message}>
 				<DialogContent onInteractOutside={(e) => e.preventDefault()}>
 					<DialogHeader>
 						<DialogTitle>Confirm Upgrade</DialogTitle>
@@ -99,34 +103,32 @@ export function ErrorLimitMessage({
 							<div className="mt-4 space-y-3">
 								{message === "Lead limit exceeded" ? (
 									["trial", "basic"].includes(
-											userSubscription?.plan_tier || "trial"
-										) ? (
-											<>
-												<p className="text-gray-900">
-													You’ve reached your{" "}
-													{userSubscription?.plan_tier || "trial"} limit (
-													{userSubscription?.usage_limits?.max_leads || 0}{" "}
-													leads).
-												</p>
-												<p className="text-gray-900">
-													Unlock 500 scrapes/mo + SmartSend (150 emails/day) →
-													Upgrade to Pro ($297/mo).
-												</p>
-											</>
-										) : (
-											<>
-												<p className="text-gray-900">
-													You’ve reached your{" "}
-													{userSubscription?.plan_tier || "trial"} limit (
-													{userSubscription?.usage_limits?.max_leads || 0}{" "}
-													leads).
-												</p>
-												<p className="text-gray-900">
-													Unlock unlimited scrapes + SmartSend (150 emails/day)
-													→ Upgrade to Unlimited ($497/mo).
-												</p>
-											</>
-										)
+										userSubscription?.plan_tier || "trial"
+									) ? (
+										<>
+											<p className="text-gray-900">
+												You’ve reached your{" "}
+												{userSubscription?.plan_tier || "trial"} limit (
+												{userSubscription?.usage_limits?.max_leads || 0} leads).
+											</p>
+											<p className="text-gray-900">
+												Unlock 500 scrapes/mo + SmartSend (150 emails/day) →
+												Upgrade to Pro ($297/mo).
+											</p>
+										</>
+									) : (
+										<>
+											<p className="text-gray-900">
+												You’ve reached your{" "}
+												{userSubscription?.plan_tier || "trial"} limit (
+												{userSubscription?.usage_limits?.max_leads || 0} leads).
+											</p>
+											<p className="text-gray-900">
+												Unlock unlimited scrapes + SmartSend (150 emails/day) →
+												Upgrade to Unlimited ($497/mo).
+											</p>
+										</>
+									)
 								) : (
 									<p className="text-gray-900">{message}</p>
 								)}
@@ -137,18 +139,18 @@ export function ErrorLimitMessage({
 						<DialogClose asChild>
 							<Button
 								className="flex-1"
+								onClick={onClose}
 								type="button"
 								variant="outline"
-								onClick={onClose}
 							>
 								Cancel
 							</Button>
 						</DialogClose>
 						<Button
 							className="flex-1 from-indigo-600 to-purple-600"
-							type="button"
-							onClick={handleCheckout}
 							disabled={isLoading}
+							onClick={handleCheckout}
+							type="button"
 						>
 							{isLoading ? (
 								<>

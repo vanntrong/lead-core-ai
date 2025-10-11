@@ -1,5 +1,7 @@
 "use client";
 
+import { ArrowDown, ArrowUp, Filter, Search, X } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,8 +12,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import type { LeadFilters, LeadSource, LeadStatus } from "@/types/lead";
-import { ArrowDown, ArrowUp, Filter, Search, X } from "lucide-react";
-import { useState } from "react";
 
 interface LeadFiltersProps {
 	filters: LeadFilters;
@@ -115,6 +115,9 @@ export function LeadFiltersComponent({
 							<SelectItem value="etsy">Etsy</SelectItem>
 							<SelectItem value="g2">G2</SelectItem>
 							<SelectItem value="woocommerce">WooCommerce</SelectItem>
+							<SelectItem value="google_places">Google Places</SelectItem>
+							<SelectItem value="npi_registry">NPI Registry</SelectItem>
+							<SelectItem value="fmcsa">FMCSA</SelectItem>
 						</SelectContent>
 					</Select>
 

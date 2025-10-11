@@ -1,10 +1,14 @@
 // @ts-nocheck
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
 import Stripe from "https://esm.sh/stripe@13.10.0?target=deno";
+
+const sourceTypes = ["etsy", "woocommerce", "shopify", "g2", "google_places", "npi_registry", "fmcsa"]
+
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const stripeKey = Deno.env.get("STRIPE_API_KEY");
 const supabase = createClient(supabaseUrl, supabaseKey);
+
 import { pricingPlans } from "./utils.ts";
 export async function handleSubscriptionUpdated({ subscription }) {
 	try {
@@ -40,7 +44,7 @@ export async function handleSubscriptionUpdated({ subscription }) {
 			subscription.current_period_start &&
 			(!subscriptionExisting.period_start ||
 				subscription.current_period_start * 1000 !==
-					new Date(subscriptionExisting.period_start).getTime());
+				new Date(subscriptionExisting.period_start).getTime());
 		let usageLimitId = subscriptionExisting.usage_limit_id;
 		if (subscription.status === "active" && isNewPeriod) {
 			const usageLimit = await createUsageLimit({
@@ -48,7 +52,7 @@ export async function handleSubscriptionUpdated({ subscription }) {
 				plan_tier: plan.tier,
 				sources:
 					plan.limits.sources === "unlimited"
-						? ["etsy", "woocommerce", "shopify", "g2"]
+						? sourceTypes
 						: source
 							? [source]
 							: [],
@@ -151,7 +155,7 @@ export async function handleSubscriptionCreated({ subscription }) {
 			plan_tier: plan.tier,
 			sources:
 				plan.limits.sources === "unlimited"
-					? ["etsy", "woocommerce", "shopify", "g2"]
+					? sourceTypes
 					: source
 						? [source]
 						: [],
@@ -379,7 +383,7 @@ export async function handleCheckoutSessionCompleted({ session }) {
 				plan_tier: plan.tier,
 				sources:
 					plan.limits.sources === "unlimited"
-						? ["etsy", "woocommerce", "shopify", "g2"]
+						? sourceTypes
 						: source
 							? [source]
 							: [],
@@ -394,7 +398,9 @@ export async function handleCheckoutSessionCompleted({ session }) {
 				period_start: new Date().toISOString(),
 				period_end: new Date().toISOString(),
 			});
-			if (!usageLimit) { throw new Error("Create usage_limits for trial error"); }
+			if (!usageLimit) {
+				throw new Error("Create usage_limits for trial error");
+			}
 			// Insert trial record
 			const subResult = await createSubscription({
 				user_id: userId,

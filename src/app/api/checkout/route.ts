@@ -1,8 +1,8 @@
-import pricingPlans from "@/config/pricing-plans.json" with { type: "json" };
-import { stripe } from "@/lib/stripe";
-import { createClient } from "@/lib/supabase/server";
 import { type NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
+import pricingPlans from "@/config/pricing-plans";
+import { stripe } from "@/lib/stripe";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
 	try {

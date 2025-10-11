@@ -19,6 +19,9 @@ export interface LeadScrapInfo {
 	title?: string;
 	// detected emails (for direct access)
 	emails?: string[];
+
+	phone?: string;
+
 }
 
 export interface LeadEnrichInfo {

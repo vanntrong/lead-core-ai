@@ -1,6 +1,7 @@
 // @ts-nocheck
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 import Anthropic from "https://esm.sh/@anthropic-ai/sdk@latest";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -42,7 +43,7 @@ async function enrichLead(scrapInfo: any) {
 	console.log("scrapInfo:", scrapInfo);
 	const prompt = `
 You are an AI enrichment assistant.
-Input is scraped raw data from a website.
+Input is scraped raw data from a website/Google place API/NPI Registry or FMCSA.
 
 Data:
 ${JSON.stringify(scrapInfo, null, 2)}
@@ -107,8 +108,12 @@ export async function processJobsForUser(user_id: string) {
 		.order("created_at")
 		.limit(1)
 		.maybeSingle();
-	if (error && error.code !== "PGRST116") { return console.error(error); }
-	if (!job) { return; }
+	if (error && error.code !== "PGRST116") {
+		return console.error(error);
+	}
+	if (!job) {
+		return;
+	}
 
 	// 2. Set status enriching
 	const { error: updateError } = await supabase
@@ -117,7 +122,9 @@ export async function processJobsForUser(user_id: string) {
 			status: "enriching",
 		})
 		.eq("id", job.id);
-	if (updateError) { return console.error(updateError); }
+	if (updateError) {
+		return console.error(updateError);
+	}
 
 	// 3. Enrich
 	let enriched = null;
@@ -137,16 +144,18 @@ export async function processJobsForUser(user_id: string) {
 		.update(
 			enrichFailed
 				? {
-						status: "scraped",
-						enrich_info: null,
-					}
+					status: "scraped",
+					enrich_info: null,
+				}
 				: {
-						status: "enriched",
-						enrich_info: enriched,
-					}
+					status: "enriched",
+					enrich_info: enriched,
+				}
 		)
 		.eq("id", job.id);
-	if (updateEnrichError) { return console.error(updateEnrichError); }
+	if (updateEnrichError) {
+		return console.error(updateEnrichError);
+	}
 
 	// 5. Verify email
 	const emails = job.scrap_info?.emails ?? [];
@@ -182,5 +191,7 @@ export async function processJobsForUser(user_id: string) {
 			verify_email_info: verifyEmailData,
 		})
 		.eq("id", job.id);
-	if (updateVerifyEmailError) { console.error(updateVerifyEmailError); }
+	if (updateVerifyEmailError) {
+		console.error(updateVerifyEmailError);
+	}
 }

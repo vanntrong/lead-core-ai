@@ -1,6 +1,4 @@
-import pricingPlans from "@/config/pricing-plans.json" with { type: "json" };
-import { leadSourceColorConfig } from "@/constants/saas-source";
-import type { Subscription } from "@/types/subscription";
+import { useRouter } from "@bprogress/next/app";
 import {
 	BarChart3,
 	Calendar,
@@ -10,9 +8,11 @@ import {
 	Zap,
 } from "lucide-react";
 import type React from "react";
+import pricingPlans from "@/config/pricing-plans";
+import { leadSourceColorConfig } from "@/constants/saas-source";
+import type { Subscription } from "@/types/subscription";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
-import { useRouter } from "@bprogress/next/app";
 
 interface UsageOverviewProps {
 	activeSubscription?: Subscription | null;
@@ -30,9 +30,13 @@ export const UsageOverview: React.FC<UsageOverviewProps> = ({
 		: null;
 
 	let _planColor = "text-gray-900";
-	if (mappedPlan?.tier === "basic") { _planColor = "text-gray-500"; }
-	else if (mappedPlan?.tier === "pro") { _planColor = "text-indigo-500"; }
-	else if (mappedPlan?.tier === "unlimited") { _planColor = "text-purple-500"; }
+	if (mappedPlan?.tier === "basic") {
+		_planColor = "text-gray-500";
+	} else if (mappedPlan?.tier === "pro") {
+		_planColor = "text-indigo-500";
+	} else if (mappedPlan?.tier === "unlimited") {
+		_planColor = "text-purple-500";
+	}
 
 	const isZapierExport = _subscription?.usage_limits?.zapier_export ?? false;
 	const isExportCSV = _subscription?.usage_limits?.csv_export ?? false;
@@ -54,9 +58,9 @@ export const UsageOverview: React.FC<UsageOverviewProps> = ({
 						</p>
 					</div>
 					<Button
+						className="bg-indigo-600 text-white hover:bg-indigo-700"
 						onClick={() => router.push("/pricing")}
 						size="sm"
-						className="bg-indigo-600 text-white hover:bg-indigo-700"
 					>
 						<Crown className="mr-2 h-4 w-4 text-yellow-300" />
 						Choose a Plan
@@ -207,14 +211,15 @@ export const UsageOverview: React.FC<UsageOverviewProps> = ({
 										{(() => {
 											if (activeSubscription?.plan_tier === "unlimited") {
 												return <></>;
-											}if (activeSubscription?.usage_limits?.max_leads) {
+											}
+											if (activeSubscription?.usage_limits?.max_leads) {
 												return ` / ${activeSubscription?.usage_limits?.max_leads}`;
 											}
-												return (
-													<span className="ml-2 rounded bg-purple-50 px-2 py-0.5 font-semibold text-indigo-700">
-														Unlimited
-													</span>
-												);
+											return (
+												<span className="ml-2 rounded bg-purple-50 px-2 py-0.5 font-semibold text-indigo-700">
+													Unlimited
+												</span>
+											);
 										})()}
 									</span>
 									<span className={"font-semibold text-indigo-700 text-sm"}>
@@ -250,8 +255,8 @@ export const UsageOverview: React.FC<UsageOverviewProps> = ({
 						{activeSubscription?.usage_limits?.sources?.map(
 							(source: string) => (
 								<span
-									key={source}
 									className={`inline-block rounded-full border px-3 py-1 font-medium text-xs shadow-sm transition-colors duration-150 ${leadSourceColorConfig[source]?.badge || "border-gray-300 bg-gray-100 text-gray-600"}`}
+									key={source}
 								>
 									{leadSourceColorConfig[source]?.label || source}
 								</span>

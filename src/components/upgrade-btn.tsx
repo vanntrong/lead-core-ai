@@ -1,3 +1,6 @@
+import { Crown, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -7,11 +10,8 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import pricingPlans from "@/config/pricing-plans.json" with { type: "json" };
+import pricingPlans from "@/config/pricing-plans";
 import type { PlanTier } from "@/types/subscription";
-import { Crown, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import RewardfulScript from "./rewardfull-script";
 
 interface UpgradeButtonProps {
@@ -30,8 +30,12 @@ export function UpgradeButton({
 	const [referral, setReferral] = useState(null);
 
 	const getNextPlan = (plan: PlanTier): PlanTier | null => {
-		if (plan === "basic" || plan === "trial") { return "pro"; }
-		if (plan === "pro") { return "unlimited"; }
+		if (plan === "basic" || plan === "trial") {
+			return "pro";
+		}
+		if (plan === "pro") {
+			return "unlimited";
+		}
 		return null;
 	};
 
@@ -99,7 +103,7 @@ export function UpgradeButton({
 				<Crown className="mr-2 h-4 w-4 text-yellow-300" />
 				{title || "Upgrade to add leads"}
 			</Button>
-			<Dialog open={open} onOpenChange={setOpen}>
+			<Dialog onOpenChange={setOpen} open={open}>
 				<DialogContent onInteractOutside={(e) => e.preventDefault()}>
 					<DialogHeader>
 						<DialogTitle>Confirm Upgrade</DialogTitle>
@@ -114,7 +118,7 @@ export function UpgradeButton({
 								</div>
 								<div className="space-y-3">
 									{nextPlanFeatures.map((feature) => (
-										<div key={feature} className="group flex items-start gap-3">
+										<div className="group flex items-start gap-3" key={feature}>
 											<div className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600">
 												<svg
 													className="h-2.5 w-2.5 text-white"
@@ -122,9 +126,9 @@ export function UpgradeButton({
 													viewBox="0 0 20 20"
 												>
 													<path
-														fillRule="evenodd"
-														d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
 														clipRule="evenodd"
+														d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+														fillRule="evenodd"
 													/>
 												</svg>
 											</div>
@@ -152,18 +156,18 @@ export function UpgradeButton({
 						<DialogClose asChild>
 							<Button
 								className="flex-1"
+								onClick={() => setOpen(false)}
 								type="button"
 								variant="outline"
-								onClick={() => setOpen(false)}
 							>
 								Cancel
 							</Button>
 						</DialogClose>
 						<Button
 							className="flex-1 from-indigo-600 to-purple-600"
-							type="button"
-							onClick={handleCheckout}
 							disabled={isLoading}
+							onClick={handleCheckout}
+							type="button"
 						>
 							{isLoading ? (
 								<>

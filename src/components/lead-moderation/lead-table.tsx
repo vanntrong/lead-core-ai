@@ -1,18 +1,5 @@
 "use client";
 
-import { DeleteLeadButton } from "@/components/lead-moderation/delete-lead-button";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
-import { leadSourceColorConfig } from "@/constants/saas-source";
-import { leadScoringService } from "@/services/lead-scoring.service";
-import type { Lead } from "@/types/lead";
-import { formatDate } from "@/utils/helper";
 import {
 	Calendar,
 	CheckCircle2,
@@ -23,6 +10,20 @@ import {
 	XCircle,
 } from "lucide-react";
 import React from "react";
+import { DeleteLeadButton } from "@/components/lead-moderation/delete-lead-button";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import { leadSourceColorConfig } from "@/constants/saas-source";
+import { formatUrlForDisplay } from "@/lib/utils";
+import { leadScoringService } from "@/services/lead-scoring.service";
+import type { Lead } from "@/types/lead";
+import { formatDate } from "@/utils/helper";
 import { Badge } from "../ui/badge";
 import { HighlightText } from "../ui/highlight-text";
 import { FlagLeadButton } from "./flag-lead-button";
@@ -174,9 +175,9 @@ const LeadRow = ({
 
 	return (
 		<TableRow
+			aria-label={`Lead ${lead.url}`}
 			className="group cursor-pointer transition-colors hover:bg-indigo-50/50"
 			key={lead.id}
-			aria-label={`Lead ${lead.url}`}
 		>
 			{/* Flagged */}
 			<TableCell className="py-3 text-center align-middle">
@@ -195,23 +196,39 @@ const LeadRow = ({
 			<TableCell className="max-w-[270px] py-3 pl-4 align-middle">
 				<div className="max-w-[270px] font-medium text-gray-900 text-sm">
 					<div className="flex items-center gap-1">
-						<a
-							href={lead.url}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="inline-flex items-center"
-							title={lead.url}
-							aria-label="Open link"
-						>
-							<Link className="h-3 w-3" aria-hidden="true" />
-						</a>
-						<div className="max-w-[270px] gap-1 truncate">
-							<HighlightText
-								highlightClassName="bg-yellow-200 text-yellow-900 px-1 rounded"
-								highlightTerms={highlightTerms}
-								text={lead.url}
-							/>
-						</div>
+						{(() => {
+							const { displayUrl, actualUrl } = formatUrlForDisplay(
+								lead.url,
+								lead.source
+							);
+							return (
+								<>
+									{actualUrl ? (
+										<a
+											aria-label="Open link"
+											className="inline-flex items-center"
+											href={actualUrl}
+											rel="noopener noreferrer"
+											target="_blank"
+											title={actualUrl}
+										>
+											<Link aria-hidden="true" className="h-3 w-3" />
+										</a>
+									) : (
+										<span className="inline-flex items-center opacity-50">
+											<Link aria-hidden="true" className="h-3 w-3" />
+										</span>
+									)}
+									<div className="max-w-[270px] gap-1 truncate">
+										<HighlightText
+											highlightClassName="bg-yellow-200 text-yellow-900 px-1 rounded"
+											highlightTerms={highlightTerms}
+											text={displayUrl}
+										/>
+									</div>
+								</>
+							);
+						})()}
 					</div>
 					<div className="mt-1 max-w-[200px] truncate text-gray-500 text-xs">
 						<span>{lead.scrap_info?.title || "N/A"}</span>
@@ -248,44 +265,47 @@ const LeadRow = ({
 								return (
 									<>
 										<CheckCircle2
-											className="h-4 w-4 text-green-500"
 											aria-label="Verified"
+											className="h-4 w-4 text-green-500"
 										/>
 										<span className="font-medium text-green-700 text-sm">
 											Verified
 										</span>
 									</>
 								);
-							}if (lead.verify_email_status === "pending") {
+							}
+							if (lead.verify_email_status === "pending") {
 								return (
 									<>
 										<Clock
-											className="h-4 w-4 text-gray-400"
 											aria-label="Pending"
+											className="h-4 w-4 text-gray-400"
 										/>
 										<span className="font-medium text-gray-600 text-sm">
 											Pending
 										</span>
 									</>
 								);
-							}if (lead.verify_email_status === "failed") {
+							}
+							if (lead.verify_email_status === "failed") {
 								return (
 									<>
 										<XCircle
-											className="h-4 w-4 text-red-500"
 											aria-label="Failed"
+											className="h-4 w-4 text-red-500"
 										/>
 										<span className="font-medium text-red-700 text-sm">
 											Failed
 										</span>
 									</>
 								);
-							}if (lead.verify_email_status === "invalid") {
+							}
+							if (lead.verify_email_status === "invalid") {
 								return (
 									<>
 										<XCircle
-											className="h-4 w-4 text-orange-500"
 											aria-label="Invalid"
+											className="h-4 w-4 text-orange-500"
 										/>
 										<span className="font-medium text-orange-700 text-sm">
 											Invalid
@@ -293,13 +313,13 @@ const LeadRow = ({
 									</>
 								);
 							}
-								return (
-									<span className="font-medium text-gray-400 text-sm">N/A</span>
-								);
+							return (
+								<span className="font-medium text-gray-400 text-sm">N/A</span>
+							);
 						})()}
 					</div>
 					<span className="mt-1 flex items-center gap-1 font-medium text-gray-500 text-sm">
-						<Mail className="mr-1 h-4 w-4 text-gray-400" aria-label="Email" />
+						<Mail aria-label="Email" className="mr-1 h-4 w-4 text-gray-400" />
 						{lead.scrap_info?.emails && lead.scrap_info?.emails?.length > 0
 							? lead.scrap_info.emails[0]
 							: "Not found"}
@@ -310,7 +330,7 @@ const LeadRow = ({
 			{/* Created At */}
 			<TableCell className="py-3 text-center align-middle">
 				<div className="flex items-center justify-center gap-1 text-gray-500 text-sm">
-					<Calendar className="h-4 w-4 text-gray-400" aria-hidden="true" />
+					<Calendar aria-hidden="true" className="h-4 w-4 text-gray-400" />
 					<time dateTime={lead.created_at}>{formatDate(lead.created_at)}</time>
 				</div>
 			</TableCell>

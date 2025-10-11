@@ -37,14 +37,18 @@
       "suspicious": {
         "noArrayIndexKey": "warn",
         "noDebugger": "error",
-        "noConsole": "off"
+        "noConsole": "off",
+        "noExplicitAny": "off"
       },
       "performance": {
-        "noAccumulatingSpread": "warn"
+        "noAccumulatingSpread": "warn",
+        "noNamespaceImport": "off",
+        "useTopLevelRegex": "off"
       },
       "nursery": {
         "useConsistentTypeDefinitions": "off",
-        "noShadow": "off"
+        "noShadow": "off",
+        "noUnnecessaryConditions": "off"
       },
       "a11y": {
         "noSvgWithoutTitle": "off",
@@ -65,5 +69,7 @@
       }
     }
   },
-  "extends": ["ultracite"]
+  "extends": [
+    "ultracite"
+  ]
 }

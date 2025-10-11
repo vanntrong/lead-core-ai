@@ -1,5 +1,10 @@
 "use client";
 
+import { useRouter } from "@bprogress/next/app";
+import { Crown, Plus, RefreshCw } from "lucide-react";
+import Link from "next/link";
+import { Suspense, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { AddLeadDialog } from "@/components/leads/add-lead-dialog";
 import { LeadFiltersComponent } from "@/components/leads/lead-filters";
@@ -8,20 +13,15 @@ import { LeadStatsCards } from "@/components/leads/lead-stats";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { usePagination } from "@/components/ui/pagination";
-import pricingPlans from "@/config/pricing-plans.json" with { type: "json" };
+import pricingPlans from "@/config/pricing-plans";
 import {
 	useGenerateMockLeads,
-	useLeadsPaginated,
 	useLeadStats,
+	useLeadsPaginated,
 } from "@/hooks/use-leads";
 import { useUserActiveSubscription } from "@/hooks/use-subscription";
 import { cn } from "@/lib/utils";
 import type { LeadFilters } from "@/types/lead";
-import { useRouter } from "@bprogress/next/app";
-import { Crown, Plus, RefreshCw } from "lucide-react";
-import Link from "next/link";
-import { Suspense, useEffect, useState } from "react";
-import { toast } from "sonner";
 
 export default function Page() {
 	return (
@@ -179,7 +179,7 @@ function LeadBoardPage() {
 									size="sm"
 								>
 									<Plus className="mr-2 h-4 w-4" />
-									Add Load
+									Add Lead
 								</Button>
 							) : (
 								<Button

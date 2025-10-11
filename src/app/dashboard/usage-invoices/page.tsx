@@ -1,4 +1,7 @@
 "use client";
+import { BarChart3, Crown } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,13 +18,10 @@ import { UpgradeButton } from "@/components/upgrade-btn";
 import { CancelSubscriptionDialog } from "@/components/usage-invoices/cancel-subscription-dialog";
 import InvoiceList from "@/components/usage-invoices/invoice-list";
 import { UsageOverview } from "@/components/usage-invoices/usage-overview";
-import pricingPlans from "@/config/pricing-plans.json" with { type: "json" };
+import pricingPlans from "@/config/pricing-plans";
 import { useUserInvoicesPaginated } from "@/hooks/use-invoice";
 import { useUserActiveSubscription } from "@/hooks/use-subscription";
 import type { InvoiceFilters } from "@/types/invoice";
-import { BarChart3, Crown } from "lucide-react";
-import Link from "next/link";
-import { useEffect, useState } from "react";
 
 export default function UsageAndInvoicesPage() {
 	const [showUpdateDialog, setShowUpdateDialog] = useState(false);
@@ -64,9 +64,13 @@ export default function UsageAndInvoicesPage() {
 		: null;
 
 	let _planColor = "text-gray-900";
-	if (mappedPlan?.tier === "basic") { _planColor = "text-gray-500"; }
-	else if (mappedPlan?.tier === "pro") { _planColor = "text-indigo-500"; }
-	else if (mappedPlan?.tier === "unlimited") { _planColor = "text-purple-500"; }
+	if (mappedPlan?.tier === "basic") {
+		_planColor = "text-gray-500";
+	} else if (mappedPlan?.tier === "pro") {
+		_planColor = "text-indigo-500";
+	} else if (mappedPlan?.tier === "unlimited") {
+		_planColor = "text-purple-500";
+	}
 
 	if (isLoading && !activeSubscription) {
 		return (
@@ -128,7 +132,7 @@ export default function UsageAndInvoicesPage() {
 			</div>
 
 			{/* Update Usage Dialog - SaaS Standard UI */}
-			<Dialog open={showUpdateDialog} onOpenChange={setShowUpdateDialog}>
+			<Dialog onOpenChange={setShowUpdateDialog} open={showUpdateDialog}>
 				<DialogContent className="mx-auto max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-lg">
 					<DialogHeader className="flex flex-col items-center text-center">
 						<div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600">
@@ -168,9 +172,9 @@ export default function UsageAndInvoicesPage() {
 					</div>
 					<DialogFooter className="flex flex-col gap-2">
 						<Button
-							variant="outline"
 							className="h-10 w-full"
 							onClick={() => setShowUpdateDialog(false)}
+							variant="outline"
 						>
 							Close
 						</Button>

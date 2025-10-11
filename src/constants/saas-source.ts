@@ -3,7 +3,12 @@ export const saasSource = {
 	woocommerce: "WooCommerce",
 	etsy: "Etsy",
 	g2: "G2",
+	google_places: "Google Places",
+	npi_registry: "NPI Registry",
+	fmcsa: "FMCSA",
 };
+
+export const sourceTypes = Object.keys(saasSource);
 
 export const leadSourceColorConfig: Record<
 	string,
@@ -24,5 +29,17 @@ export const leadSourceColorConfig: Record<
 	woocommerce: {
 		label: "WooCommerce",
 		badge: "bg-indigo-100 text-indigo-800 border-indigo-200", // WooCommerce: indigo
+	},
+	google_places: {
+		label: "Google Places",
+		badge: "bg-blue-100 text-blue-800 border-blue-200", // Google Places: blue
+	},
+	npi_registry: {
+		label: "NPI Registry",
+		badge: "bg-teal-100 text-teal-800 border-teal-200", // NPI Registry: teal
+	},
+	fmcsa: {
+		label: "FMCSA",
+		badge: "bg-amber-100 text-amber-800 border-amber-200", // FMCSA: amber
 	},
 };

@@ -1,8 +1,14 @@
-import APIFY_ACTORS from "@/constants/apify";
 import * as cheerio from "cheerio";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import fetch from "node-fetch";
+import APIFY_ACTORS from "@/constants/apify";
 import { apifyService } from "./apify.service";
+import { fmcsaService } from "./fmcsa.service";
+import { googlePlacesService } from "./google-places.service";
+import {
+	type NPISearchResult,
+	npiRegistryService,
+} from "./npi-registry.service";
 import { proxyAdminService } from "./proxy-admin.service";
 import { proxyLogsService } from "./proxy-logs.service";
 
@@ -138,7 +144,7 @@ export class ScrapeService {
 				return wooValidation.error;
 			}
 		}
-		return ;
+		return;
 	}
 
 	private extractEmailsCheerio($: any, html: string): string[] {
@@ -160,8 +166,11 @@ export class ScrapeService {
 		(html.match(emailRegex) || []).forEach((email: string) => {
 			if (
 				/^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/.test(email) &&
-				!/\.(png|jpg|jpeg|gif|svg|webp|ico|css|js)$/i.test(email) && !emails.includes(email)
-			) { emails.push(email); }
+				!/\.(png|jpg|jpeg|gif|svg|webp|ico|css|js)$/i.test(email) &&
+				!emails.includes(email)
+			) {
+				emails.push(email);
+			}
 		});
 		return Array.from(new Set(emails));
 	}
@@ -280,11 +289,33 @@ export class ScrapeService {
 		if (source === "g2") {
 			return this.g2ProductScrape(url);
 		}
+		if (source === "google_places") {
+			return this.googlePlacesScrape(url);
+		}
+		if (source === "npi_registry") {
+			return this.npiRegistryScrape(url);
+		}
+		if (source === "fmcsa") {
+			return this.fmcsaScrape(url);
+		}
 		return await this.processScrape(url, source);
 	}
 
 	validateUrl(url: string, source: string): boolean {
-		if (!(url && /^https?:\/\//i.test(url))) { return false; }
+		// For new sources that use JSON strings, validate JSON format
+		if (["google_places", "npi_registry", "fmcsa"].includes(source)) {
+			try {
+				const params = JSON.parse(url);
+				return typeof params === "object" && params !== null;
+			} catch {
+				return false;
+			}
+		}
+
+		// For old sources, validate URL format
+		if (!(url && /^https?:\/\//i.test(url))) {
+			return false;
+		}
 
 		switch (source) {
 			case "g2":
@@ -322,9 +353,7 @@ export class ScrapeService {
 		return { valid: true };
 	}
 
-	private async etsyShopScrape(
-		url: string
-	): Promise<{
+	private async etsyShopScrape(url: string): Promise<{
 		title: string;
 		desc: string;
 		emails: string[];
@@ -369,13 +398,13 @@ export class ScrapeService {
 					emails: [],
 				};
 			}
-				return {
-					title: "",
-					desc: "",
-					emails: [],
-					error: "Scrape failed",
-					errorType: "scrape_failed",
-				} as any;
+			return {
+				title: "",
+				desc: "",
+				emails: [],
+				error: "Scrape failed",
+				errorType: "scrape_failed",
+			} as any;
 		} catch (error) {
 			console.error("Etsy scrape error:", error);
 			return {
@@ -387,9 +416,7 @@ export class ScrapeService {
 			} as any;
 		}
 	}
-	private async g2ProductScrape(
-		url: string
-	): Promise<{
+	private async g2ProductScrape(url: string): Promise<{
 		title: string;
 		desc: string;
 		emails: string[];
@@ -436,13 +463,13 @@ export class ScrapeService {
 					emails: [],
 				};
 			}
-				return {
-					title: "",
-					desc: "",
-					emails: [],
-					error: "Scrape failed",
-					errorType: "scrape_failed",
-				} as any;
+			return {
+				title: "",
+				desc: "",
+				emails: [],
+				error: "Scrape failed",
+				errorType: "scrape_failed",
+			} as any;
 		} catch (error) {
 			console.error("G2 scrape error:", error);
 			return {
@@ -450,6 +477,162 @@ export class ScrapeService {
 				desc: "",
 				emails: [],
 				error: "Scrape failed",
+				errorType: "scrape_failed",
+			} as any;
+		}
+	}
+
+	/**
+	 * Google Places scraping
+	 */
+	private async googlePlacesScrape(url: string): Promise<{
+		title: string;
+		desc: string;
+		emails: string[];
+		error?: string;
+	}> {
+		try {
+			// Parse parameters from JSON string
+			const params = JSON.parse(url);
+			const keyword = params.keyword || "";
+			const location = params.location || "";
+
+			if (!keyword) {
+				return {
+					title: "",
+					desc: "",
+					emails: [],
+					error: "Missing keyword parameter",
+					errorType: "validation",
+				} as any;
+			}
+
+			const result = await googlePlacesService.searchPlaces({
+				keyword,
+				location,
+			});
+
+			return {
+				title: result.title,
+				desc: result.desc,
+				emails: result.emails,
+			};
+		} catch (error: any) {
+			console.error("Google Places scrape error:", error);
+			return {
+				title: "",
+				desc: "",
+				emails: [],
+				error: error?.message || "Failed to search Google Places",
+				errorType: "scrape_failed",
+			} as any;
+		}
+	}
+
+	/**
+	 * NPI Registry scraping
+	 */
+	private async npiRegistryScrape(url: string): Promise<NPISearchResult & { errorType?: string, error?: string }> {
+		try {
+			// Parse parameters from JSON string
+			const params = JSON.parse(url);
+			const providerName = params.provider || "";
+			const taxonomy = params.taxonomy || "";
+			const location = params.location || "";
+
+			if (!(providerName || taxonomy)) {
+				return {
+					title: "",
+					desc: "",
+					emails: [],
+					error: "Please provide provider name or taxonomy",
+					errorType: "validation",
+				} as any;
+			}
+
+			// Parse location into city/state if provided
+			let city: string | undefined;
+			let state: string | undefined;
+			if (location) {
+				// Try to split by comma for "City, State" format
+				const parts = location.split(",").map((p: string) => p.trim());
+				if (parts.length === 2) {
+					city = parts[0];
+					state = parts[1];
+				} else if (parts.length === 1) {
+					// Assume it's a state if it's short (2-3 chars) or a state name
+					if (parts[0].length <= 3 || parts[0].match(/^\d{5}$/)) {
+						state = parts[0];
+					} else {
+						city = parts[0];
+					}
+				}
+			}
+
+			const result = await npiRegistryService.searchProvider({
+				provider_name: providerName || undefined,
+				taxonomy_description: taxonomy || undefined,
+				city: city || undefined,
+				state: state || undefined,
+			});
+
+			return result;
+		} catch (error: any) {
+			console.error("NPI Registry scrape error:", error);
+			return {
+				title: "",
+				desc: "",
+				emails: [],
+				error: error?.message || "Failed to search NPI Registry",
+				errorType: "scrape_failed",
+			} as any;
+		}
+	}
+
+	/**
+	 * FMCSA scraping
+	 */
+	private async fmcsaScrape(url: string): Promise<{
+		title: string;
+		desc: string;
+		emails: string[];
+		error?: string;
+	}> {
+		try {
+			// Parse parameters from JSON string
+			const params = JSON.parse(url);
+			const companyName = params.company || "";
+			const dotNumber = params.dot || "";
+			const mcNumber = params.mc || "";
+
+			if (!(companyName || dotNumber || mcNumber)) {
+				return {
+					title: "",
+					desc: "",
+					emails: [],
+					error: "Please provide company name, DOT number, or MC number",
+					errorType: "validation",
+				} as any;
+			}
+
+			const result = await fmcsaService.searchCarrier({
+				company_name: companyName || undefined,
+				dot_number: dotNumber || undefined,
+				mc_number: mcNumber || undefined,
+			});
+
+			return {
+				title: result.title,
+				desc: result.desc,
+				emails: result.emails,
+			};
+		} catch (error: any) {
+			console.error("FMCSA scrape error:", error);
+			return {
+				title: "",
+				desc: "",
+				emails: [],
+				error: error?.message || "Failed to search FMCSA database",
 				errorType: "scrape_failed",
 			} as any;
 		}
