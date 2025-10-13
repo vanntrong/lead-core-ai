@@ -829,12 +829,17 @@ export type Database = {
       }
       leads: {
         Row: {
+          business_type: string | null
+          city: string | null
+          country: string | null
           created_at: string
           enrich_info: Json | null
           flagged: boolean | null
           id: string
+          location_full: string | null
           scrap_info: Json | null
           source: Database["public"]["Enums"]["lead_source"]
+          state: string | null
           status: Database["public"]["Enums"]["lead_status"]
           updated_at: string
           url: string
@@ -843,12 +848,17 @@ export type Database = {
           verify_email_status: Database["public"]["Enums"]["verify_email_status"]
         }
         Insert: {
+          business_type?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           enrich_info?: Json | null
           flagged?: boolean | null
           id?: string
+          location_full?: string | null
           scrap_info?: Json | null
           source: Database["public"]["Enums"]["lead_source"]
+          state?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
           updated_at?: string
           url: string
@@ -857,12 +867,17 @@ export type Database = {
           verify_email_status?: Database["public"]["Enums"]["verify_email_status"]
         }
         Update: {
+          business_type?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
           enrich_info?: Json | null
           flagged?: boolean | null
           id?: string
+          location_full?: string | null
           scrap_info?: Json | null
           source?: Database["public"]["Enums"]["lead_source"]
+          state?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
           updated_at?: string
           url?: string

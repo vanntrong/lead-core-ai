@@ -189,69 +189,114 @@ export function LeadFiltersComponent({
 
 			{/* Expandable filters */}
 			{isExpanded && (
-				<div className="border-gray-200 border-t pt-4">
-					<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-						{/* Date Range - simplified for now */}
-						<div>
-							<label
-								className="mb-1.5 block font-medium text-gray-700 text-sm"
-								htmlFor="created-date-from"
-							>
-								Created Date From
-							</label>
+				<div className="space-y-4 border-gray-200 border-t pt-4">
+					{/* Location Filters */}
+					<div>
+						<div className="mb-2 font-medium text-gray-700 text-sm">
+							Location Filters
+						</div>
+						<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
 							<Input
 								className="h-9"
-								id="created-date-from"
-								onChange={(e) => {
-									const currentRange = filters.date_range || {
-										start: "",
-										end: "",
-									};
-									handleFilterChange("date_range", {
-										...currentRange,
-										start: e.target.value,
-									});
-								}}
-								type="date"
-								value={filters.date_range?.start || ""}
+								onChange={(e) =>
+									handleFilterChange("location", e.target.value || undefined)
+								}
+								placeholder="Location (e.g., Austin, LA)"
+								value={filters.location || ""}
 							/>
-						</div>
-
-						<div>
-							<label
-								className="mb-1.5 block font-medium text-gray-700 text-sm"
-								htmlFor="created-date-to"
-							>
-								Created Date To
-							</label>
 							<Input
 								className="h-9"
-								id="created-date-to"
-								onChange={(e) => {
-									const currentRange = filters.date_range || {
-										start: "",
-										end: "",
-									};
-									handleFilterChange("date_range", {
-										...currentRange,
-										end: e.target.value,
-									});
-								}}
-								type="date"
-								value={filters.date_range?.end || ""}
+								onChange={(e) =>
+									handleFilterChange("city", e.target.value || undefined)
+								}
+								placeholder="City"
+								value={filters.city || ""}
+							/>
+							<Input
+								className="h-9"
+								onChange={(e) =>
+									handleFilterChange("state", e.target.value || undefined)
+								}
+								placeholder="State (e.g., TX, CA)"
+								value={filters.state || ""}
+							/>
+							<Input
+								className="h-9"
+								onChange={(e) =>
+									handleFilterChange("business_type", e.target.value || undefined)
+								}
+								placeholder="Business Type"
+								value={filters.business_type || ""}
 							/>
 						</div>
+					</div>
 
-						{/* Clear date range */}
-						<div className="flex items-end">
-							<Button
-								className="h-9"
-								onClick={() => handleFilterChange("date_range", undefined)}
-								size="sm"
-								variant="outline"
-							>
-								Clear Dates
-							</Button>
+					{/* Date Range */}
+					<div>
+						<div className="mb-2 font-medium text-gray-700 text-sm">
+							Date Range
+						</div>
+						<div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+							<div>
+								<label
+									className="mb-1.5 block text-gray-600 text-sm"
+									htmlFor="created-date-from"
+								>
+									From
+								</label>
+								<Input
+									className="h-9"
+									id="created-date-from"
+									onChange={(e) => {
+										const currentRange = filters.date_range || {
+											start: "",
+											end: "",
+										};
+										handleFilterChange("date_range", {
+											...currentRange,
+											start: e.target.value,
+										});
+									}}
+									type="date"
+									value={filters.date_range?.start || ""}
+								/>
+							</div>
+
+							<div>
+								<label
+									className="mb-1.5 block text-gray-600 text-sm"
+									htmlFor="created-date-to"
+								>
+									To
+								</label>
+								<Input
+									className="h-9"
+									id="created-date-to"
+									onChange={(e) => {
+										const currentRange = filters.date_range || {
+											start: "",
+											end: "",
+										};
+										handleFilterChange("date_range", {
+											...currentRange,
+											end: e.target.value,
+										});
+									}}
+									type="date"
+									value={filters.date_range?.end || ""}
+								/>
+							</div>
+
+							<div className="flex items-end">
+								<Button
+									className="h-9"
+									onClick={() => handleFilterChange("date_range", undefined)}
+									size="sm"
+									variant="outline"
+								>
+									Clear Dates
+								</Button>
+							</div>
 						</div>
 					</div>
 				</div>

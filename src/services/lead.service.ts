@@ -10,6 +10,11 @@ import type {
 	PaginatedLeadResponse,
 	UpdateLeadData,
 } from "@/types/lead";
+import {
+	extractBusinessType,
+	parseGooglePlacesLocation,
+	parseLocationFromURL,
+} from "@/utils/location";
 import type { Json } from "../../database.types";
 import { scrapeService } from "./scrape.service";
 import { scraperLogsService } from "./scraper-logs.service";
@@ -19,6 +24,57 @@ import { usageLimitService } from "./usage-limit.service";
 export class LeadService {
 	private async getSupabaseClient() {
 		return await createClient();
+	}
+
+	/**
+	 * Extract location data from scraping results
+	 */
+	private extractLocationData(
+		url: string,
+		source: string,
+		scrapInfo: any
+	): {
+		city?: string;
+		state?: string;
+		country?: string;
+		location_full?: string;
+		business_type?: string;
+	} {
+		let locationData: {
+			city?: string;
+			state?: string;
+			country?: string;
+			location_full?: string;
+		} = {};
+
+		// Try to parse location from URL (for google_places, npi_registry, fmcsa)
+		if (
+			source === "google_places" ||
+			source === "npi_registry" ||
+			source === "fmcsa"
+		) {
+			locationData = parseLocationFromURL(url);
+		}
+
+		// Try to extract location from scrapInfo address field
+		if (scrapInfo?.address && !locationData.location_full) {
+			const addressLocation = parseGooglePlacesLocation(scrapInfo.address);
+			locationData = {
+				...locationData,
+				...addressLocation,
+			};
+		}
+
+		// Extract business type
+		const businessType = extractBusinessType(source, scrapInfo);
+
+		return {
+			city: locationData.city || "",
+			state: locationData.state || "",
+			country: locationData.country || "",
+			location_full: locationData.location_full || "",
+			business_type: businessType || "",
+		};
 	}
 
 	async getLeadById(id: string): Promise<Lead | null> {
@@ -102,6 +158,33 @@ export class LeadService {
 			countQuery = countQuery.lte("created_at", filters.date_range.end);
 		}
 
+		// Location filters
+		if (filters.city) {
+			const cityTerm = `%${filters.city.toLowerCase()}%`;
+			query = query.ilike("city", cityTerm);
+			countQuery = countQuery.ilike("city", cityTerm);
+		}
+		if (filters.state) {
+			const stateTerm = `%${filters.state.toUpperCase()}%`;
+			query = query.ilike("state", stateTerm);
+			countQuery = countQuery.ilike("state", stateTerm);
+		}
+		if (filters.country) {
+			const countryTerm = `%${filters.country.toLowerCase()}%`;
+			query = query.ilike("country", countryTerm);
+			countQuery = countQuery.ilike("country", countryTerm);
+		}
+		if (filters.location) {
+			const locationTerm = `%${filters.location.toLowerCase()}%`;
+			query = query.ilike("location_full", locationTerm);
+			countQuery = countQuery.ilike("location_full", locationTerm);
+		}
+		if (filters.business_type) {
+			const businessTypeTerm = `%${filters.business_type.toLowerCase()}%`;
+			query = query.ilike("business_type", businessTypeTerm);
+			countQuery = countQuery.ilike("business_type", businessTypeTerm);
+		}
+
 		// Apply pagination and ordering
 		query = query
 			.order("created_at", { ascending: false })
@@ -166,6 +249,27 @@ export class LeadService {
 			query = query
 				.gte("created_at", filters.date_range.start)
 				.lte("created_at", filters.date_range.end);
+		}
+		// Location filters
+		if (filters?.city) {
+			const cityTerm = `%${filters.city.toLowerCase()}%`;
+			query = query.ilike("city", cityTerm);
+		}
+		if (filters?.state) {
+			const stateTerm = `%${filters.state.toUpperCase()}%`;
+			query = query.ilike("state", stateTerm);
+		}
+		if (filters?.country) {
+			const countryTerm = `%${filters.country.toLowerCase()}%`;
+			query = query.ilike("country", countryTerm);
+		}
+		if (filters?.location) {
+			const locationTerm = `%${filters.location.toLowerCase()}%`;
+			query = query.ilike("location_full", locationTerm);
+		}
+		if (filters?.business_type) {
+			const businessTypeTerm = `%${filters.business_type.toLowerCase()}%`;
+			query = query.ilike("business_type", businessTypeTerm);
 		}
 		const { data, error } = await query.order("created_at", {
 			ascending: false,
@@ -274,6 +378,9 @@ export class LeadService {
 				});
 		}
 
+		// Extract location data from scrapInfo
+		const locationData = this.extractLocationData(data.url, data.source, scrapInfo);
+
 		const { data: newLead, error } = await supabase
 			.from("leads")
 			.insert({
@@ -282,6 +389,11 @@ export class LeadService {
 				scrap_info: scrapInfo as Json | undefined,
 				user_id: userData?.user?.id,
 				status: scrapInfo?.title ? "scraped" : "scrap_failed",
+				city: locationData.city,
+				state: locationData.state,
+				country: locationData.country,
+				location_full: locationData.location_full,
+				business_type: locationData.business_type,
 			})
 			.select("*")
 			.single();

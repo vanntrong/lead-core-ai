@@ -22,6 +22,17 @@ export interface LeadScrapInfo {
 
 	phone?: string;
 
+	// Location information (for preset searches)
+	address?: string;
+	city?: string;
+	state?: string;
+	country?: string;
+	location_full?: string;
+
+	// Business information
+	business_type?: string;
+	rating?: number;
+	website?: string;
 }
 
 export interface LeadEnrichInfo {
@@ -67,6 +78,12 @@ export interface LeadFilters {
 	};
 	page?: number;
 	limit?: number;
+	// Location filters
+	city?: string;
+	state?: string;
+	country?: string;
+	location?: string; // Flexible location search
+	business_type?: string;
 }
 
 export interface PaginatedLeadResponse {
