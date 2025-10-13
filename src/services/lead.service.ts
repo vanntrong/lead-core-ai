@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { normalizeUrl } from "@/lib/utils";
 import { leadScoringService } from "@/services/lead-scoring.service";
+import { locationGeocodingService } from "@/services/location-geocoding.service";
 import type {
 	CreateLeadData,
 	Lead,
@@ -12,7 +13,7 @@ import type {
 } from "@/types/lead";
 import {
 	extractBusinessType,
-	parseGooglePlacesLocation,
+	parseLocationBasic,
 	parseLocationFromURL,
 } from "@/utils/location";
 import type { Json } from "../../database.types";
@@ -28,18 +29,19 @@ export class LeadService {
 
 	/**
 	 * Extract location data from scraping results
+	 * Uses geocoding service for accurate normalization
 	 */
-	private extractLocationData(
+	private async extractLocationData(
 		url: string,
 		source: string,
 		scrapInfo: any
-	): {
+	): Promise<{
 		city?: string;
 		state?: string;
 		country?: string;
 		location_full?: string;
 		business_type?: string;
-	} {
+	}> {
 		let locationData: {
 			city?: string;
 			state?: string;
@@ -47,22 +49,47 @@ export class LeadService {
 			location_full?: string;
 		} = {};
 
+		let locationQuery = "";
+
 		// Try to parse location from URL (for google_places, npi_registry, fmcsa)
 		if (
 			source === "google_places" ||
 			source === "npi_registry" ||
 			source === "fmcsa"
 		) {
-			locationData = parseLocationFromURL(url);
+			const urlLocation = parseLocationFromURL(url);
+			if (urlLocation.location_full) {
+				locationQuery = urlLocation.location_full;
+			}
 		}
 
 		// Try to extract location from scrapInfo address field
-		if (scrapInfo?.address && !locationData.location_full) {
-			const addressLocation = parseGooglePlacesLocation(scrapInfo.address);
-			locationData = {
-				...locationData,
-				...addressLocation,
-			};
+		if (scrapInfo?.address && !locationQuery) {
+			locationQuery = scrapInfo.address;
+		}
+
+		// Use geocoding service for accurate location parsing
+		if (locationQuery) {
+			try {
+				const geocoded = await locationGeocodingService.geocodeLocation(locationQuery);
+				if (geocoded) {
+					locationData = {
+						city: geocoded.city,
+						state: geocoded.state_code || geocoded.state,
+						country: geocoded.country,
+						location_full: geocoded.formatted,
+					};
+				} else {
+					// Fallback to basic parsing
+					locationData = parseLocationBasic(locationQuery);
+				}
+			} catch (error) {
+				console.error("Error geocoding location:", error);
+				// Fallback to basic parsing
+				if (locationQuery) {
+					locationData = parseLocationBasic(locationQuery);
+				}
+			}
 		}
 
 		// Extract business type
@@ -378,8 +405,8 @@ export class LeadService {
 				});
 		}
 
-		// Extract location data from scrapInfo
-		const locationData = this.extractLocationData(data.url, data.source, scrapInfo);
+		// Extract location data from scrapInfo (now async with geocoding)
+		const locationData = await this.extractLocationData(data.url, data.source, scrapInfo);
 
 		const { data: newLead, error } = await supabase
 			.from("leads")

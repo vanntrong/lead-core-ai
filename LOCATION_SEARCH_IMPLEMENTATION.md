@@ -36,36 +36,55 @@ The implementation includes flexible location searching that supports multiple f
 - Updated `LeadFilters` interface to support location filtering:
   - `city`, `state`, `country`, `location`, `business_type`
 
-### 4. Location Utilities
-**File**: `/src/utils/location.ts` (NEW)
-A comprehensive utility module for parsing and normalizing location data:
-
-**Functions**:
-- `parseGooglePlacesLocation()` - Parse location from Google Places addresses
-- `parseNPIRegistryLocation()` - Parse location from NPI Registry addresses
-- `parseFMCSALocation()` - Parse location from FMCSA addresses
-- `parseLocationFromURL()` - Extract location from URL parameters
-- `normalizeCity()` - Normalize city names (handles "LA" → "Los Angeles", etc.)
-- `normalizeState()` - Normalize state codes (handles 2-letter codes and full names)
-- `normalizeCountry()` - Normalize country names
-- `extractBusinessType()` - Intelligently extract business type from titles/descriptions
+### 4. Location Geocoding Service
+**File**: `/src/services/location-geocoding.service.ts` (NEW)
+A professional geocoding service using OpenCage API for accurate location normalization:
 
 **Features**:
-- Handles common city abbreviations (LA, NYC, SF, etc.)
-- Converts state abbreviations to full names and vice versa
-- Supports flexible location formats
-- Extracts business types from content using keyword matching
+- **Free Tier**: 2,500 requests/day
+- **Global Coverage**: Any location worldwide
+- **Smart Caching**: Reduces API calls for repeated locations
+- **Graceful Fallback**: Works without API key (basic parsing)
+- **Confidence Scores**: Quality validation for results
+- **Rate Limit Monitoring**: Tracks API usage
+- **Batch Processing**: Handle multiple locations efficiently
 
-### 5. Lead Service Updates
+**Methods**:
+- `geocodeLocation()` - Normalize any location string
+- `validateLocation()` - Check if location is valid
+- `geocodeLocations()` - Batch process multiple locations
+
+### 5. Location Utilities
+**File**: `/src/utils/location.ts` (UPDATED)
+Helper utilities for location parsing:
+
+**Functions**:
+- `parseLocationWithGeocoding()` - Uses geocoding service for accuracy (NEW)
+- `parseLocationBasic()` - Fallback basic parsing (NEW)
+- `parseGooglePlacesLocation()` - Parse location from Google Places addresses
+- `parseLocationFromURL()` - Extract location from URL parameters
+- `normalizeCity()` - Basic city normalization (simplified)
+- `normalizeState()` - Basic state normalization (simplified)
+- `normalizeCountry()` - Normalize country names
+- `extractBusinessType()` - Extract business type from content
+
+**Migration**:
+- ✅ Removed hardcoded city/state maps
+- ✅ Now uses OpenCage API for real-time geocoding
+- ✅ Maintains backward compatibility with fallback parsing
+
+### 6. Lead Service Updates
 **File**: `/src/services/lead.service.ts`
 
-**New Method**: `extractLocationData()`
+**Updated Method**: `extractLocationData()` (NOW ASYNC)
 - Extracts location information from URL parameters and scrap_info
-- Integrates with location utilities for normalization
+- **Uses OpenCage geocoding service** for accurate normalization
+- Falls back to basic parsing if API unavailable
 - Returns structured location data for database storage
 
 **Updated Method**: `createLead()`
-- Now extracts location data before inserting leads
+- Now awaits location data extraction (async)
+- Uses geocoded results for better accuracy
 - Stores city, state, country, location_full, and business_type in database
 
 **Updated Methods**: `getLeads()` and `getLeadsPaginated()`
@@ -277,6 +296,35 @@ The implementation includes:
 - Color contrast compliance
 - Screen reader friendly
 
+## Recent Updates: Geocoding Service Integration
+
+### Migration from Hardcoded Maps to OpenCage API
+
+**Previous Implementation:**
+- ❌ Hardcoded city aliases (~10 cities)
+- ❌ Manual state abbreviation maps (50 US states)
+- ❌ No international coverage
+- ❌ Couldn't handle typos or variations
+- ❌ Required manual maintenance
+
+**New Implementation:**
+- ✅ OpenCage Geocoding API integration
+- ✅ 2,500 free requests per day
+- ✅ Global coverage (any location worldwide)
+- ✅ Automatic typo handling
+- ✅ Confidence scores for validation
+- ✅ Smart caching to reduce API calls
+- ✅ Graceful fallback if API unavailable
+
+**Setup Required:**
+1. Sign up at [OpenCage Data](https://opencagedata.com/)
+2. Get free API key (no credit card required)
+3. Add to `.env.local`: `OPENCAGE_API_KEY=your_key_here`
+
+See `GEOCODING_SERVICE_SETUP.md` for detailed setup instructions.
+
 ## Summary
 
-This feature enables users to quickly find leads by combining business type and location, making the platform more powerful and user-friendly. The flexible search capabilities handle various input formats, making it intuitive for non-technical users. The implementation is scalable, performant, and ready for future enhancements.
+This feature enables users to quickly find leads by combining business type and location, making the platform more powerful and user-friendly. The flexible search capabilities handle various input formats, making it intuitive for non-technical users. 
+
+**Now powered by OpenCage Geocoding Service** for accurate, worldwide location parsing without manual maintenance. The implementation is scalable, performant, and ready for future enhancements like map visualization and distance-based search.

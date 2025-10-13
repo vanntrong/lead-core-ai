@@ -7,10 +7,9 @@ import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { AddLeadDialog } from "@/components/leads/add-lead-dialog";
-import { LeadFiltersComponent } from "@/components/leads/lead-filters";
 import LeadList from "@/components/leads/lead-list";
 import { LeadStatsCards } from "@/components/leads/lead-stats";
-import { PresetSearch } from "@/components/leads/preset-search";
+import { UnifiedLeadFilters } from "@/components/leads/unified-lead-filters";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { usePagination } from "@/components/ui/pagination";
@@ -99,19 +98,6 @@ function LeadBoardPage() {
 
 	const handleCreateLead = () => {
 		setIsAddLeadDialogOpen(true);
-	};
-
-	const handlePresetSearch = (businessType: string, location: string) => {
-		// Update filters with the preset search values
-		setFilters({
-			...filters,
-			business_type: businessType,
-			location,
-		});
-		// Reset pagination to first page
-		resetPagination();
-		// Show success message
-		toast.success(`Searching for ${businessType} in ${location}`);
 	};
 
 	const handleRefresh = async () => {
@@ -243,11 +229,8 @@ function LeadBoardPage() {
 					stats={stats}
 				/>
 
-				{/* Preset Search */}
-				<PresetSearch onSearch={handlePresetSearch} />
-
-				{/* Filters */}
-				<LeadFiltersComponent
+				{/* Unified Search & Filters */}
+				<UnifiedLeadFilters
 					filteredCount={filteredCount}
 					filters={filters ?? {}}
 					onFiltersChange={setFilters}

@@ -1,11 +1,76 @@
 // Location parsing utilities for leads
 // Extracts and normalizes location data from various sources
 
+import { locationGeocodingService } from "@/services/location-geocoding.service";
+
 export interface LocationData {
     city?: string;
     state?: string;
     country?: string;
     location_full?: string;
+}
+
+/**
+ * Enhanced location parsing using geocoding service
+ * Falls back to basic parsing if service unavailable
+ */
+export async function parseLocationWithGeocoding(location: string): Promise<LocationData> {
+    if (!location) {
+        return {};
+    }
+
+    try {
+        const geocoded = await locationGeocodingService.geocodeLocation(location);
+
+        if (!geocoded) {
+            return parseLocationBasic(location);
+        }
+
+        return {
+            city: geocoded.city,
+            state: geocoded.state_code || geocoded.state,
+            country: geocoded.country,
+            location_full: geocoded.formatted,
+        };
+    } catch (error) {
+        console.error("Error parsing location with geocoding:", error);
+        return parseLocationBasic(location);
+    }
+}
+
+/**
+ * Basic location parsing without API calls
+ * Used as fallback when geocoding service unavailable
+ */
+export function parseLocationBasic(location: string): LocationData {
+    const parts = location.split(",").map(p => p.trim());
+
+    let city: string | undefined;
+    let state: string | undefined;
+    let country: string | undefined;
+
+    if (parts.length === 1) {
+        city = normalizeCity(parts[0]);
+    } else if (parts.length === 2) {
+        city = normalizeCity(parts[0]);
+        const second = parts[1];
+        if (second.length === 2) {
+            state = normalizeState(second);
+        } else {
+            state = normalizeState(second);
+        }
+    } else if (parts.length >= 3) {
+        city = normalizeCity(parts[0]);
+        state = normalizeState(parts[1]);
+        country = normalizeCountry(parts[2]);
+    }
+
+    return {
+        city,
+        state,
+        country,
+        location_full: location,
+    };
 }
 
 /**
@@ -123,23 +188,20 @@ export function parseLocationFromURL(url: string): LocationData {
 
 /**
  * Normalize city name for consistent searching
- * Handles common abbreviations and variations
+ * Basic normalization - prefer using geocoding service for full accuracy
  */
 export function normalizeCity(city?: string): string {
     if (!city) { return ""; }
 
     const normalized = city.trim();
 
-    // City aliases (add more as needed)
+    // Only handle most common abbreviations
+    // For full normalization, use the geocoding service
     const cityAliases: Record<string, string> = {
         la: "Los Angeles",
         nyc: "New York",
         sf: "San Francisco",
-        "san fran": "San Francisco",
-        philly: "Philadelphia",
         dc: "Washington",
-        chi: "Chicago",
-        atx: "Austin",
     };
 
     const lowerCity = normalized.toLowerCase();
@@ -148,14 +210,15 @@ export function normalizeCity(city?: string): string {
 
 /**
  * Normalize state name for consistent searching
- * Converts abbreviations to full names and vice versa
+ * Returns state code (e.g., "TX" for "Texas")
+ * Prefer using geocoding service for full accuracy
  */
 export function normalizeState(state?: string): string {
     if (!state) { return ""; }
 
     const normalized = state.trim().toUpperCase();
 
-    // US State abbreviations
+    // US State abbreviations - kept for backward compatibility
     const stateAbbreviations: Record<string, string> = {
         AL: "Alabama",
         AK: "Alaska",
