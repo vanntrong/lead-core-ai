@@ -42,10 +42,10 @@ class LocationGeocodingService {
     private readonly userAgent = "lead-core-ai/1.0 (contact: admin@mail.leadcoreai.com)";
     private readonly cache = new Map<string, GeocodedLocation>();
     private lastRequestTime = 0;
-    private readonly minRequestInterval = 1000; // 1 second between requests
+    private readonly minRequestInterval = 1500; // 1.5 seconds between requests
 
     /**
-     * Rate limiting: ensure 1 second between requests
+     * Rate limiting: ensure 1.5 seconds between requests
      */
     private async waitForRateLimit(): Promise<void> {
         const now = Date.now();
@@ -89,7 +89,7 @@ class LocationGeocodingService {
                 headers: {
                     "User-Agent": this.userAgent,
                 },
-                signal: AbortSignal.timeout(10_000), // 10 seconds timeout
+                signal: AbortSignal.timeout(20_000), // 20 seconds timeout
             });
 
             if (!response.ok) {

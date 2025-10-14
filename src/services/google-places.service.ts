@@ -108,10 +108,7 @@ export class GooglePlacesService {
         const allDetails = await Promise.all(detailsPromises);
         const validDetails = allDetails.filter((d) => d !== null) as GooglePlaceDetails[];
 
-        // Step 3: Build results array
-        const results: GooglePlacesSearchResult[] = [];
-
-        for (const details of validDetails) {
+        const resultsPromises = Promise.all(validDetails.map(async (details) => {
             // Extract email from website (if available)
             let emails: string[] = [];
             if (details.website) {
@@ -137,7 +134,7 @@ export class GooglePlacesService {
                 descParts.push(`Business type: ${businessType}`);
             }
 
-            results.push({
+            return {
                 title: details.name,
                 desc: `${descParts.join(". ")}.`,
                 emails,
@@ -146,8 +143,10 @@ export class GooglePlacesService {
                 website: details.website,
                 rating: details.rating,
                 place_id: details.place_id,
-            });
-        }
+            };
+        }));
+
+        const results = await resultsPromises
 
         return { results, totalFound };
     }

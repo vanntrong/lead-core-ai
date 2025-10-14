@@ -288,9 +288,9 @@ export class LeadService {
 			countQuery = countQuery.ilike("country", countryTerm);
 		}
 		if (filters.location) {
-			const locationTerm = `%${filters.location.toLowerCase()}%`;
-			query = query.ilike("location_full", locationTerm);
-			countQuery = countQuery.ilike("location_full", locationTerm);
+			// search by location_search array for flexible matching
+			query = query.contains("location_search", [filters.location.toLowerCase()]);
+			countQuery = countQuery.contains("location_search", [filters.location.toLowerCase()]);
 		}
 		if (filters.business_type) {
 			const businessTypeTerm = `%${filters.business_type.toLowerCase()}%`;
