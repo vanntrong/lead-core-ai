@@ -28,8 +28,74 @@ export class LeadService {
 	}
 
 	/**
+	 * Generate normalized location search terms for flexible searching
+	 * Handles variations like "NY", "New York", "new york", "ny", "United States", "US", "us"
+	 */
+	private generateLocationSearchTerms(locationData: {
+		city?: string;
+		state?: string;
+		state_code?: string;
+		country?: string;
+		country_code?: string;
+		location_full?: string;
+	}): string[] {
+		const terms = new Set<string>();
+
+		// Add city variations
+		if (locationData.city) {
+			terms.add(locationData.city.toLowerCase());
+			terms.add(locationData.city.toUpperCase());
+			terms.add(locationData.city);
+		}
+
+		// Add state variations (both full name and code)
+		if (locationData.state) {
+			terms.add(locationData.state.toLowerCase());
+			terms.add(locationData.state.toUpperCase());
+			terms.add(locationData.state);
+		}
+		if (locationData.state_code) {
+			terms.add(locationData.state_code.toLowerCase());
+			terms.add(locationData.state_code.toUpperCase());
+		}
+
+		// Add country variations
+		if (locationData.country) {
+			terms.add(locationData.country.toLowerCase());
+			terms.add(locationData.country.toUpperCase());
+			terms.add(locationData.country);
+		}
+		if (locationData.country_code) {
+			terms.add(locationData.country_code.toLowerCase());
+			terms.add(locationData.country_code.toUpperCase());
+		}
+
+		// Add full location string variations
+		if (locationData.location_full) {
+			terms.add(locationData.location_full.toLowerCase());
+		}
+
+		// Add combined terms (city + state)
+		if (locationData.city && locationData.state) {
+			terms.add(`${locationData.city} ${locationData.state}`.toLowerCase());
+			terms.add(`${locationData.city}, ${locationData.state}`.toLowerCase());
+		}
+		if (locationData.city && locationData.state_code) {
+			terms.add(`${locationData.city} ${locationData.state_code}`.toLowerCase());
+			terms.add(`${locationData.city}, ${locationData.state_code}`.toLowerCase());
+		}
+
+		// Add combined terms (city + state + country)
+		if (locationData.city && locationData.state && locationData.country) {
+			terms.add(`${locationData.city} ${locationData.state} ${locationData.country}`.toLowerCase());
+		}
+
+		return Array.from(terms).filter(Boolean);
+	}
+
+	/**
 	 * Extract location data from scraping results
-	 * Uses geocoding service for accurate normalization
+	 * Uses geocoding service for accurate normalization and address from scrape results
 	 */
 	private async extractLocationData(
 		url: string,
@@ -41,31 +107,34 @@ export class LeadService {
 		country?: string;
 		location_full?: string;
 		business_type?: string;
+		location_search?: string[];
 	}> {
 		let locationData: {
 			city?: string;
 			state?: string;
+			state_code?: string;
 			country?: string;
+			country_code?: string;
 			location_full?: string;
 		} = {};
 
 		let locationQuery = "";
 
-		// Try to parse location from URL (for google_places, npi_registry, fmcsa)
-		if (
+		// Priority 1: Use address from scrape results (available for google_places, npi_registry, fmcsa)
+		if (scrapInfo?.address) {
+			locationQuery = scrapInfo.address;
+		}
+
+		// Priority 2: Try to parse location from URL (for google_places, npi_registry, fmcsa)
+		if (!locationQuery && (
 			source === "google_places" ||
 			source === "npi_registry" ||
 			source === "fmcsa"
-		) {
+		)) {
 			const urlLocation = parseLocationFromURL(url);
 			if (urlLocation.location_full) {
 				locationQuery = urlLocation.location_full;
 			}
-		}
-
-		// Try to extract location from scrapInfo address field
-		if (scrapInfo?.address && !locationQuery) {
-			locationQuery = scrapInfo.address;
 		}
 
 		// Use geocoding service for accurate location parsing
@@ -75,19 +144,31 @@ export class LeadService {
 				if (geocoded) {
 					locationData = {
 						city: geocoded.city,
-						state: geocoded.state_code || geocoded.state,
+						state: geocoded.state,
+						state_code: geocoded.state_code,
 						country: geocoded.country,
+						country_code: geocoded.country_code,
 						location_full: geocoded.formatted,
 					};
 				} else {
 					// Fallback to basic parsing
-					locationData = parseLocationBasic(locationQuery);
+					const basicParsed = parseLocationBasic(locationQuery);
+					locationData = {
+						...basicParsed,
+						state_code: basicParsed.state,
+						country_code: undefined,
+					};
 				}
 			} catch (error) {
 				console.error("Error geocoding location:", error);
 				// Fallback to basic parsing
 				if (locationQuery) {
-					locationData = parseLocationBasic(locationQuery);
+					const basicParsed = parseLocationBasic(locationQuery);
+					locationData = {
+						...basicParsed,
+						state_code: basicParsed.state,
+						country_code: undefined,
+					};
 				}
 			}
 		}
@@ -95,12 +176,16 @@ export class LeadService {
 		// Extract business type
 		const businessType = extractBusinessType(source, scrapInfo);
 
+		// Generate location search terms for flexible searching
+		const locationSearch = this.generateLocationSearchTerms(locationData);
+
 		return {
 			city: locationData.city || "",
-			state: locationData.state || "",
+			state: locationData.state_code || locationData.state || "",
 			country: locationData.country || "",
 			location_full: locationData.location_full || "",
 			business_type: businessType || "",
+			location_search: locationSearch.length > 0 ? locationSearch : undefined,
 		};
 	}
 
@@ -405,7 +490,7 @@ export class LeadService {
 				});
 		}
 
-		// Extract location data from scrapInfo (now async with geocoding)
+		// Extract location data from scrapInfo (now async with geocoding and address)
 		const locationData = await this.extractLocationData(data.url, data.source, scrapInfo);
 
 		const { data: newLead, error } = await supabase
@@ -421,6 +506,7 @@ export class LeadService {
 				country: locationData.country,
 				location_full: locationData.location_full,
 				business_type: locationData.business_type,
+				location_search: locationData.location_search as any,
 			})
 			.select("*")
 			.single();

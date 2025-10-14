@@ -1,6 +1,6 @@
 /**
  * Location Geocoding Service
- * Uses OpenCage Geocoding API (Free tier: 2,500 requests/day)
+ * Uses Nominatim API (OpenStreetMap) - Free with rate limit of 1 request/second
  * Provides location normalization and validation
  */
 
@@ -13,49 +13,50 @@ export interface GeocodedLocation {
     formatted: string;
     latitude?: number;
     longitude?: number;
-    confidence: number; // 0-10 scale from OpenCage
+    confidence: number; // 0-10 scale (converted from Nominatim importance)
 }
 
-interface OpenCageResponse {
-    results: Array<{
-        components: {
-            city?: string;
-            town?: string;
-            village?: string;
-            state?: string;
-            state_code?: string;
-            country?: string;
-            country_code?: string;
-            county?: string;
-        };
-        formatted: string;
-        geometry: {
-            lat: number;
-            lng: number;
-        };
-        confidence: number;
-    }>;
-    status: {
-        code: number;
-        message: string;
+interface NominatimResponse {
+    place_id: number;
+    licence: string;
+    osm_type: string;
+    osm_id: number;
+    lat: string;
+    lon: string;
+    display_name: string;
+    address: {
+        city?: string;
+        town?: string;
+        village?: string;
+        state?: string;
+        country?: string;
+        country_code?: string;
+        county?: string;
+        municipality?: string;
     };
-    rate: {
-        limit: number;
-        remaining: number;
-        reset: number;
-    };
+    importance: number; // 0-1 scale
 }
 
 class LocationGeocodingService {
-    private readonly baseUrl = "https://api.opencagedata.com/geocode/v1/json";
-    private readonly apiKey: string;
+    private readonly baseUrl = "https://nominatim.openstreetmap.org/search";
+    private readonly userAgent = "lead-core-ai/1.0 (contact: admin@lead-core-ai.com)";
     private readonly cache = new Map<string, GeocodedLocation>();
+    private lastRequestTime = 0;
+    private readonly minRequestInterval = 1000; // 1 second between requests
 
-    constructor() {
-        this.apiKey = process.env.OPENCAGE_API_KEY || "";
-        if (!this.apiKey) {
-            console.warn("OPENCAGE_API_KEY not configured - location geocoding will be limited");
+    /**
+     * Rate limiting: ensure 1 second between requests
+     */
+    private async waitForRateLimit(): Promise<void> {
+        const now = Date.now();
+        const timeSinceLastRequest = now - this.lastRequestTime;
+
+        if (timeSinceLastRequest < this.minRequestInterval) {
+            const waitTime = this.minRequestInterval - timeSinceLastRequest;
+            await new Promise(resolve => setTimeout(resolve, waitTime));
         }
+
+        this.lastRequestTime = Date.now();
     }
 
     /**
@@ -74,54 +75,57 @@ class LocationGeocodingService {
             return cached;
         }
 
-        // If no API key, return basic parsing
-        if (!this.apiKey) {
-            return this.fallbackParsing(query);
-        }
-
         try {
+            // Apply rate limiting
+            await this.waitForRateLimit();
+
             const url = new URL(this.baseUrl);
             url.searchParams.set("q", query);
-            url.searchParams.set("key", this.apiKey);
+            url.searchParams.set("format", "json");
             url.searchParams.set("limit", "1");
-            url.searchParams.set("no_annotations", "1");
-            url.searchParams.set("language", "en");
+            url.searchParams.set("addressdetails", "1");
 
-            const response = await fetch(url.toString());
+            const response = await fetch(url.toString(), {
+                headers: {
+                    "User-Agent": this.userAgent,
+                },
+                signal: AbortSignal.timeout(10_000), // 10 seconds timeout
+            });
 
             if (!response.ok) {
-                console.error(`OpenCage API error: ${response.status}`);
+                console.error(`Nominatim API error: ${response.status}`);
                 return this.fallbackParsing(query);
             }
 
-            const data: OpenCageResponse = await response.json();
+            const data: NominatimResponse[] = await response.json();
 
-            // Log rate limit info for monitoring
-            if (data.rate) {
-                console.log(`OpenCage rate limit: ${data.rate.remaining}/${data.rate.limit} remaining`);
-            }
-
-            if (data.results.length === 0) {
+            if (!data || data.length === 0) {
                 console.warn(`No geocoding results for: ${query}`);
                 return this.fallbackParsing(query);
             }
 
-            const result = data.results[0];
-            const components = result.components;
+            const result = data[0];
+            const address = result.address;
 
             // Extract city (try multiple fields)
-            const city = components.city || components.town || components.village || components.county;
+            const city = address.city || address.town || address.village || address.municipality || address.county;
+
+            // Extract state code from state name if available
+            const stateCode = this.getStateCode(address.state);
+
+            // Convert Nominatim importance (0-1) to confidence score (0-10)
+            const confidence = Math.round(result.importance * 10);
 
             const geocoded: GeocodedLocation = {
                 city,
-                state: components.state,
-                state_code: components.state_code,
-                country: components.country,
-                country_code: components.country_code,
-                formatted: result.formatted,
-                latitude: result.geometry.lat,
-                longitude: result.geometry.lng,
-                confidence: result.confidence,
+                state: address.state,
+                state_code: stateCode,
+                country: address.country,
+                country_code: address.country_code?.toUpperCase(),
+                formatted: result.display_name,
+                latitude: Number.parseFloat(result.lat),
+                longitude: Number.parseFloat(result.lon),
+                confidence,
             };
 
             // Cache the result
@@ -140,6 +144,31 @@ class LocationGeocodingService {
             console.error("Error geocoding location:", error);
             return this.fallbackParsing(query);
         }
+    }
+
+    /**
+     * Extract state code from state name (US states only)
+     */
+    private getStateCode(stateName?: string): string | undefined {
+        if (!stateName) {
+            return;
+        }
+
+        const stateMap: Record<string, string> = {
+            alabama: "AL", alaska: "AK", arizona: "AZ", arkansas: "AR", california: "CA",
+            colorado: "CO", connecticut: "CT", delaware: "DE", florida: "FL", georgia: "GA",
+            hawaii: "HI", idaho: "ID", illinois: "IL", indiana: "IN", iowa: "IA",
+            kansas: "KS", kentucky: "KY", louisiana: "LA", maine: "ME", maryland: "MD",
+            massachusetts: "MA", michigan: "MI", minnesota: "MN", mississippi: "MS", missouri: "MO",
+            montana: "MT", nebraska: "NE", nevada: "NV", "new hampshire": "NH", "new jersey": "NJ",
+            "new mexico": "NM", "new york": "NY", "north carolina": "NC", "north dakota": "ND", ohio: "OH",
+            oklahoma: "OK", oregon: "OR", pennsylvania: "PA", "rhode island": "RI", "south carolina": "SC",
+            "south dakota": "SD", tennessee: "TN", texas: "TX", utah: "UT", vermont: "VT",
+            virginia: "VA", washington: "WA", "west virginia": "WV", wisconsin: "WI", wyoming: "WY"
+        };
+
+        const normalized = stateName.toLowerCase().trim();
+        return stateMap[normalized] || (stateName.length === 2 ? stateName.toUpperCase() : undefined);
     }
 
     /**
@@ -185,30 +214,15 @@ class LocationGeocodingService {
 
     /**
      * Batch geocode multiple locations (respects rate limits)
+     * Processes one at a time to respect 1 request/second limit
      */
     async geocodeLocations(queries: string[]): Promise<Map<string, GeocodedLocation | null>> {
         const results = new Map<string, GeocodedLocation | null>();
 
-        // Process in small batches to avoid rate limiting
-        const batchSize = 10;
-        const delay = 100; // 100ms between requests
-
-        for (let i = 0; i < queries.length; i += batchSize) {
-            const batch = queries.slice(i, i + batchSize);
-
-            const batchResults = await Promise.all(
-                batch.map(async (query) => {
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    return {
-                        query,
-                        result: await this.geocodeLocation(query),
-                    };
-                })
-            );
-
-            for (const { query, result } of batchResults) {
-                results.set(query, result);
-            }
+        // Process sequentially to respect rate limit (1 req/sec)
+        for (const query of queries) {
+            const result = await this.geocodeLocation(query);
+            results.set(query, result);
         }
 
         return results;

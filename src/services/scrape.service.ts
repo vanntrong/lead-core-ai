@@ -489,6 +489,10 @@ export class ScrapeService {
 		title: string;
 		desc: string;
 		emails: string[];
+		address?: string;
+		phone?: string;
+		website?: string;
+		rating?: number;
 		error?: string;
 	}> {
 		try {
@@ -516,6 +520,10 @@ export class ScrapeService {
 				title: result.title,
 				desc: result.desc,
 				emails: result.emails,
+				address: result.address,
+				phone: result.phone,
+				website: result.website,
+				rating: result.rating,
 			};
 		} catch (error: any) {
 			console.error("Google Places scrape error:", error);
@@ -596,6 +604,8 @@ export class ScrapeService {
 		title: string;
 		desc: string;
 		emails: string[];
+		address?: string;
+		phone?: string;
 		error?: string;
 	}> {
 		try {
@@ -625,6 +635,8 @@ export class ScrapeService {
 				title: result.title,
 				desc: result.desc,
 				emails: result.emails,
+				address: result.address,
+				phone: result.phone,
 			};
 		} catch (error: any) {
 			console.error("FMCSA scrape error:", error);
