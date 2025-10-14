@@ -5,12 +5,28 @@ import APIFY_ACTORS from "@/constants/apify";
 import { apifyService } from "./apify.service";
 import { fmcsaService } from "./fmcsa.service";
 import { googlePlacesService } from "./google-places.service";
-import {
-	type NPISearchResult,
-	npiRegistryService,
-} from "./npi-registry.service";
+import { npiRegistryService } from "./npi-registry.service";
 import { proxyAdminService } from "./proxy-admin.service";
 import { proxyLogsService } from "./proxy-logs.service";
+
+// Standard scrape result interface
+interface ScrapeResult {
+	title: string;
+	desc: string;
+	emails: string[];
+	address?: string;
+	phone?: string;
+	website?: string;
+	rating?: number;
+	error?: string;
+	errorType?: string;
+}
+
+// Multiple scrape results
+interface ScrapeMultipleResults {
+	results: ScrapeResult[];
+	totalFound: number;
+}
 
 export class ScrapeService {
 	private readonly userAgents = [
@@ -29,12 +45,7 @@ export class ScrapeService {
 	async processScrape(
 		url: string,
 		source?: string
-	): Promise<{
-		title: string;
-		desc: string;
-		emails: string[];
-		error?: string;
-	}> {
+	): Promise<ScrapeResult> {
 		const proxy = await proxyAdminService.getNextProxy();
 		const proxyResult: {
 			status: "success" | "failed" | "banned" | "timeout";
@@ -78,7 +89,20 @@ export class ScrapeService {
 			const title = $("title").text() || "";
 			const desc = $('meta[name="description"]').attr("content") || "";
 			const emails = this.extractEmailsCheerio($, html);
-			return { title, desc, emails };
+
+			// Try to extract address information from common patterns
+			const address = this.extractAddress($);
+			const phone = this.extractPhone($, html);
+			const website = url; // The scraped URL is the website
+
+			return {
+				title,
+				desc,
+				emails,
+				address: address || undefined,
+				phone: phone || undefined,
+				website
+			};
 		} catch (error) {
 			const scrapError = this.handleScrapeError(error);
 			switch (scrapError.errorType) {
@@ -175,13 +199,139 @@ export class ScrapeService {
 		return Array.from(new Set(emails));
 	}
 
-	private handleScrapeError(error: unknown): {
-		title: string;
-		desc: string;
-		emails: string[];
-		error: string;
-		errorType: string;
-	} {
+	/**
+	 * Extract address information from HTML
+	 * Looks for common address patterns and schema.org markup
+	 */
+	private extractAddress($: any): string {
+		// Try schema.org address markup
+		const schemaAddress = $('[itemtype*="schema.org/PostalAddress"]');
+		if (schemaAddress.length > 0) {
+			const streetAddress = schemaAddress.find('[itemprop="streetAddress"]').text().trim();
+			const city = schemaAddress.find('[itemprop="addressLocality"]').text().trim();
+			const state = schemaAddress.find('[itemprop="addressRegion"]').text().trim();
+			const postalCode = schemaAddress.find('[itemprop="postalCode"]').text().trim();
+			const country = schemaAddress.find('[itemprop="addressCountry"]').text().trim();
+
+			const parts = [streetAddress, city, state, postalCode, country].filter(Boolean);
+			if (parts.length > 0) {
+				return parts.join(", ");
+			}
+		}
+
+		// Try JSON-LD structured data
+		const jsonLdScripts = $('script[type="application/ld+json"]');
+		for (const script of jsonLdScripts) {
+			try {
+				const jsonLd = JSON.parse($(script).html() || "");
+				const address = jsonLd?.address || jsonLd?.location?.address;
+				if (address && typeof address === "object") {
+					const parts = [
+						address.streetAddress,
+						address.addressLocality,
+						address.addressRegion,
+						address.postalCode,
+						address.addressCountry,
+					].filter(Boolean);
+					if (parts.length > 0) {
+						return parts.join(", ");
+					}
+				}
+			} catch {
+				// Skip invalid JSON-LD
+			}
+		}
+
+		// Try common selectors for address
+		const addressSelectors = [
+			'[class*="address"]',
+			'[id*="address"]',
+			'address',
+			'.contact-address',
+			'#contact-address',
+		];
+
+		for (const selector of addressSelectors) {
+			const element = $(selector).first();
+			if (element.length > 0) {
+				const text = element.text().trim();
+				// Check if it looks like an address (has numbers and common address keywords)
+				if (text && /\d+/.test(text) && text.length > 10 && text.length < 300) {
+					return text.replace(/\s+/g, " ");
+				}
+			}
+		}
+
+		return "";
+	}
+
+	/**
+	 * Extract phone number from HTML
+	 * Looks for tel: links and common phone patterns
+	 */
+	private extractPhone($: any, html: string): string {
+		// Try tel: links first
+		const telLink = $('a[href^="tel:"]').first();
+		if (telLink.length > 0) {
+			const href = telLink.attr("href");
+			if (href) {
+				return href.replace(/^tel:/, "").trim();
+			}
+		}
+
+		// Try schema.org markup
+		const schemaTel = $('[itemprop="telephone"]').first();
+		if (schemaTel.length > 0) {
+			const phone = schemaTel.text().trim();
+			if (phone) {
+				return phone;
+			}
+		}
+
+		// Try JSON-LD structured data
+		const jsonLdScripts = $('script[type="application/ld+json"]');
+		for (const script of jsonLdScripts) {
+			try {
+				const jsonLd = JSON.parse($(script).html() || "");
+				const phone = jsonLd?.telephone || jsonLd?.contactPoint?.telephone;
+				if (phone && typeof phone === "string") {
+					return phone;
+				}
+			} catch {
+				// Skip invalid JSON-LD
+			}
+		}
+
+		// Try common phone selectors
+		const phoneSelectors = [
+			'[class*="phone"]',
+			'[id*="phone"]',
+			'.contact-phone',
+			'#contact-phone',
+		];
+
+		for (const selector of phoneSelectors) {
+			const element = $(selector).first();
+			if (element.length > 0) {
+				const text = element.text().trim();
+				// Check if it looks like a phone number
+				if (text && /[\d\s\-+()]{10,}/.test(text)) {
+					return text;
+				}
+			}
+		}
+
+		// Try regex pattern in HTML for phone numbers
+		const phoneRegex = /(?:tel:|phone:|call:)?\s*(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/gi;
+		const matches = html.match(phoneRegex);
+		if (matches && matches.length > 0) {
+			return matches[0].replace(/^(tel:|phone:|call:)\s*/i, "").trim();
+		}
+
+		return "";
+	}
+
+	private handleScrapeError(error: unknown): ScrapeResult {
 		const errorMessage = error instanceof Error ? error.message : String(error);
 		const errorName = error instanceof Error ? error.name : "";
 
@@ -196,7 +346,7 @@ export class ScrapeService {
 				emails: [],
 				error: "Request timed out - website took too long to respond",
 				errorType: "timeout",
-			} as any;
+			};
 		}
 		if (errorMessage.includes("net::ERR_NAME_NOT_RESOLVED")) {
 			return {
@@ -205,7 +355,7 @@ export class ScrapeService {
 				emails: [],
 				error: "Website not found - please check the URL",
 				errorType: "not_found",
-			} as any;
+			};
 		}
 		if (errorMessage.includes("net::ERR_CONNECTION_REFUSED")) {
 			return {
@@ -214,7 +364,7 @@ export class ScrapeService {
 				emails: [],
 				error: "Connection refused - website may be down",
 				errorType: "connection_refused",
-			} as any;
+			};
 		}
 		if (errorMessage.includes("net::ERR_SSL_PROTOCOL_ERROR")) {
 			return {
@@ -223,7 +373,7 @@ export class ScrapeService {
 				emails: [],
 				error: "SSL certificate error - website security issue",
 				errorType: "ssl_error",
-			} as any;
+			};
 		}
 		if (errorMessage.includes("403")) {
 			return {
@@ -232,7 +382,7 @@ export class ScrapeService {
 				emails: [],
 				error: "Access forbidden - website blocked the request",
 				errorType: "forbidden",
-			} as any;
+			};
 		}
 		if (errorMessage.includes("404")) {
 			return {
@@ -241,7 +391,7 @@ export class ScrapeService {
 				emails: [],
 				error: "Page not found - please check the URL",
 				errorType: "not_found",
-			} as any;
+			};
 		}
 		if (
 			errorMessage.includes("500") ||
@@ -254,7 +404,7 @@ export class ScrapeService {
 				emails: [],
 				error: "Website server error - please try again later",
 				errorType: "server_error",
-			} as any;
+			};
 		}
 		return {
 			title: "",
@@ -262,18 +412,13 @@ export class ScrapeService {
 			emails: [],
 			error: "Scrape failed - unable to access website",
 			errorType: "unknown",
-		} as any;
+		};
 	}
 
 	async scrape(
 		url: string,
 		source: string
-	): Promise<{
-		title: string;
-		desc: string;
-		emails: string[];
-		error?: string;
-	}> {
+	): Promise<ScrapeResult> {
 		if (!this.validateUrl(url, source)) {
 			return {
 				title: "",
@@ -281,7 +426,7 @@ export class ScrapeService {
 				emails: [],
 				error: `Invalid URL for source: ${source}`,
 				errorType: "validation",
-			} as any;
+			};
 		}
 		if (source === "etsy") {
 			return this.etsyShopScrape(url);
@@ -299,6 +444,47 @@ export class ScrapeService {
 			return this.fmcsaScrape(url);
 		}
 		return await this.processScrape(url, source);
+	}
+
+	/**
+	 * Scrape multiple results from a source
+	 * Only supported for: google_places, npi_registry, fmcsa
+	 */
+	async scrapeMultiple(
+		url: string,
+		source: string,
+		maxResults = 20
+	): Promise<ScrapeMultipleResults> {
+		if (!this.validateUrl(url, source)) {
+			return {
+				results: [{
+					title: "",
+					desc: "",
+					emails: [],
+					error: `Invalid URL for source: ${source}`,
+					errorType: "validation",
+				}],
+				totalFound: 0,
+			};
+		}
+
+		// Only new sources support multiple results
+		if (source === "google_places") {
+			return this.googlePlacesScrapeMultiple(url, maxResults);
+		}
+		if (source === "npi_registry") {
+			return this.npiRegistryScrapeMultiple(url, maxResults);
+		}
+		if (source === "fmcsa") {
+			return this.fmcsaScrapeMultiple(url, maxResults);
+		}
+
+		// For old sources (shopify, etsy, g2, woocommerce), return single result
+		const singleResult = await this.scrape(url, source);
+		return {
+			results: [singleResult],
+			totalFound: 1,
+		};
 	}
 
 	validateUrl(url: string, source: string): boolean {
@@ -353,12 +539,7 @@ export class ScrapeService {
 		return { valid: true };
 	}
 
-	private async etsyShopScrape(url: string): Promise<{
-		title: string;
-		desc: string;
-		emails: string[];
-		error?: string;
-	}> {
+	private async etsyShopScrape(url: string): Promise<ScrapeResult> {
 		const match = url.match(/^https?:\/\/(www\.)?etsy\.com\/shop\/([\w-]+)/i);
 		if (!match || match.length < 3) {
 			return Promise.resolve({
@@ -367,7 +548,7 @@ export class ScrapeService {
 				emails: [],
 				error: "Invalid Etsy shop URL",
 				errorType: "validation",
-			} as any);
+			});
 		}
 		const shopName = match[2];
 		if (!shopName) {
@@ -377,7 +558,7 @@ export class ScrapeService {
 				emails: [],
 				error: "Invalid Etsy shop name",
 				errorType: "validation",
-			} as any);
+			});
 		}
 		// Extract the first word from shopName (split by hyphen or space)
 		const firstWord = shopName.split(/[-\s]/)[0];
@@ -396,6 +577,8 @@ export class ScrapeService {
 					title: `${item?.shop_name} - ${item?.location}`,
 					desc: item?.headline,
 					emails: [],
+					address: item?.location, // Etsy provides location
+					website: url,
 				};
 			}
 			return {
@@ -404,7 +587,7 @@ export class ScrapeService {
 				emails: [],
 				error: "Scrape failed",
 				errorType: "scrape_failed",
-			} as any;
+			};
 		} catch (error) {
 			console.error("Etsy scrape error:", error);
 			return {
@@ -413,15 +596,10 @@ export class ScrapeService {
 				emails: [],
 				error: "Scrape failed",
 				errorType: "scrape_failed",
-			} as any;
+			};
 		}
 	}
-	private async g2ProductScrape(url: string): Promise<{
-		title: string;
-		desc: string;
-		emails: string[];
-		error?: string;
-	}> {
+	private async g2ProductScrape(url: string): Promise<ScrapeResult> {
 		const match = url.match(/^https?:\/\/(www\.)?g2\.com\/products\/([\w-]+)/i);
 		if (!match || match.length < 3) {
 			return Promise.resolve({
@@ -430,7 +608,7 @@ export class ScrapeService {
 				emails: [],
 				error: "Invalid G2 product URL",
 				errorType: "validation",
-			} as any);
+			});
 		}
 		const productSlug = match[2];
 		if (!productSlug) {
@@ -440,7 +618,7 @@ export class ScrapeService {
 				emails: [],
 				error: "Invalid G2 product slug",
 				errorType: "validation",
-			} as any);
+			});
 		}
 		try {
 			const resp = await apifyService.runActorSyncGetDatasetItems({
@@ -461,6 +639,7 @@ export class ScrapeService {
 					title: item?.product_name || "",
 					desc: item?.product_description || "",
 					emails: [],
+					website: url,
 				};
 			}
 			return {
@@ -469,7 +648,7 @@ export class ScrapeService {
 				emails: [],
 				error: "Scrape failed",
 				errorType: "scrape_failed",
-			} as any;
+			};
 		} catch (error) {
 			console.error("G2 scrape error:", error);
 			return {
@@ -478,23 +657,14 @@ export class ScrapeService {
 				emails: [],
 				error: "Scrape failed",
 				errorType: "scrape_failed",
-			} as any;
+			};
 		}
 	}
 
 	/**
 	 * Google Places scraping
 	 */
-	private async googlePlacesScrape(url: string): Promise<{
-		title: string;
-		desc: string;
-		emails: string[];
-		address?: string;
-		phone?: string;
-		website?: string;
-		rating?: number;
-		error?: string;
-	}> {
+	private async googlePlacesScrape(url: string): Promise<ScrapeResult> {
 		try {
 			// Parse parameters from JSON string
 			const params = JSON.parse(url);
@@ -508,7 +678,7 @@ export class ScrapeService {
 					emails: [],
 					error: "Missing keyword parameter",
 					errorType: "validation",
-				} as any;
+				};
 			}
 
 			const result = await googlePlacesService.searchPlaces({
@@ -533,14 +703,14 @@ export class ScrapeService {
 				emails: [],
 				error: error?.message || "Failed to search Google Places",
 				errorType: "scrape_failed",
-			} as any;
+			};
 		}
 	}
 
 	/**
 	 * NPI Registry scraping
 	 */
-	private async npiRegistryScrape(url: string): Promise<NPISearchResult & { errorType?: string, error?: string }> {
+	private async npiRegistryScrape(url: string): Promise<ScrapeResult> {
 		try {
 			// Parse parameters from JSON string
 			const params = JSON.parse(url);
@@ -555,7 +725,7 @@ export class ScrapeService {
 					emails: [],
 					error: "Please provide provider name or taxonomy",
 					errorType: "validation",
-				} as any;
+				};
 			}
 
 			// Parse location into city/state if provided
@@ -584,7 +754,13 @@ export class ScrapeService {
 				state: state || undefined,
 			});
 
-			return result;
+			return {
+				title: result.title,
+				desc: result.desc,
+				emails: result.emails,
+				address: result.address,
+				phone: result.phone,
+			};
 		} catch (error: any) {
 			console.error("NPI Registry scrape error:", error);
 			return {
@@ -593,21 +769,14 @@ export class ScrapeService {
 				emails: [],
 				error: error?.message || "Failed to search NPI Registry",
 				errorType: "scrape_failed",
-			} as any;
+			};
 		}
 	}
 
 	/**
 	 * FMCSA scraping
 	 */
-	private async fmcsaScrape(url: string): Promise<{
-		title: string;
-		desc: string;
-		emails: string[];
-		address?: string;
-		phone?: string;
-		error?: string;
-	}> {
+	private async fmcsaScrape(url: string): Promise<ScrapeResult> {
 		try {
 			// Parse parameters from JSON string
 			const params = JSON.parse(url);
@@ -622,7 +791,7 @@ export class ScrapeService {
 					emails: [],
 					error: "Please provide company name, DOT number, or MC number",
 					errorType: "validation",
-				} as any;
+				};
 			}
 
 			const result = await fmcsaService.searchCarrier({
@@ -646,7 +815,192 @@ export class ScrapeService {
 				emails: [],
 				error: error?.message || "Failed to search FMCSA database",
 				errorType: "scrape_failed",
-			} as any;
+			};
+		}
+	}
+
+	/**
+	 * Google Places scraping - multiple results
+	 */
+	private async googlePlacesScrapeMultiple(url: string, maxResults = 20): Promise<ScrapeMultipleResults> {
+		try {
+			// Parse parameters from JSON string
+			const params = JSON.parse(url);
+			const keyword = params.keyword || "";
+			const location = params.location || "";
+
+			if (!keyword) {
+				return {
+					results: [{
+						title: "",
+						desc: "",
+						emails: [],
+						error: "Missing keyword parameter",
+						errorType: "validation",
+					}],
+					totalFound: 0,
+				};
+			}
+
+			const searchResults = await googlePlacesService.searchPlacesMultiple({
+				keyword,
+				location,
+			}, maxResults);
+
+			return {
+				results: searchResults.results.map((result) => ({
+					title: result.title,
+					desc: result.desc,
+					emails: result.emails,
+					address: result.address,
+					phone: result.phone,
+					website: result.website,
+					rating: result.rating,
+				})),
+				totalFound: searchResults.totalFound,
+			};
+		} catch (error: any) {
+			console.error("Google Places scrape error:", error);
+			return {
+				results: [{
+					title: "",
+					desc: "",
+					emails: [],
+					error: error?.message || "Failed to search Google Places",
+					errorType: "scrape_failed",
+				}],
+				totalFound: 0,
+			};
+		}
+	}
+
+	/**
+	 * NPI Registry scraping - multiple results
+	 */
+	private async npiRegistryScrapeMultiple(url: string, maxResults = 20): Promise<ScrapeMultipleResults> {
+		try {
+			// Parse parameters from JSON string
+			const params = JSON.parse(url);
+			const providerName = params.provider || "";
+			const taxonomy = params.taxonomy || "";
+			const location = params.location || "";
+
+			if (!(providerName || taxonomy)) {
+				return {
+					results: [{
+						title: "",
+						desc: "",
+						emails: [],
+						error: "Please provide provider name or taxonomy",
+						errorType: "validation",
+					}],
+					totalFound: 0,
+				};
+			}
+
+			// Parse location into city/state if provided
+			let city: string | undefined;
+			let state: string | undefined;
+			if (location) {
+				// Try to split by comma for "City, State" format
+				const parts = location.split(",").map((p: string) => p.trim());
+				if (parts.length === 2) {
+					city = parts[0];
+					state = parts[1];
+				} else if (parts.length === 1) {
+					// Assume it's a state if it's short (2-3 chars) or a state name
+					if (parts[0].length <= 3 || parts[0].match(/^\d{5}$/)) {
+						state = parts[0];
+					} else {
+						city = parts[0];
+					}
+				}
+			}
+
+			const searchResults = await npiRegistryService.searchProviderMultiple({
+				provider_name: providerName || undefined,
+				taxonomy_description: taxonomy || undefined,
+				city: city || undefined,
+				state: state || undefined,
+			}, maxResults);
+
+			return {
+				results: searchResults.results.map((result) => ({
+					title: result.title,
+					desc: result.desc,
+					emails: result.emails,
+					address: result.address,
+					phone: result.phone,
+				})),
+				totalFound: searchResults.totalFound,
+			};
+		} catch (error: any) {
+			console.error("NPI Registry scrape error:", error);
+			return {
+				results: [{
+					title: "",
+					desc: "",
+					emails: [],
+					error: error?.message || "Failed to search NPI Registry",
+					errorType: "scrape_failed",
+				}],
+				totalFound: 0,
+			};
+		}
+	}
+
+	/**
+	 * FMCSA scraping - multiple results
+	 */
+	private async fmcsaScrapeMultiple(url: string, maxResults = 20): Promise<ScrapeMultipleResults> {
+		try {
+			// Parse parameters from JSON string
+			const params = JSON.parse(url);
+			const companyName = params.company || "";
+			const dotNumber = params.dot || "";
+			const mcNumber = params.mc || "";
+
+			if (!(companyName || dotNumber || mcNumber)) {
+				return {
+					results: [{
+						title: "",
+						desc: "",
+						emails: [],
+						error: "Please provide company name, DOT number, or MC number",
+						errorType: "validation",
+					}],
+					totalFound: 0,
+				};
+			}
+
+			const searchResults = await fmcsaService.searchCarrierMultiple({
+				company_name: companyName || undefined,
+				dot_number: dotNumber || undefined,
+				mc_number: mcNumber || undefined,
+			}, maxResults);
+
+			return {
+				results: searchResults.results.map((result) => ({
+					title: result.title,
+					desc: result.desc,
+					emails: result.emails,
+					address: result.address,
+					phone: result.phone,
+				})),
+				totalFound: searchResults.totalFound,
+			};
+		} catch (error: any) {
+			console.error("FMCSA scrape error:", error);
+			return {
+				results: [{
+					title: "",
+					desc: "",
+					emails: [],
+					error: error?.message || "Failed to search FMCSA database",
+					errorType: "scrape_failed",
+				}],
+				totalFound: 0,
+			};
 		}
 	}
 }

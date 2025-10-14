@@ -1,8 +1,8 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { leadService } from "@/services/lead.service";
 import type { CreateLeadData, LeadFilters, UpdateLeadData } from "@/types/lead";
-import { revalidatePath } from "next/cache";
 
 export async function getLeadsAction(filters?: LeadFilters) {
 	try {
@@ -103,6 +103,48 @@ export async function generateMockLeadsAction() {
 		return {
 			success: false,
 			message: error?.message || "Failed to generate mock leads",
+		};
+	}
+}
+
+export async function scrapeLeadsAction(data: CreateLeadData) {
+	try {
+		const results = await leadService.scrapeLeads(data);
+		return {
+			success: true,
+			results,
+			message: "Leads scraped successfully",
+		};
+	} catch (error: any) {
+		console.error("Error in scrapeLeadsAction:", error);
+		return {
+			success: false,
+			message: error?.message || "Failed to scrape leads",
+			results: [],
+		};
+	}
+}
+
+export async function bulkCreateLeadsAction(
+	leads: Array<{
+		url: string;
+		source: CreateLeadData["source"];
+		scrapInfo: any;
+	}>
+) {
+	try {
+		const createdLeads = await leadService.bulkCreateLeads(leads);
+		revalidatePath("/dashboard/leads");
+		return {
+			success: true,
+			count: createdLeads.length,
+			message: `${createdLeads.length} leads created successfully`,
+		};
+	} catch (error: any) {
+		console.error("Error in bulkCreateLeadsAction:", error);
+		return {
+			success: false,
+			message: error?.message || "Failed to create leads",
 		};
 	}
 }

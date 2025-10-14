@@ -7,6 +7,7 @@ import type {
 	Lead,
 	LeadFilters,
 	LeadScrapInfo,
+	LeadSource,
 	LeadStats,
 	PaginatedLeadResponse,
 	UpdateLeadData,
@@ -521,6 +522,178 @@ export class LeadService {
 		});
 
 		return newLead;
+	}
+
+	/**
+	 * Scrape multiple leads without saving them
+	 */
+	async scrapeLeads(data: CreateLeadData): Promise<Array<{
+		url: string;
+		title: string;
+		desc: string;
+		emails: string[];
+		phone?: string;
+		address?: string;
+		website?: string;
+		rating?: number;
+		error?: string;
+	}>> {
+		const supabase = await this.getSupabaseClient();
+		const { data: userData } = await supabase.auth.getUser();
+
+		if (!userData.user) {
+			throw new Error("User not found");
+		}
+
+		const activeSubscription =
+			await subscriptionService.getUserActiveSubscription();
+		if (!activeSubscription) {
+			throw new Error(
+				"No active subscription found. Please subscribe to a plan to add leads."
+			);
+		}
+
+		if (
+			activeSubscription.usage_limits?.sources?.includes(data.source) === false
+		) {
+			throw new Error(
+				"Selected source is not available in your current plan. Please choose a different source or upgrade your plan."
+			);
+		}
+
+		// Track scraping operation
+		const startTime = new Date();
+		let scrapingSuccess = false;
+		let scrapingError: string | undefined;
+
+		try {
+			const scrapeResults = await scrapeService.scrapeMultiple(data.url, data.source, 20);
+
+			if (scrapeResults.results.length === 0) {
+				throw new Error("No results found");
+			}
+
+			// Check if first result has error
+			const firstResult = scrapeResults.results[0];
+			if (firstResult?.error) {
+				scrapingError = firstResult.error;
+				const errorType = (firstResult as any)?.errorType || "scrape_failed";
+				const errorMessage = `[${errorType}] ${firstResult.error || "Failed to scrape URL"}`;
+				throw new Error(errorMessage);
+			}
+
+			scrapingSuccess = true;
+
+			// Format results for the frontend - generate unique URLs for each result
+			return scrapeResults.results.map((result, index) => ({
+				url: result.website || `${data.url}#${index}`, // Use website if available, otherwise add index
+				title: result.title,
+				desc: result.desc,
+				emails: result.emails,
+				phone: result.phone,
+				address: result.address,
+				website: result.website,
+				rating: result.rating,
+			}));
+		} catch (error: any) {
+			scrapingError = error.message || "Failed to scrape URL";
+			throw error;
+		} finally {
+			// Log scraping operation regardless of success or failure
+			const endTime = new Date();
+			scraperLogsService
+				.logScrapingOperation({
+					source: data.source,
+					url: data.url,
+					startTime,
+					endTime,
+					success: scrapingSuccess,
+					error: scrapingError,
+				})
+				.catch((err) => {
+					console.error("Error logging scraping operation:", err);
+				});
+		}
+	}
+
+	/**
+	 * Bulk create leads from scraped data
+	 */
+	async bulkCreateLeads(
+		leads: Array<{ url: string; source: LeadSource; scrapInfo: any }>
+	): Promise<any[]> {
+		const supabase = await this.getSupabaseClient();
+		const { data: userData } = await supabase.auth.getUser();
+
+		if (!userData.user) {
+			throw new Error("User not found");
+		}
+
+		const activeSubscription =
+			await subscriptionService.getUserActiveSubscription();
+		if (!activeSubscription) {
+			throw new Error(
+				"No active subscription found. Please subscribe to a plan to add leads."
+			);
+		}
+
+		// Check if adding these leads would exceed the limit
+		const currentLeads = activeSubscription.usage_limits?.current_leads || 0;
+		const maxLeads = activeSubscription.usage_limits?.max_leads;
+		const leadsToAdd = leads.length;
+
+		if (
+			typeof maxLeads === "number" &&
+			maxLeads !== null &&
+			currentLeads + leadsToAdd > maxLeads
+		) {
+			throw new Error(
+				`Adding ${leadsToAdd} leads would exceed your limit. Current: ${currentLeads}, Max: ${maxLeads}`
+			);
+		}
+
+		// Prepare lead data for bulk insert
+		const leadsToInsert = await Promise.all(
+			leads.map(async (lead) => {
+				// Extract location data from scrapInfo
+				const locationData = await this.extractLocationData(
+					lead.url,
+					lead.source,
+					lead.scrapInfo
+				);
+
+				return {
+					url: normalizeUrl(lead.url),
+					source: lead.source,
+					scrap_info: lead.scrapInfo as Json | undefined,
+					user_id: userData.user.id,
+					status: lead.scrapInfo?.title ? "scraped" : "scrap_failed",
+					city: locationData.city,
+					state: locationData.state,
+					country: locationData.country,
+					location_full: locationData.location_full,
+					business_type: locationData.business_type,
+					location_search: locationData.location_search as any,
+				};
+			})
+		);
+
+		const { data: createdLeads, error } = await supabase
+			.from("leads")
+			.insert(leadsToInsert)
+			.select("*");
+
+		if (error) {
+			console.error("Error creating leads:", error);
+			throw new Error(`Failed to create leads: ${error.message}`);
+		}
+
+		// Update usage limit
+		usageLimitService.increCurrentLeadsByCount(leadsToAdd).catch((err: any) => {
+			console.error("Error updating usage limit:", err);
+		});
+
+		return createdLeads || [];
 	}
 
 	async deleteLead(id: string): Promise<void> {

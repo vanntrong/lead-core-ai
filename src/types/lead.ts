@@ -60,6 +60,29 @@ export interface CreateLeadData {
 	source: LeadSource;
 }
 
+// Scraped lead result before saving
+export interface ScrapedLeadResult {
+	url: string; // The actual URL or identifier for this specific lead
+	title: string;
+	desc: string;
+	emails: string[];
+	phone?: string;
+	address?: string;
+	website?: string;
+	rating?: number;
+	error?: string;
+	errorType?: string;
+}
+
+// Bulk create leads data
+export interface BulkCreateLeadsData {
+	leads: Array<{
+		url: string;
+		source: LeadSource;
+		scrapInfo: LeadScrapInfo;
+	}>;
+}
+
 // Lead update data
 export interface UpdateLeadData extends Partial<LeadRow> {
 	id: string;

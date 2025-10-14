@@ -43,74 +43,90 @@ interface FMCSASearchResult {
     total_power_units?: number;
 }
 
+interface FMCSASearchMultipleResult {
+    results: FMCSASearchResult[];
+    totalFound: number;
+}
+
 export class FMCSAService {
     private readonly baseUrl = "https://mobile.fmcsa.dot.gov/qc/services/carriers";
 
     /**
-     * Search FMCSA database
+     * Search FMCSA database - returns first result only (legacy)
      * Note: FMCSA API requires at least DOT number or MC number for reliable results
      */
     async searchCarrier(params: FMCSASearchParams): Promise<FMCSASearchResult> {
-        let searchUrl = "";
+        const results = await this.searchCarrierMultiple(params);
+        if (results.results.length === 0) {
+            throw new Error("No carrier found with the provided information");
+        }
+        return results.results[0];
+    }
 
-        // Priority: DOT Number > MC Number > Company Name
-        if (params.dot_number) {
-            searchUrl = `${this.baseUrl}/${params.dot_number}?webKey=FMCSA_API_KEY`;
-        } else if (params.mc_number) {
-            // Convert MC number to DOT number via docket search
-            searchUrl = `${this.baseUrl}/docket-number/${params.mc_number}?webKey=FMCSA_API_KEY`;
+    /**
+     * Search FMCSA database - returns multiple results when possible
+     */
+    async searchCarrierMultiple(
+        params: FMCSASearchParams,
+        maxResults = 20
+    ): Promise<FMCSASearchMultipleResult> {
+        // If we have specific DOT/MC number, we can only get 1 result
+        if (params.dot_number || params.mc_number) {
+            try {
+                let searchUrl = "";
+                if (params.dot_number) {
+                    searchUrl = `${this.baseUrl}/${params.dot_number}?webKey=FMCSA_API_KEY`;
+                } else if (params.mc_number) {
+                    searchUrl = `${this.baseUrl}/docket-number/${params.mc_number}?webKey=FMCSA_API_KEY`;
+                }
+
+                const response = await fetch(searchUrl, {
+                    headers: {
+                        Accept: "application/json",
+                        "User-Agent":
+                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                    },
+                    signal: AbortSignal.timeout(15_000), // 15 seconds timeout
+                });
+
+                if (!response.ok) {
+                    throw new Error(`FMCSA API error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (!(data?.content)) {
+                    return { results: [], totalFound: 0 };
+                }
+
+                const result = this.formatCarrierData(data.content);
+                return { results: [result], totalFound: 1 };
+            } catch (error: any) {
+                if (error.name === "TimeoutError") {
+                    throw new Error("Request timed out. Please try again.");
+                }
+                // If API fails and we have company name, try name search
+                if (params.company_name) {
+                    return this.searchByNameMultiple(params, maxResults);
+                }
+                throw error;
+            }
         } else if (params.company_name) {
-            // Name search is less reliable, but we'll try web scraping as fallback
-            return this.searchByName(params);
+            // Name search can return multiple results
+            return this.searchByNameMultiple(params, maxResults);
         } else {
             throw new Error("Please provide DOT number, MC number, or company name");
-        }
-
-        try {
-            const response = await fetch(searchUrl, {
-                headers: {
-                    Accept: "application/json",
-                    "User-Agent":
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                },
-                signal: AbortSignal.timeout(15_000), // 15 seconds timeout
-            });
-
-            if (!response.ok) {
-                // If API fails, try web scraping
-                if (params.company_name) {
-                    return this.searchByName(params);
-                }
-                throw new Error(`FMCSA API error: ${response.status}`);
-            }
-
-            const data = await response.json();
-
-            if (!(data?.content)) {
-                throw new Error("No carrier found with the provided information");
-            }
-
-            return this.formatCarrierData(data.content);
-        } catch (error: any) {
-            if (error.name === "TimeoutError") {
-                throw new Error("Request timed out. Please try again.");
-            }
-            // Try fallback search by name if we have it
-            if (params.company_name) {
-                return this.searchByName(params);
-            }
-            throw error;
         }
     }
 
     /**
-     * Search by company name using FMCSA website scraping
-     * This is a fallback when API search is not available
+     * Search by company name - returns multiple results
      */
-    private async searchByName(
-        params: FMCSASearchParams
-    ): Promise<FMCSASearchResult> {
-        const { company_name, city, state } = params;
+    private async searchByNameMultiple(
+        params: FMCSASearchParams,
+        maxResults = 20
+    ): Promise<FMCSASearchMultipleResult> {
+        const { company_name, state } = params;
 
         if (!company_name) {
             throw new Error("Company name is required for name-based search");
@@ -151,10 +167,12 @@ export class FMCSAService {
             const carrierData = this.parseCarrierHTML(html, company_name);
 
             if (!carrierData) {
-                throw new Error(`No carrier found with name: ${company_name}`);
+                return { results: [], totalFound: 0 };
             }
 
-            return carrierData;
+            // For now, HTML parsing returns single result
+            // In the future, this could be enhanced to parse multiple results from the HTML
+            return { results: [carrierData].slice(0, maxResults), totalFound: 1 };
         } catch (error) {
             throw new Error(
                 `FMCSA search failed: ${error instanceof Error ? error.message : "Unknown error"}`

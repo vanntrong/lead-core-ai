@@ -837,6 +837,7 @@ export type Database = {
           flagged: boolean | null
           id: string
           location_full: string | null
+          location_search: string[] | null
           scrap_info: Json | null
           source: Database["public"]["Enums"]["lead_source"]
           state: string | null
@@ -856,6 +857,7 @@ export type Database = {
           flagged?: boolean | null
           id?: string
           location_full?: string | null
+          location_search?: string[] | null
           scrap_info?: Json | null
           source: Database["public"]["Enums"]["lead_source"]
           state?: string | null
@@ -875,6 +877,7 @@ export type Database = {
           flagged?: boolean | null
           id?: string
           location_full?: string | null
+          location_search?: string[] | null
           scrap_info?: Json | null
           source?: Database["public"]["Enums"]["lead_source"]
           state?: string | null

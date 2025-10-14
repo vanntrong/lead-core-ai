@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import { subscriptionService } from "./subscription.service";
 import type { UsageLimit } from "@/types/usage_limit";
+import { subscriptionService } from "./subscription.service";
 
 export class UsageLimitService {
 	private async getSupabaseClient() {
@@ -29,7 +29,42 @@ export class UsageLimitService {
 			.eq("id", usageLimitId)
 			.select("*")
 			.maybeSingle();
-		if (error) { throw error; }
+		if (error) {
+			throw error;
+		}
+		if (!data) {
+			throw new Error(
+				"No usage limit row was updated. Check if the id exists and matches a row."
+			);
+		}
+		return data as UsageLimit;
+	}
+
+	/**
+	 * Increment current leads by a specific count
+	 */
+	async increCurrentLeadsByCount(count: number): Promise<UsageLimit> {
+		const supabase = await this.getSupabaseClient();
+		const activeSub = await subscriptionService.getUserActiveSubscription();
+		if (!activeSub?.usage_limits) {
+			throw new Error("No active subscription or usage limits found");
+		}
+		const usageLimitId = activeSub.usage_limit_id;
+		const usageLimits = activeSub.usage_limits;
+		const currentLeads = usageLimits.current_leads ?? 0;
+		const maxLeads = usageLimits.max_leads ?? null;
+		if (maxLeads !== null && currentLeads + count > maxLeads) {
+			throw new Error("Lead quota would be exceeded for this plan tier.");
+		}
+		const { data, error } = await supabase
+			.from("usage_limits")
+			.update({ current_leads: currentLeads + count })
+			.eq("id", usageLimitId)
+			.select("*")
+			.maybeSingle();
+		if (error) {
+			throw error;
+		}
 		if (!data) {
 			throw new Error(
 				"No usage limit row was updated. Check if the id exists and matches a row."

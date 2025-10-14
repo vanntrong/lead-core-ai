@@ -30,6 +30,11 @@ interface GooglePlacesSearchResult {
     place_id?: string;
 }
 
+interface GooglePlacesSearchMultipleResult {
+    results: GooglePlacesSearchResult[];
+    totalFound: number;
+}
+
 export class GooglePlacesService {
     private readonly apiKey: string;
     private readonly baseUrl = "https://maps.googleapis.com/maps/api";
@@ -42,11 +47,25 @@ export class GooglePlacesService {
     }
 
     /**
-     * Search for places using Text Search API
+     * Search for places using Text Search API - returns first result only (legacy)
      */
     async searchPlaces(
         params: GooglePlacesSearchParams
     ): Promise<GooglePlacesSearchResult> {
+        const results = await this.searchPlacesMultiple(params);
+        if (results.results.length === 0) {
+            throw new Error(`No results found for "${params.keyword}" in ${params.location}`);
+        }
+        return results.results[0];
+    }
+
+    /**
+     * Search for places using Text Search API - returns multiple results
+     */
+    async searchPlacesMultiple(
+        params: GooglePlacesSearchParams,
+        maxResults = 20
+    ): Promise<GooglePlacesSearchMultipleResult> {
         if (!this.apiKey) {
             throw new Error("Google Places API key not configured");
         }
@@ -71,50 +90,66 @@ export class GooglePlacesService {
         }
 
         if (!searchData.results || searchData.results.length === 0) {
-            throw new Error(`No results found for "${keyword}" in ${location}`);
+            return { results: [], totalFound: 0 };
         }
 
-        // Get the first result
-        const firstPlace = searchData.results[0];
+        // Get up to maxResults places
+        const placesToFetch = searchData.results.slice(0, maxResults);
+        const totalFound = searchData.results.length;
 
-        // Step 2: Get place details
-        const details = await this.getPlaceDetails(firstPlace.place_id);
+        // Step 2: Get place details for each result
+        const detailsPromises = placesToFetch.map((place: any) =>
+            this.getPlaceDetails(place.place_id).catch((error) => {
+                console.error(`Error fetching details for place ${place.place_id}:`, error);
+                return null;
+            })
+        );
 
-        // Step 3: Extract email from website (if available)
-        let emails: string[] = [];
-        if (details.website) {
-            try {
-                emails = await this.extractEmailsFromWebsite(details.website);
-            } catch (error) {
-                console.error("Error extracting emails from website:", error);
+        const allDetails = await Promise.all(detailsPromises);
+        const validDetails = allDetails.filter((d) => d !== null) as GooglePlaceDetails[];
+
+        // Step 3: Build results array
+        const results: GooglePlacesSearchResult[] = [];
+
+        for (const details of validDetails) {
+            // Extract email from website (if available)
+            let emails: string[] = [];
+            if (details.website) {
+                try {
+                    emails = await this.extractEmailsFromWebsite(details.website);
+                } catch (error) {
+                    console.error("Error extracting emails from website:", error);
+                }
             }
+
+            // Build description from place data
+            const descParts: string[] = [];
+            if (details.formatted_address) {
+                descParts.push(`Located at ${details.formatted_address}`);
+            }
+            if (details.rating && details.user_ratings_total) {
+                descParts.push(
+                    `Rated ${details.rating}/5 from ${details.user_ratings_total} reviews`
+                );
+            }
+            if (details.types && details.types.length > 0) {
+                const businessType = details.types[0].replace(/_/g, " ");
+                descParts.push(`Business type: ${businessType}`);
+            }
+
+            results.push({
+                title: details.name,
+                desc: `${descParts.join(". ")}.`,
+                emails,
+                phone: details.formatted_phone_number,
+                address: details.formatted_address,
+                website: details.website,
+                rating: details.rating,
+                place_id: details.place_id,
+            });
         }
 
-        // Build description from place data
-        const descParts: string[] = [];
-        if (details.formatted_address) {
-            descParts.push(`Located at ${details.formatted_address}`);
-        }
-        if (details.rating && details.user_ratings_total) {
-            descParts.push(
-                `Rated ${details.rating}/5 from ${details.user_ratings_total} reviews`
-            );
-        }
-        if (details.types && details.types.length > 0) {
-            const businessType = details.types[0].replace(/_/g, " ");
-            descParts.push(`Business type: ${businessType}`);
-        }
-
-        return {
-            title: details.name,
-            desc: `${descParts.join(". ")}.`,
-            emails,
-            phone: details.formatted_phone_number,
-            address: details.formatted_address,
-            website: details.website,
-            rating: details.rating,
-            place_id: details.place_id,
-        };
+        return { results, totalFound };
     }
 
     /**

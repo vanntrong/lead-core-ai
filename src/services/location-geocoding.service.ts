@@ -39,7 +39,7 @@ interface NominatimResponse {
 
 class LocationGeocodingService {
     private readonly baseUrl = "https://nominatim.openstreetmap.org/search";
-    private readonly userAgent = "lead-core-ai/1.0 (contact: admin@lead-core-ai.com)";
+    private readonly userAgent = "lead-core-ai/1.0 (contact: admin@mail.leadcoreai.com)";
     private readonly cache = new Map<string, GeocodedLocation>();
     private lastRequestTime = 0;
     private readonly minRequestInterval = 1000; // 1 second between requests

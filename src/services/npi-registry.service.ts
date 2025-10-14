@@ -71,13 +71,34 @@ export interface NPISearchResult {
     credential?: string;
 }
 
+export interface NPISearchMultipleResult {
+    results: NPISearchResult[];
+    totalFound: number;
+}
+
 export class NPIRegistryService {
     private readonly baseUrl = "https://npiregistry.cms.hhs.gov/api";
 
     /**
-     * Search NPI Registry
+     * Search NPI Registry - returns first result only (legacy)
      */
     async searchProvider(params: NPISearchParams): Promise<NPISearchResult> {
+        const results = await this.searchProviderMultiple(params);
+        if (results.results.length === 0) {
+            throw new Error(
+                "No healthcare providers found matching your search criteria"
+            );
+        }
+        return results.results[0];
+    }
+
+    /**
+     * Search NPI Registry - returns multiple results
+     */
+    async searchProviderMultiple(
+        params: NPISearchParams,
+        maxResults = 20
+    ): Promise<NPISearchMultipleResult> {
         const queryParams = new URLSearchParams();
 
         // Add search parameters
@@ -101,7 +122,7 @@ export class NPIRegistryService {
             queryParams.append("postal_code", params.postal_code);
         }
 
-        queryParams.append("limit", String(params.limit || 10));
+        queryParams.append("limit", String(Math.min(params.limit || 200, 200))); // NPI API max is 200
         queryParams.append("version", "2.1");
 
         const url = `${this.baseUrl}/?${queryParams.toString()}`;
@@ -121,15 +142,18 @@ export class NPIRegistryService {
             const data = await response.json();
 
             if (!data.results || data.results.length === 0) {
-                throw new Error(
-                    "No healthcare providers found matching your search criteria"
-                );
+                return { results: [], totalFound: 0 };
             }
 
-            // Get the first result
-            const provider = data.results[0] as NPIResult;
+            const totalFound = data.result_count || data.results.length;
+            const providersToProcess = data.results.slice(0, maxResults);
 
-            return this.formatProviderData(provider);
+            // Format all results
+            const formattedResults = providersToProcess.map((provider: NPIResult) =>
+                this.formatProviderData(provider)
+            );
+
+            return { results: formattedResults, totalFound };
         } catch (error: any) {
             if (error.name === "TimeoutError") {
                 throw new Error("Request timed out. Please try again.");
