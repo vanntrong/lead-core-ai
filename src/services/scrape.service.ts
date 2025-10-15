@@ -3,7 +3,7 @@ import { HttpsProxyAgent } from "https-proxy-agent";
 import fetch from "node-fetch";
 import APIFY_ACTORS from "@/constants/apify";
 import { apifyService } from "./apify.service";
-import { fmcsaService } from "./fmcsa.service";
+import { fmcsaDatabaseService } from "./fmcsa-database.service";
 import { googlePlacesService } from "./google-places.service";
 import { npiRegistryService } from "./npi-registry.service";
 import { proxyAdminService } from "./proxy-admin.service";
@@ -794,7 +794,7 @@ export class ScrapeService {
 				};
 			}
 
-			const result = await fmcsaService.searchCarrier({
+			const result = await fmcsaDatabaseService.searchCarrier({
 				company_name: companyName || undefined,
 				dot_number: dotNumber || undefined,
 				mc_number: mcNumber || undefined,
@@ -973,7 +973,7 @@ export class ScrapeService {
 				};
 			}
 
-			const searchResults = await fmcsaService.searchCarrierMultiple({
+			const searchResults = await fmcsaDatabaseService.searchCarrierMultiple({
 				company_name: companyName || undefined,
 				dot_number: dotNumber || undefined,
 				mc_number: mcNumber || undefined,
