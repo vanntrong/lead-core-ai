@@ -5,8 +5,8 @@ import {
 	Calendar,
 	CheckCircle2,
 	Clock,
+	ExternalLink,
 	Eye,
-	Link,
 	Mail,
 	XCircle,
 } from "lucide-react";
@@ -107,7 +107,13 @@ export function LeadTable({
 							Status
 						</TableHead>
 						<TableHead className="h-12 px-4 text-center font-semibold text-gray-900 text-sm">
-							Verify Email status
+							Email
+						</TableHead>
+						<TableHead className="h-12 px-4 text-center font-semibold text-gray-900 text-sm">
+							Phone
+						</TableHead>
+						<TableHead className="h-12 px-4 text-center font-semibold text-gray-900 text-sm">
+							Address
 						</TableHead>
 						<TableHead className="h-12 px-4 text-center font-semibold text-gray-900 text-sm">
 							Created At
@@ -210,11 +216,11 @@ const LeadRow = ({
 											target="_blank"
 											title={actualUrl}
 										>
-											<Link aria-hidden="true" className="h-3 w-3" />
+											<ExternalLink aria-hidden="true" className="h-3 w-3" />
 										</a>
 									) : (
 										<span className="inline-flex items-center opacity-50">
-											<Link aria-hidden="true" className="h-3 w-3" />
+											<ExternalLink aria-hidden="true" className="h-3 w-3" />
 										</span>
 									)}
 									<div className="max-w-[270px] gap-1 truncate">
@@ -259,6 +265,10 @@ const LeadRow = ({
 				<div className="flex flex-col items-center">
 					<div className="flex items-center justify-center gap-2">
 						{(() => {
+							if (lead.scrap_info?.emails?.length === 0) {
+								return null;
+							}
+
 							if (lead.verify_email_status === "verified") {
 								return (
 									<>
@@ -320,7 +330,31 @@ const LeadRow = ({
 						<Mail aria-label="Email" className="mr-1 h-4 w-4 text-gray-400" />
 						{lead.scrap_info?.emails && lead.scrap_info?.emails?.length > 0
 							? lead.scrap_info.emails[0]
-							: "Not found"}
+							: "N/A"}
+					</span>
+				</div>
+			</TableCell>
+
+			{/* Phone Numbers Found */}
+			<TableCell className="py-3 align-middle">
+				<div className="flex flex-col items-center">
+					<span className="mt-1 flex items-center gap-1 font-medium text-gray-500 text-sm">
+						<Mail aria-label="Email" className="mr-1 h-4 w-4 text-gray-400" />
+						{lead.scrap_info?.phone && lead.scrap_info?.phone?.length > 0
+							? lead.scrap_info.phone
+							: "N/A"}
+					</span>
+				</div>
+			</TableCell>
+
+			{/* Address */}
+			<TableCell className="py-3 align-middle">
+				<div className="flex justify-center">
+
+					<span className="mt-1 max-w-[200px] items-center gap-1 truncate font-medium text-gray-500 text-sm">
+						{lead.scrap_info?.address && lead.scrap_info?.address?.length > 0
+							? lead.scrap_info.address
+							: "N/A"}
 					</span>
 				</div>
 			</TableCell>

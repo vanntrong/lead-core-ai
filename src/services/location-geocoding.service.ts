@@ -1,6 +1,6 @@
 /**
  * Location Geocoding Service
- * Uses Nominatim API (OpenStreetMap) - Free with rate limit of 1 request/second
+ * Uses Geoapify Forward Geocoding API - 3000 requests/day, up to 5 requests/second
  * Provides location normalization and validation
  */
 
@@ -13,50 +13,74 @@ export interface GeocodedLocation {
     formatted: string;
     latitude?: number;
     longitude?: number;
-    confidence: number; // 0-10 scale (converted from Nominatim importance)
+    confidence: number; // 0-10 scale (converted from Geoapify confidence)
 }
 
-interface NominatimResponse {
-    place_id: number;
-    licence: string;
-    osm_type: string;
-    osm_id: number;
-    lat: string;
-    lon: string;
-    display_name: string;
-    address: {
+interface GeoapifyResponse {
+    results: Array<{
+        formatted: string;
+        lat: number;
+        lon: number;
         city?: string;
-        town?: string;
-        village?: string;
         state?: string;
         country?: string;
         country_code?: string;
         county?: string;
         municipality?: string;
-    };
-    importance: number; // 0-1 scale
+        suburb?: string;
+        district?: string;
+        rank: {
+            confidence: number; // 0-1 scale
+            confidence_city_level?: number;
+            confidence_street_level?: number;
+            match_type?: string;
+        };
+    }>;
 }
 
 class LocationGeocodingService {
-    private readonly baseUrl = "https://nominatim.openstreetmap.org/search";
-    private readonly userAgent = "lead-core-ai/1.0 (contact: admin@mail.leadcoreai.com)";
+    private readonly baseUrl = "https://api.geoapify.com/v1/geocode/search";
+    private readonly apiKey: string;
     private readonly cache = new Map<string, GeocodedLocation>();
     private lastRequestTime = 0;
-    private readonly minRequestInterval = 1500; // 1.5 seconds between requests
+    private readonly minRequestInterval = 200; // 5 requests per second = 200ms between requests
+    private requestCount = 0;
+    private requestResetTime = Date.now() + 86_400_000; // Reset after 24 hours
+
+    constructor() {
+        // Get API key from environment variables
+        this.apiKey = process.env.GEOAPIFY_API_KEY || "";
+        if (!this.apiKey) {
+            console.warn("⚠️ GEOAPIFY_API_KEY not set in environment variables. Geocoding will use fallback parsing.");
+        }
+    }
 
     /**
-     * Rate limiting: ensure 1.5 seconds between requests
+     * Rate limiting: ensure 5 requests per second and track daily limit (3000/day)
      */
     private async waitForRateLimit(): Promise<void> {
+        // Reset daily counter if 24 hours have passed
         const now = Date.now();
-        const timeSinceLastRequest = now - this.lastRequestTime;
+        if (now >= this.requestResetTime) {
+            this.requestCount = 0;
+            this.requestResetTime = now + 86_400_000; // Next 24 hours
+        }
 
+        // Check daily limit
+        if (this.requestCount >= 3000) {
+            const hoursUntilReset = Math.ceil((this.requestResetTime - now) / 3_600_000);
+            throw new Error(`Daily Geoapify API limit (3000 requests) reached. Resets in ${hoursUntilReset} hours.`);
+        }
+
+        // Rate limiting: 5 requests per second = 200ms between requests
+        const timeSinceLastRequest = now - this.lastRequestTime;
         if (timeSinceLastRequest < this.minRequestInterval) {
             const waitTime = this.minRequestInterval - timeSinceLastRequest;
             await new Promise(resolve => setTimeout(resolve, waitTime));
         }
 
         this.lastRequestTime = Date.now();
+        this.requestCount++;
     }
 
     /**
@@ -72,7 +96,14 @@ class LocationGeocodingService {
         const cacheKey = query.toLowerCase().trim();
         const cached = this.cache.get(cacheKey);
         if (cached) {
+            console.log(`📍 Cache hit for: ${query}`);
             return cached;
+        }
+
+        // If no API key, use fallback parsing immediately
+        if (!this.apiKey) {
+            console.warn(`⚠️ No API key - using fallback parsing for: ${query}`);
+            return this.fallbackParsing(query);
         }
 
         try {
@@ -80,64 +111,64 @@ class LocationGeocodingService {
             await this.waitForRateLimit();
 
             const url = new URL(this.baseUrl);
-            url.searchParams.set("q", query);
+            url.searchParams.set("text", query);
+            url.searchParams.set("apiKey", this.apiKey);
             url.searchParams.set("format", "json");
             url.searchParams.set("limit", "1");
-            url.searchParams.set("addressdetails", "1");
+
+            console.log(`🌍 Geocoding: ${query} (${this.requestCount}/3000 requests today)`);
 
             const response = await fetch(url.toString(), {
-                headers: {
-                    "User-Agent": this.userAgent,
-                },
                 signal: AbortSignal.timeout(20_000), // 20 seconds timeout
             });
 
             if (!response.ok) {
-                console.error(`Nominatim API error: ${response.status}`);
+                console.error(`Geoapify API error: ${response.status} - ${response.statusText}`);
                 return this.fallbackParsing(query);
             }
 
-            const data: NominatimResponse[] = await response.json();
+            const data: GeoapifyResponse = await response.json();
 
-            if (!data || data.length === 0) {
+            if (!data?.results || data.results.length === 0) {
                 console.warn(`No geocoding results for: ${query}`);
                 return this.fallbackParsing(query);
             }
 
-            const result = data[0];
-            const address = result.address;
+            const result = data.results[0];
 
             // Extract city (try multiple fields)
-            const city = address.city || address.town || address.village || address.municipality || address.county;
+            const city = result.city || result.municipality || result.county || result.suburb || result.district;
 
             // Extract state code from state name if available
-            const stateCode = this.getStateCode(address.state);
+            const stateCode = this.getStateCode(result.state);
 
-            // Convert Nominatim importance (0-1) to confidence score (0-10)
-            const confidence = Math.round(result.importance * 10);
+            // Convert Geoapify confidence (0-1) to confidence score (0-10)
+            const confidence = Math.round((result.rank?.confidence || 0) * 10);
 
             const geocoded: GeocodedLocation = {
                 city,
-                state: address.state,
+                state: result.state,
                 state_code: stateCode,
-                country: address.country,
-                country_code: address.country_code?.toUpperCase(),
-                formatted: result.display_name,
-                latitude: Number.parseFloat(result.lat),
-                longitude: Number.parseFloat(result.lon),
+                country: result.country,
+                country_code: result.country_code?.toUpperCase(),
+                formatted: result.formatted,
+                latitude: result.lat,
+                longitude: result.lon,
                 confidence,
             };
 
             // Cache the result
             this.cache.set(cacheKey, geocoded);
 
-            // Auto-cleanup old cache entries
+            // Auto-cleanup old cache entries (keep max 1000 cached locations)
             if (this.cache.size > 1000) {
                 const firstKey = this.cache.keys().next().value;
                 if (firstKey) {
                     this.cache.delete(firstKey);
                 }
             }
+
+            console.log(`✅ Geocoded: ${query} → ${geocoded.formatted} (confidence: ${confidence}/10)`);
 
             return geocoded;
         } catch (error) {
@@ -255,10 +286,55 @@ class LocationGeocodingService {
     }
 
     /**
+     * Get current API usage statistics
+     */
+    getUsageStats(): {
+        requestsToday: number;
+        dailyLimit: number;
+        remainingRequests: number;
+        cacheSize: number;
+        resetsIn: string;
+    } {
+        const now = Date.now();
+        const hoursUntilReset = Math.ceil((this.requestResetTime - now) / 3_600_000);
+        const minutesUntilReset = Math.ceil((this.requestResetTime - now) / 60_000);
+
+        return {
+            requestsToday: this.requestCount,
+            dailyLimit: 3000,
+            remainingRequests: Math.max(0, 3000 - this.requestCount),
+            cacheSize: this.cache.size,
+            resetsIn: hoursUntilReset > 0 ? `${hoursUntilReset}h` : `${minutesUntilReset}m`,
+        };
+    }
+
+    /**
+     * Check if we can make more requests today
+     */
+    canMakeRequest(): boolean {
+        // Reset counter if needed
+        const now = Date.now();
+        if (now >= this.requestResetTime) {
+            this.requestCount = 0;
+            this.requestResetTime = now + 86_400_000;
+        }
+
+        return this.requestCount < 3000;
+    }
+
+    /**
      * Clear cache (useful for testing or memory management)
      */
     clearCache(): void {
         this.cache.clear();
+    }
+
+    /**
+     * Reset usage counters (useful for testing)
+     */
+    resetUsageCounters(): void {
+        this.requestCount = 0;
+        this.requestResetTime = Date.now() + 86_400_000;
     }
 }
 

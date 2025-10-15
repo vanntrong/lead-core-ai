@@ -24,6 +24,11 @@ NEXT_PUBLIC_ADMIN_EMAILS=your_admin_email
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_client_id
 ANTHROPIC_API_KEY=your_anthropic_api_key
 STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+
+# Geoapify Geocoding API (Required for location search)
+# Get free API key: https://myprojects.geoapify.com/
+# Free tier: 3,000 requests/day
+GEOAPIFY_API_KEY=your_geoapify_api_key
 ```
 
 ### Step 3: Run development server
@@ -76,8 +81,26 @@ npm run build
 - **Billing:** `src/services/invoice.service.ts`, `src/services/subscription.service.ts`, Stripe integration in `src/lib/stripe.ts`
 - **Exports:** `src/services/lead-export.service.ts`
 
-## 5. Notes
+## 5. Location Geocoding Setup
+
+The application uses **Geoapify Forward Geocoding API** for location search and normalization.
+
+### Quick Setup:
+1. Get free API key at: https://myprojects.geoapify.com/
+2. Add `GEOAPIFY_API_KEY` to your `.env.local`
+3. Restart dev server
+
+### Free Tier Limits:
+- ✅ 3,000 requests/day
+- ✅ 5 requests/second
+- ✅ No credit card required
+
+📖 **Full Guide:** [GEOAPIFY_SETUP.md](./GEOAPIFY_SETUP.md)  
+📖 **Migration Details:** [GEOAPIFY_MIGRATION.md](./GEOAPIFY_MIGRATION.md)
+
+## 6. Notes
 
 - Make sure all environment variables are filled in correctly.
 - If using Supabase, create a project and get the appropriate keys.
 - Stripe is only used for payment features.
+- Geoapify API key is required for location-based features.
