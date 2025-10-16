@@ -28,7 +28,7 @@ export async function createSubscription({
 export const pricingPlans = [
 	{
 		tier: "trial",
-		priceId: "price_1SD0M1G2cJrqXSBvymQCQBgv",
+		priceId: "price_1SGt6qRdJrlbSvYQNec1r3yK",
 		limits: {
 			sources: 1,
 			leads_per_month: 25,
@@ -39,7 +39,7 @@ export const pricingPlans = [
 	},
 	{
 		tier: "basic",
-		priceId: "price_1S9FJBG2cJrqXSBvC5Oyd5Km",
+		priceId: "price_1SGt7CRdJrlbSvYQTcHIljq9",
 		limits: {
 			sources: 1,
 			leads_per_month: 100,
@@ -50,7 +50,7 @@ export const pricingPlans = [
 	},
 	{
 		tier: "pro",
-		priceId: "price_1S9FJbG2cJrqXSBvQhFaDnAi",
+		priceId: "price_1SGt7XRdJrlbSvYQjyhR1eAy",
 		limits: {
 			sources: "unlimited",
 			leads_per_month: 500,
@@ -61,7 +61,7 @@ export const pricingPlans = [
 	},
 	{
 		tier: "unlimited",
-		priceId: "price_1S9FK0G2cJrqXSBvluk26Kw0",
+		priceId: "price_1SGt7yRdJrlbSvYQD7PuqeZJ",
 		limits: {
 			sources: "unlimited",
 			leads_per_month: "unlimited",
