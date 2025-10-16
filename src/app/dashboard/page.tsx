@@ -4,9 +4,12 @@ import {
 	BarChart3,
 	Brain,
 	CheckCircle2,
+	FileText,
 	Globe,
+	MapPin,
 	Package,
 	RefreshCw,
+	Truck,
 } from "lucide-react";
 import Link from "next/link";
 import { DashboardLayout } from "@/components/dashboard-layout";
@@ -314,6 +317,15 @@ export default function Dashboard() {
 												)}
 												{item.source === "etsy" && (
 													<Brain className="h-6 w-6 text-purple-600" />
+												)}
+												{item.source === "google_places" && (
+													<MapPin className="h-6 w-6 text-blue-600" />
+												)}
+												{item.source === "npi_registry" && (
+													<FileText className="h-6 w-6 text-teal-600" />
+												)}
+												{item.source === "fmcsa" && (
+													<Truck className="h-6 w-6 text-amber-600" />
 												)}
 											</div>
 											<div className="flex-1">
