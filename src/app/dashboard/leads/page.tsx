@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter } from "@bprogress/next/app";
-import { Crown, Plus, RefreshCw } from "lucide-react";
+import { Crown, Download, Plus, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { AddLeadDialog } from "@/components/leads/add-lead-dialog";
+import { ExportLeadsDialog } from "@/components/leads/export-leads-dialog";
 import LeadList from "@/components/leads/lead-list";
 import { LeadStatsCards } from "@/components/leads/lead-stats";
 import { UnifiedLeadFilters } from "@/components/leads/unified-lead-filters";
@@ -34,6 +35,7 @@ export default function Page() {
 function LeadBoardPage() {
 	const [filters, setFilters] = useState<LeadFilters>();
 	const [isAddLeadDialogOpen, setIsAddLeadDialogOpen] = useState(false);
+	const [isExportLeadsDialogOpen, setIsExportLeadsDialogOpen] = useState(false);
 	const {
 		data: activeSubscription,
 		isLoading,
@@ -190,14 +192,26 @@ function LeadBoardPage() {
 								Refresh
 							</Button>
 							{_subscription ? (
-								<Button
-									className="h-9 bg-indigo-600 hover:bg-indigo-700"
-									onClick={handleCreateLead}
-									size="sm"
-								>
-									<Plus className="mr-2 h-4 w-4" />
-									Add Lead
-								</Button>
+								<>
+									<Button
+										className="h-9"
+										disabled={totalCount === 0}
+										onClick={() => setIsExportLeadsDialogOpen(true)}
+										size="sm"
+										variant="outline"
+									>
+										<Download className="mr-2 h-4 w-4" />
+										Export Leads
+									</Button>
+									<Button
+										className="h-9 bg-indigo-600 hover:bg-indigo-700"
+										onClick={handleCreateLead}
+										size="sm"
+									>
+										<Plus className="mr-2 h-4 w-4" />
+										Add Lead
+									</Button>
+								</>
 							) : (
 								<Button
 									className="h-9 from-indigo-600 to-purple-600"
@@ -278,6 +292,13 @@ function LeadBoardPage() {
 				isOpen={isAddLeadDialogOpen}
 				onClose={() => setIsAddLeadDialogOpen(false)}
 				onLeadAdded={handleRefresh}
+			/>
+
+			{/* Export Leads Dialog */}
+			<ExportLeadsDialog
+				filters={filters}
+				isOpen={isExportLeadsDialogOpen}
+				onClose={() => setIsExportLeadsDialogOpen(false)}
 			/>
 		</DashboardLayout>
 	);

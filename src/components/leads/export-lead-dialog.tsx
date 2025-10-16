@@ -1,5 +1,10 @@
 "use client";
 
+import { AlertCircle, Download, Loader2 } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,11 +31,6 @@ import {
 import { useUserActiveSubscription } from "@/hooks/use-subscription";
 import { leadExportService } from "@/services/lead-export.service";
 import type { Lead } from "@/types/lead";
-import { AlertCircle, Download, Loader2 } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
 import { GoogleLoginBtn } from "../google-login-btn";
 import { UpgradeButton } from "../upgrade-btn";
 import ExportGoogleSheetButton from "./export-google-sheet";
@@ -108,7 +108,7 @@ export function ExportLeadDialog({
 			try {
 				switch (data.format) {
 					case "csv":
-						await exportToCSV();
+						exportToCSV();
 						break;
 					case "google-sheets":
 						if (!isGoogleConnected) {
@@ -187,7 +187,7 @@ export function ExportLeadDialog({
 		setIsExporting(false);
 	};
 
-	const exportToCSV = async () => {
+	const exportToCSV = () => {
 		if (!leadData) {
 			throw new Error("No lead data to export", { cause: "validation" });
 		}
@@ -258,7 +258,6 @@ export function ExportLeadDialog({
 			throw new Error("No lead data to export", { cause: "validation" });
 		}
 		// Implement Zapier webhook export
-		// This would send data to a Zapier webhook
 		await leadExportService.export({
 			format: "zapier",
 			webhookUrl,
@@ -276,7 +275,7 @@ export function ExportLeadDialog({
 	}, [isOpen, reset]);
 
 	return (
-		<Dialog open={isOpen} onOpenChange={handleClose}>
+		<Dialog onOpenChange={handleClose} open={isOpen}>
 			<DialogContent
 				className="mx-auto max-h-screen max-w-md overflow-y-auto rounded-lg border-gray-200 bg-white shadow-2xl"
 				onInteractOutside={(e) => e.preventDefault()}
@@ -327,8 +326,8 @@ export function ExportLeadDialog({
 								<div className="space-y-2">
 									{retryAttempts.map((attempt) => (
 										<div
-											key={`${attempt.attempt}-${attempt.status}`}
 											className="flex items-center space-x-2 text-sm"
+											key={`${attempt.attempt}-${attempt.status}`}
 										>
 											<span className="text-blue-700">
 												Attempt {attempt.attempt}:
@@ -451,15 +450,12 @@ export function ExportLeadDialog({
 									Zapier Webhook URL *
 								</Label>
 								<Input
-									type="text"
-									id="webhookUrl"
 									className="mt-2 w-full"
+									id="webhookUrl"
 									placeholder="https://hooks.zapier.com/..."
+									type="text"
 									{...register("webhookUrl")}
-									disabled={
-										!activeSubscription?.usage_limits?.zapier_export &&
-										selectedFormat === "zapier"
-									}
+									disabled={!activeSubscription?.usage_limits?.zapier_export}
 									required
 								/>
 							</div>
@@ -469,22 +465,22 @@ export function ExportLeadDialog({
 						{selectedFormat === "google-sheets" && (
 							<>
 								<GoogleLoginBtn
-									handleLogin={handleGoogleLogin}
-									isLoading={isGoogleLoading}
-									isConnected={isGoogleConnected}
 									disabled={
 										isExporting ||
 										isSubmitting ||
 										!activeSubscription?.usage_limits?.sheets_export
 									}
+									handleLogin={handleGoogleLogin}
+									isConnected={isGoogleConnected}
+									isLoading={isGoogleLoading}
 								/>
 								{leadData && (
 									<ExportGoogleSheetButton
 										accessToken={googleToken ?? ""}
-										setSpreadsheetId={setValue.bind(null, "spreadsheetId")}
-										setSpreadsheetName={setValue.bind(null, "spreadsheetNew")}
 										mode={googleSheetMode}
 										setMode={setGoogleSheetMode}
+										setSpreadsheetId={setValue.bind(null, "spreadsheetId")}
+										setSpreadsheetName={setValue.bind(null, "spreadsheetNew")}
 									/>
 								)}
 							</>
@@ -496,35 +492,34 @@ export function ExportLeadDialog({
 								<p className="text-gray-600 text-sm">
 									{selectedFormat === "csv" &&
 										"Your lead data will be downloaded as a CSV file that you can open in Excel or Google Sheets."}
-									{selectedFormat === "google-sheets" && (
-										isGoogleConnected ? (
-												googleSheetMode === "create" ? (
-														<span>
-															Your lead data will be exported directly to a{" "}
-															<span className="rounded bg-indigo-50 px-1 font-semibold text-indigo-600">
-																New
-															</span>{" "}
-															Google Sheets document.
-															<br />
-														</span>
-													) : (
-														<span>
-															Your lead data will be exported to the existing
-															Google Sheets document.
-															<br />
-															<span className="font-semibold">
-																The sheet name must be{" "}
-																<span className="rounded bg-indigo-50 px-1 text-indigo-600">
-																	Leads
-																</span>{" "}
-																for correct export.
-															</span>
-														</span>
-													)
+									{selectedFormat === "google-sheets" &&
+										(isGoogleConnected ? (
+											googleSheetMode === "create" ? (
+												<span>
+													Your lead data will be exported directly to a{" "}
+													<span className="rounded bg-indigo-50 px-1 font-semibold text-indigo-600">
+														New
+													</span>{" "}
+													Google Sheets document.
+													<br />
+												</span>
 											) : (
-												"Please connect your Google account to export to Google Sheets."
+												<span>
+													Your lead data will be exported to the existing Google
+													Sheets document.
+													<br />
+													<span className="font-semibold">
+														The sheet name must be{" "}
+														<span className="rounded bg-indigo-50 px-1 text-indigo-600">
+															Leads
+														</span>{" "}
+														for correct export.
+													</span>
+												</span>
 											)
-									)}
+										) : (
+											"Please connect your Google account to export to Google Sheets."
+										))}
 									{selectedFormat === "zapier" &&
 										"Your lead data will be sent to your configured Zapier webhook for further automation."}
 								</p>
@@ -544,8 +539,8 @@ export function ExportLeadDialog({
 							</DialogClose>
 							{(!activeSubscription?.usage_limits?.zapier_export &&
 								selectedFormat === "zapier") ||
-							(!activeSubscription?.usage_limits?.sheets_export &&
-								selectedFormat === "google-sheets") ? (
+								(!activeSubscription?.usage_limits?.sheets_export &&
+									selectedFormat === "google-sheets") ? (
 								<UpgradeButton
 									className="flex-1"
 									currentPlan={

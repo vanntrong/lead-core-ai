@@ -1,5 +1,5 @@
-import type { Lead } from "../types/lead";
 import { leadScoringService } from "@/services/lead-scoring.service";
+import type { Lead } from "../types/lead";
 
 export type LeadExportFormat = "csv" | "google_sheets" | "zapier" | "ghl";
 
@@ -13,7 +13,9 @@ export interface LeadExportOptions {
 export class LeadExportService {
 	// Export leads to CSV string
 	exportToCSV(leads: Lead[]) {
-		if (!leads.length) { return; }
+		if (!leads.length) {
+			return;
+		}
 
 		const headers = [
 			"URL",
@@ -48,8 +50,15 @@ export class LeadExportService {
 		const link = document.createElement("a");
 		const url = URL.createObjectURL(blob);
 
+		// Generate filename based on number of leads
+		const timestamp = new Date().toISOString().split("T")[0];
+		const filename =
+			leads.length === 1
+				? `lead-${leads[0]?.id || "export"}.csv`
+				: `leads-export-${timestamp}-${leads.length}-leads.csv`;
+
 		link.setAttribute("href", url);
-		link.setAttribute("download", `lead-${leads[0]?.id || "export"}.csv`);
+		link.setAttribute("download", filename);
 		link.style.visibility = "hidden";
 		document.body.appendChild(link);
 		link.click();
@@ -107,18 +116,19 @@ export class LeadExportService {
 	}
 
 	// Main export function
-	async export(options: LeadExportOptions): Promise<string | undefined> {
-		const { format, leads, webhookUrl, googleSheetId } = options;
-		switch (format) {
-			case "csv":
-				return this.exportToCSV(leads);
-			case "zapier":
-			case "ghl":
-				if (!webhookUrl) { throw new Error("Missing webhook URL"); }
-				return this.exportToWebhook(leads, webhookUrl);
-			default:
-				throw new Error("Unsupported export format");
+	export(options: LeadExportOptions): Promise<any> | undefined {
+		const { format, leads, webhookUrl } = options;
+		if (format === "csv") {
+			this.exportToCSV(leads);
+			return;
 		}
+		if (format === "zapier" || format === "ghl") {
+			if (!webhookUrl) {
+				throw new Error("Missing webhook URL");
+			}
+			return this.exportToWebhook(leads, webhookUrl);
+		}
+		throw new Error("Unsupported export format");
 	}
 }
 

@@ -1,16 +1,18 @@
 "use client";
 
-import { useRouter } from "@bprogress/next/app";
 import {
+	ArrowUpRight,
 	Calendar,
 	CheckCircle2,
 	Clock,
 	ExternalLink,
 	Eye,
 	Mail,
+	MapPin,
 	XCircle,
 } from "lucide-react";
-import React from "react";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Table,
@@ -21,12 +23,13 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { leadSourceColorConfig } from "@/constants/saas-source";
-import { formatUrlForDisplay } from "@/lib/utils";
 import { leadScoringService } from "@/services/lead-scoring.service";
 import type { Lead } from "@/types/lead";
 import { formatDate } from "@/utils/helper";
+import { getLeadDisplayData } from "@/utils/lead-display";
 import { Badge } from "../ui/badge";
 import { HighlightText } from "../ui/highlight-text";
+import { LeadDetailModal } from "./lead-detail-modal";
 
 interface LeadTableProps {
 	leads: Lead[];
@@ -72,6 +75,8 @@ export function LeadTable({
 	showSummary = true,
 }: LeadTableProps) {
 	const highlightTerms = searchTerms ? [searchTerms] : [];
+	const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	// Calculate summary statistics for business insights
 	const summaryStats = React.useMemo(() => {
@@ -91,6 +96,16 @@ export function LeadTable({
 			verifiedEmail,
 		};
 	}, [leads]);
+
+	const handleLeadClick = (lead: Lead) => {
+		setSelectedLead(lead);
+		setIsModalOpen(true);
+	};
+
+	const handleCloseModal = () => {
+		setIsModalOpen(false);
+		setSelectedLead(null);
+	};
 
 	return (
 		<div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
@@ -129,6 +144,7 @@ export function LeadTable({
 							highlightTerms={highlightTerms}
 							key={lead.id}
 							lead={lead}
+							onLeadClick={handleLeadClick}
 						/>
 					))}
 				</TableBody>
@@ -158,6 +174,13 @@ export function LeadTable({
 					</div>
 				</div>
 			)}
+
+			{/* Lead Detail Modal */}
+			<LeadDetailModal
+				isOpen={isModalOpen}
+				lead={selectedLead}
+				onClose={handleCloseModal}
+			/>
 		</div>
 	);
 }
@@ -165,10 +188,13 @@ export function LeadTable({
 const LeadRow = ({
 	lead,
 	highlightTerms,
+	onLeadClick,
 }: {
 	lead: Lead;
 	highlightTerms: string[];
+	onLeadClick: (lead: Lead) => void;
 }) => {
+	const router = useRouter();
 	const sourceInfo = leadSourceColorConfig[lead.source];
 
 	const statusInfo = statusConfig[lead.status] || {
@@ -177,9 +203,10 @@ const LeadRow = ({
 		dot: "bg-gray-400",
 	};
 
-	const router = useRouter();
-
 	const totalScore = leadScoringService.scoreLead(lead);
+
+	// Get display data based on source type
+	const displayData = getLeadDisplayData(lead);
 
 	return (
 		<TableRow
@@ -196,46 +223,39 @@ const LeadRow = ({
 				</Badge>
 			</TableCell>
 
-			{/* Web URL / Title */}
+			{/* Business Name / Title */}
 			<TableCell className="max-w-[270px] py-3 pl-4 align-middle">
 				<div className="max-w-[270px] font-medium text-gray-900 text-sm">
 					<div className="flex items-center gap-1">
-						{(() => {
-							const { displayUrl, actualUrl } = formatUrlForDisplay(
-								lead.url,
-								lead.source
-							);
-							return (
-								<>
-									{actualUrl ? (
-										<a
-											aria-label="Open link"
-											className="inline-flex items-center"
-											href={actualUrl}
-											rel="noopener noreferrer"
-											target="_blank"
-											title={actualUrl}
-										>
-											<ExternalLink aria-hidden="true" className="h-3 w-3" />
-										</a>
-									) : (
-										<span className="inline-flex items-center opacity-50">
-											<ExternalLink aria-hidden="true" className="h-3 w-3" />
-										</span>
-									)}
-									<div className="max-w-[270px] gap-1 truncate">
-										<HighlightText
-											highlightClassName="bg-yellow-200 text-yellow-900 px-1 rounded"
-											highlightTerms={highlightTerms}
-											text={displayUrl}
-										/>
-									</div>
-								</>
-							);
-						})()}
+						{displayData.actualUrl ? (
+							<a
+								aria-label="Open link"
+								className="inline-flex items-center"
+								href={displayData.actualUrl}
+								rel="noopener noreferrer"
+								target="_blank"
+								title={displayData.actualUrl}
+							>
+								<ExternalLink aria-hidden="true" className="h-3 w-3" />
+							</a>
+						) : (
+							<span className="inline-flex items-center opacity-50">
+								<ExternalLink aria-hidden="true" className="h-3 w-3" />
+							</span>
+						)}
+						<div className="max-w-[240px] gap-1 truncate">
+							<HighlightText
+								highlightClassName="bg-yellow-200 text-yellow-900 px-1 rounded"
+								highlightTerms={highlightTerms}
+								text={displayData.displayTitle}
+							/>
+						</div>
 					</div>
-					<div className="mt-1 max-w-[200px] truncate text-gray-500 text-xs">
-						<span>{lead.scrap_info?.title || "N/A"}</span>
+					<div className="mt-1 flex max-w-[240px] items-center gap-1 truncate text-gray-500 text-xs">
+						<MapPin className="h-3 w-3 flex-shrink-0" />
+						<span className="truncate" title={displayData.displaySubtitle}>
+							{displayData.displaySubtitle}
+						</span>
 					</div>
 				</div>
 			</TableCell>
@@ -350,7 +370,6 @@ const LeadRow = ({
 			{/* Address */}
 			<TableCell className="py-3 align-middle">
 				<div className="flex justify-center">
-
 					<span className="mt-1 max-w-[200px] items-center gap-1 truncate font-medium text-gray-500 text-sm">
 						{lead.scrap_info?.address && lead.scrap_info?.address?.length > 0
 							? lead.scrap_info.address
@@ -371,17 +390,30 @@ const LeadRow = ({
 			<TableCell className="py-3 text-center align-middle">
 				<div className="flex items-center justify-center space-x-1">
 					{lead.verify_email_status !== "pending" && (
-						<Button
-							aria-label="View Lead Details"
-							className="h-7 w-7 p-0 hover:bg-indigo-100 hover:text-indigo-700 focus:ring-2 focus:ring-indigo-500/20"
-							onClick={() => router.push(`/dashboard/leads/${lead.id}`)}
-							size="sm"
-							title="View Details"
-							type="button"
-							variant="ghost"
-						>
-							<Eye aria-hidden="true" className="h-4 w-4" />
-						</Button>
+						<>
+							<Button
+								aria-label="Quick View"
+								className="h-7 w-7 p-0 hover:bg-indigo-100 hover:text-indigo-700 focus:ring-2 focus:ring-indigo-500/20"
+								onClick={() => onLeadClick(lead)}
+								size="sm"
+								title="Quick View"
+								type="button"
+								variant="ghost"
+							>
+								<Eye aria-hidden="true" className="h-4 w-4" />
+							</Button>
+							<Button
+								aria-label="Go to Detail Page"
+								className="h-7 w-7 p-0 hover:bg-purple-100 hover:text-purple-700 focus:ring-2 focus:ring-purple-500/20"
+								onClick={() => router.push(`/dashboard/leads/${lead.id}`)}
+								size="sm"
+								title="Go to Detail Page"
+								type="button"
+								variant="ghost"
+							>
+								<ArrowUpRight aria-hidden="true" className="h-4 w-4" />
+							</Button>
+						</>
 					)}
 				</div>
 			</TableCell>

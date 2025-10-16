@@ -81,6 +81,43 @@ export class GoogleApiService {
 		);
 		if (!res.ok) { throw new Error("Failed to export data to Google Sheet"); }
 	}
+
+	async exportLeadsToSheet(
+		token: string,
+		sheetId: string,
+		leads: Lead[]
+	): Promise<void> {
+		if (!token) { throw new Error("No access token provided"); }
+		if (!leads || leads.length === 0) { throw new Error("No leads data to export"); }
+		if (!sheetId) { throw new Error("Please select a spreadsheet"); }
+
+		const leadRows = leads.map((lead) => [
+			lead.id,
+			lead.url,
+			lead.source,
+			lead.status,
+			lead.created_at,
+			lead.scrap_info?.title || "N/A",
+			lead.scrap_info?.desc || "N/A",
+			lead.scrap_info?.emails?.join(", ") || "N/A",
+			lead.enrich_info?.title_guess || "N/A",
+			lead.enrich_info?.summary || "N/A",
+		]);
+		const range = "Leads";
+		const body = { values: leadRows };
+		const res = await fetch(
+			`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}:append?valueInputOption=USER_ENTERED`,
+			{
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${token}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(body),
+			}
+		);
+		if (!res.ok) { throw new Error("Failed to export leads to Google Sheet"); }
+	}
 }
 
 export const googleApiService = new GoogleApiService();

@@ -56,3 +56,23 @@ export async function exportLeadToSheetAction(
 		};
 	}
 }
+
+export async function exportLeadsToSheetAction(
+	token: string,
+	sheetId: string,
+	leads: Lead[]
+) {
+	try {
+		await googleApiService.exportLeadsToSheet(token, sheetId, leads);
+		return {
+			success: true,
+			message: "Leads exported to sheet successfully",
+		};
+	} catch (error: any) {
+		console.error("Error in exportLeadsToSheetAction:", error);
+		return {
+			success: false,
+			message: error?.message || "Failed to export leads to sheet",
+		};
+	}
+}

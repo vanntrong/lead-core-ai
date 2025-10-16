@@ -15,6 +15,7 @@ import {
 	Info,
 	Link as LinkIcon,
 	Mail,
+	MapPin,
 	Phone,
 	RefreshCw,
 	TrendingUp,
@@ -31,6 +32,10 @@ import { useLead } from "@/hooks/use-leads";
 import { useUserActiveSubscription } from "@/hooks/use-subscription";
 import { cn } from "@/lib/utils";
 import { leadScoringService } from "@/services/lead-scoring.service";
+import {
+	formatSearchParams,
+	getLeadDisplayData,
+} from "@/utils/lead-display";
 
 const SOURCE_MAP: Record<string, { label: string; badge: string }> = {
 	shopify: {
@@ -146,6 +151,9 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
 	const mappedPlan = _subscription
 		? pricingPlans.find((plan) => plan.tier === _subscription.plan_tier)
 		: null;
+
+	// Get display data for the lead
+	const displayData = lead ? getLeadDisplayData(lead) : null;
 
 	return (
 		<DashboardLayout planName={mappedPlan?.name}>
@@ -397,15 +405,30 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
 											<LinkIcon className="h-4 w-4 text-indigo-600" />
 										</div>
 										<div className="min-w-0 flex-1">
-											<a
-												className="block truncate font-semibold text-gray-900 text-lg transition-colors hover:text-indigo-700"
-												href={lead.url}
-												rel="noopener noreferrer"
-												target="_blank"
-											>
-												{lead.url}
-											</a>
-											<div className="mt-1.5 flex items-center gap-4">
+											<h3 className="truncate font-semibold text-gray-900 text-lg">
+												{displayData?.displayTitle || "Unknown"}
+											</h3>
+											<p className="mt-1 flex items-center gap-2 text-gray-600 text-sm">
+												<MapPin className="h-3.5 w-3.5" />
+												{displayData?.displaySubtitle || "No location"}
+											</p>
+											{displayData?.actualUrl && (
+												<a
+													className="mt-1 flex items-center gap-1 text-indigo-600 text-sm transition-colors hover:text-indigo-700"
+													href={displayData.actualUrl}
+													rel="noopener noreferrer"
+													target="_blank"
+												>
+													<Globe className="h-3.5 w-3.5" />
+													Visit Website
+												</a>
+											)}
+											{displayData?.searchParams && (
+												<p className="mt-1 text-gray-500 text-xs">
+													Search: {formatSearchParams(displayData.searchParams)}
+												</p>
+											)}
+											<div className="mt-2 flex items-center gap-4">
 												<span
 													className={`inline-flex items-center rounded-full border px-3 py-1 font-medium text-xs shadow-sm ${SOURCE_MAP[lead.source]?.badge ??
 														"border-gray-200 bg-gray-100 text-gray-800"
@@ -634,12 +657,23 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
 								</div>
 								<div className="p-6">
 									<dl className="space-y-4">
-										{/* Page Title */}
+										{/* Title/Name */}
 										<div className="flex items-start gap-3 border-gray-100 border-b py-3 last:border-b-0">
 											<div className="flex min-w-0 flex-1 items-center gap-2">
 												<Globe className="h-4 w-4 flex-shrink-0 text-gray-400" />
 												<dt className="flex-shrink-0 font-medium text-gray-700 text-sm">
-													{lead.source === "npi_registry" ? "Entity Name" : "Page Title"}
+													{(() => {
+														if (lead.source === "npi_registry") {
+															return "Entity Name";
+														}
+														if (lead.source === "fmcsa") {
+															return "Company Name";
+														}
+														if (lead.source === "google_places") {
+															return "Business Name";
+														}
+														return "Page Title";
+													})()}
 												</dt>
 											</div>
 											<dd
@@ -650,7 +684,7 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
 											</dd>
 										</div>
 
-										{/* Emails Found */}
+										{/* Email */}
 										{(() => {
 											const emails =
 												Array.isArray(lead.scrap_info?.emails) &&
@@ -675,22 +709,99 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
 											);
 										})()}
 
-										{/* Phone Numbers Found */}
-										{lead.scrap_info?.phone && <div className="border-gray-100 border-b py-3 last:border-b-0">
-											<div className="flex items-start gap-3">
-												<div className="flex min-w-0 flex-1 items-center gap-2">
-													<Phone className="h-4 w-4 flex-shrink-0 text-gray-400" />
-													<dt className="flex-shrink-0 font-medium text-gray-700 text-sm">
-														Phone Numbers Found
-													</dt>
+										{/* Phone */}
+										{lead.scrap_info?.phone && (
+											<div className="border-gray-100 border-b py-3 last:border-b-0">
+												<div className="flex items-start gap-3">
+													<div className="flex min-w-0 flex-1 items-center gap-2">
+														<Phone className="h-4 w-4 flex-shrink-0 text-gray-400" />
+														<dt className="flex-shrink-0 font-medium text-gray-700 text-sm">
+															Phone Number
+														</dt>
+													</div>
+													<dd className="max-w-xs break-all text-right text-gray-900 text-sm">
+														{lead.scrap_info.phone}
+													</dd>
 												</div>
-												<dd className="max-w-xs break-all text-right text-gray-900 text-sm">
-													{lead.scrap_info?.phone}
-												</dd>
 											</div>
-										</div>}
+										)}
 
-										{/* About */}
+										{/* Address */}
+										{lead.scrap_info?.address && (
+											<div className="border-gray-100 border-b py-3 last:border-b-0">
+												<div className="flex items-start gap-3">
+													<div className="flex min-w-0 flex-1 items-center gap-2">
+														<MapPin className="h-4 w-4 flex-shrink-0 text-gray-400" />
+														<dt className="flex-shrink-0 font-medium text-gray-700 text-sm">
+															Address
+														</dt>
+													</div>
+													<dd className="max-w-xs text-right text-gray-900 text-sm">
+														{lead.scrap_info.address}
+													</dd>
+												</div>
+											</div>
+										)}
+
+										{/* Website */}
+										{lead.scrap_info?.website && (
+											<div className="border-gray-100 border-b py-3 last:border-b-0">
+												<div className="flex items-start gap-3">
+													<div className="flex min-w-0 flex-1 items-center gap-2">
+														<Globe className="h-4 w-4 flex-shrink-0 text-gray-400" />
+														<dt className="flex-shrink-0 font-medium text-gray-700 text-sm">
+															Website
+														</dt>
+													</div>
+													<dd className="max-w-xs truncate text-right text-gray-900 text-sm">
+														<a
+															className="text-indigo-600 transition-colors hover:text-indigo-700"
+															href={lead.scrap_info.website}
+															rel="noopener noreferrer"
+															target="_blank"
+														>
+															{lead.scrap_info.website}
+														</a>
+													</dd>
+												</div>
+											</div>
+										)}
+
+										{/* Business Type */}
+										{lead.scrap_info?.business_type && (
+											<div className="border-gray-100 border-b py-3 last:border-b-0">
+												<div className="flex items-start gap-3">
+													<div className="flex min-w-0 flex-1 items-center gap-2">
+														<Building2 className="h-4 w-4 flex-shrink-0 text-gray-400" />
+														<dt className="flex-shrink-0 font-medium text-gray-700 text-sm">
+															Business Type
+														</dt>
+													</div>
+													<dd className="max-w-xs text-right text-gray-900 text-sm">
+														{lead.scrap_info.business_type}
+													</dd>
+												</div>
+											</div>
+										)}
+
+										{/* Rating */}
+										{lead.scrap_info?.rating && (
+											<div className="border-gray-100 border-b py-3 last:border-b-0">
+												<div className="flex items-start gap-3">
+													<div className="flex min-w-0 flex-1 items-center gap-2">
+														<TrendingUp className="h-4 w-4 flex-shrink-0 text-gray-400" />
+														<dt className="flex-shrink-0 font-medium text-gray-700 text-sm">
+															Rating
+														</dt>
+													</div>
+													<dd className="max-w-xs text-right text-gray-900 text-sm">
+														★ {lead.scrap_info.rating}
+													</dd>
+												</div>
+											</div>
+										)}
+
+										{/* Description */}
 										{lead.scrap_info?.desc && (
 											<div className="py-3">
 												{lead.scrap_info.desc.length > 100 ? (
@@ -730,11 +841,11 @@ function LeadDossierPage({ leadId }: { leadId: string }) {
 														<div className="flex min-w-0 flex-1 items-center gap-2">
 															<Info className="h-4 w-4 flex-shrink-0 text-gray-400" />
 															<dt className="flex-shrink-0 font-medium text-gray-700 text-sm">
-																About
+																Description
 															</dt>
 														</div>
 														<dd className="max-w-xs text-right text-gray-900 text-sm leading-relaxed">
-															{lead.scrap_info?.desc ?? "N/A"}
+															{lead.scrap_info.desc}
 														</dd>
 													</div>
 												)}

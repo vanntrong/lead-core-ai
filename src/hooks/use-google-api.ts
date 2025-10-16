@@ -1,13 +1,14 @@
-import {
-	createNewSpreadsheetAction,
-	exportLeadToSheetAction,
-	fetchSpreadsheetsAction,
-} from "@/lib/actions/googleapi.actions";
-import type { Lead } from "@/types/lead";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import {
+	createNewSpreadsheetAction,
+	exportLeadsToSheetAction,
+	exportLeadToSheetAction,
+	fetchSpreadsheetsAction,
+} from "@/lib/actions/googleapi.actions";
+import type { Lead } from "@/types/lead";
 export const googleApiKeys = {
 	all: ["googleApi"] as const,
 	spreadLists: () => [...googleApiKeys.all, "spreadList"] as const,
@@ -76,10 +77,7 @@ export function useGoogleAuth() {
 	};
 }
 
-export function useGoogleSpreadsheetQuery(
-	accessToken: string,
-	enabled = true
-) {
+export function useGoogleSpreadsheetQuery(accessToken: string, enabled = true) {
 	return useQuery({
 		queryKey: [googleApiKeys.spreadLists(), accessToken],
 		queryFn: () => fetchSpreadsheetsAction(accessToken),
@@ -139,6 +137,66 @@ export function useGoogleCreateAndExport(accessToken: string) {
 				queryKey: [googleApiKeys.spreadLists(), accessToken],
 			});
 			toast.success("Spreadsheet created and lead exported!");
+		},
+		onError: (error: any) => {
+			toast.error(error?.message || "Create & export failed");
+		},
+	});
+
+	return mutation;
+}
+
+export function useGoogleExportMultiple(accessToken: string) {
+	const mutation = useMutation({
+		mutationFn: async ({
+			leads,
+			selectedSheet,
+		}: {
+			leads: Lead[];
+			selectedSheet: string;
+		}) => exportLeadsToSheetAction(accessToken, selectedSheet, leads),
+		onSuccess: (result) => {
+			if (result?.success) {
+				toast.success("Leads exported successfully!");
+			}
+		},
+		onError: (error: any) => {
+			toast.error(error?.message || "Export failed");
+		},
+	});
+
+	return mutation;
+}
+
+export function useGoogleCreateAndExportMultiple(accessToken: string) {
+	const queryClient = useQueryClient();
+
+	const mutation = useMutation({
+		mutationFn: async ({
+			leads,
+			spreadsheetName,
+		}: {
+			leads: Lead[];
+			spreadsheetName: string;
+		}) => {
+			// Create new spreadsheet and export leads
+			const result = await createNewSpreadsheetAction(
+				accessToken,
+				spreadsheetName
+			);
+			if (!result.sheet?.id) {
+				return {
+					success: false,
+					message: "Failed to create spreadsheet or retrieve its ID",
+				};
+			}
+			return exportLeadsToSheetAction(accessToken, result.sheet.id, leads);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: [googleApiKeys.spreadLists(), accessToken],
+			});
+			toast.success("Spreadsheet created and leads exported!");
 		},
 		onError: (error: any) => {
 			toast.error(error?.message || "Create & export failed");
