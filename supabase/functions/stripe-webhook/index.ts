@@ -1,19 +1,23 @@
 // @ts-nocheck
-import Stripe from "https://esm.sh/stripe@14?target=denonext";
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
+import Stripe from "https://esm.sh/stripe@14?target=denonext";
+
 const stripe = new Stripe(Deno.env.get("STRIPE_API_KEY"));
 const cryptoProvider = Stripe.createSubtleCryptoProvider();
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const stripeWebhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
 const supabase = createClient(supabaseUrl, supabaseKey);
+
 import { handleInvoicePaymentSucceeded } from "./invoice.ts";
 import {
-	handleSubscriptionCreated,
-	handleSubscriptionUpdated,
-	handleSubscriptionDeleted,
 	handleCheckoutSessionCompleted,
+	handleSubscriptionCreated,
+	handleSubscriptionDeleted,
+	handleSubscriptionUpdated,
 } from "./subscription.ts";
+
 Deno.serve(async (req) => {
 	const signature = req.headers.get("Stripe-Signature");
 	const body = await req.text();
@@ -50,7 +54,6 @@ Deno.serve(async (req) => {
 					invoice,
 					supabase,
 					stripe,
-					pricingPlans,
 				});
 			}
 			case "customer.subscription.created": {
@@ -179,35 +182,3 @@ async function _createSubscription({
 	});
 	return sub;
 }
-const pricingPlans = [
-	{
-		tier: "basic",
-		priceId: "price_1S9FJBG2cJrqXSBvC5Oyd5Km",
-		limits: {
-			sources: 1,
-			leads_per_month: 100,
-			export_enabled: false,
-			zapier_export: false,
-		},
-	},
-	{
-		tier: "pro",
-		priceId: "price_1S9FJbG2cJrqXSBvQhFaDnAi",
-		limits: {
-			sources: "unlimited",
-			leads_per_month: 500,
-			export_enabled: true,
-			zapier_export: false,
-		},
-	},
-	{
-		tier: "unlimited",
-		priceId: "price_1S9FK0G2cJrqXSBvluk26Kw0",
-		limits: {
-			sources: "unlimited",
-			leads_per_month: "unlimited",
-			export_enabled: true,
-			zapier_export: true,
-		},
-	},
-];
