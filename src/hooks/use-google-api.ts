@@ -23,7 +23,8 @@ export function useGoogleAuth() {
 
 	const requiredScopes = [
 		"https://www.googleapis.com/auth/spreadsheets",
-		"https://www.googleapis.com/auth/drive.readonly",
+		"https://www.googleapis.com/auth/drive.file",
+		"https://www.googleapis.com/auth/drive",
 		"openid",
 		"profile",
 		"email",
@@ -68,8 +69,15 @@ export function useGoogleAuth() {
 		handleLogin();
 	}, [handleLogin]);
 
+	const logout = useCallback(() => {
+		setToken(null);
+		setError(null);
+		toast.success("Disconnected from Google");
+	}, []);
+
 	return {
 		login,
+		logout,
 		token,
 		isLoading,
 		isConnected: !!token,

@@ -9,9 +9,9 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
 
 	return (
 		<ProgressProvider
-			key={pathname}
-			height="5px"
 			color="#818cf8"
+			height="5px"
+			key={pathname}
 			options={{ showSpinner: false }}
 		>
 			<GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>

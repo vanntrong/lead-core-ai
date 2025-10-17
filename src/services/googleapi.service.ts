@@ -23,6 +23,7 @@ export class GoogleApiService {
 		if (!name || name.trim() === "") {
 			throw new Error("Please enter a spreadsheet name");
 		}
+		console.log('token', token)
 		const res = await fetch("https://sheets.googleapis.com/v4/spreadsheets", {
 			method: "POST",
 			headers: {
@@ -40,8 +41,10 @@ export class GoogleApiService {
 				],
 			}),
 		});
+		console.log(res)
 		if (!res.ok) { throw new Error("Failed to create spreadsheet"); }
 		const newSheet = await res.json();
+		console.log("newSheet", newSheet)
 		return { id: newSheet.spreadsheetId, name };
 	}
 

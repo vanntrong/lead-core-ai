@@ -74,6 +74,7 @@ export function ExportLeadDialog({
 	const { data: activeSubscription } = useUserActiveSubscription();
 	const {
 		login: handleGoogleLogin,
+		logout: handleGoogleLogout,
 		error: googleError,
 		isLoading: isGoogleLoading,
 		token: googleToken,
@@ -471,6 +472,7 @@ export function ExportLeadDialog({
 										!activeSubscription?.usage_limits?.sheets_export
 									}
 									handleLogin={handleGoogleLogin}
+									handleLogout={handleGoogleLogout}
 									isConnected={isGoogleConnected}
 									isLoading={isGoogleLoading}
 								/>

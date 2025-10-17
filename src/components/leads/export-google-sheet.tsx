@@ -1,5 +1,5 @@
-import { useGoogleSpreadsheetQuery } from "@/hooks/use-google-api";
 import { Loader2, Plus } from "lucide-react";
+import { useGoogleSpreadsheetQuery } from "@/hooks/use-google-api";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -43,20 +43,20 @@ export default function ExportGoogleSheetButton({
 			<div className="rounded-xl border bg-white p-4">
 				<div className="mb-4 flex gap-2">
 					<Button
-						variant={mode === "select" ? "default" : "outline"}
-						size="sm"
-						onClick={() => setMode("select")}
 						disabled={isExporting}
+						onClick={() => setMode("select")}
+						size="sm"
 						type="button"
+						variant={mode === "select" ? "default" : "outline"}
 					>
 						Select Existing
 					</Button>
 					<Button
-						variant={mode === "create" ? "default" : "outline"}
-						size="sm"
-						onClick={() => setMode("create")}
 						disabled={isExporting}
+						onClick={() => setMode("create")}
+						size="sm"
 						type="button"
+						variant={mode === "create" ? "default" : "outline"}
 					>
 						<Plus className="mr-1 h-4 w-4" />
 						Create New
@@ -104,10 +104,10 @@ export default function ExportGoogleSheetButton({
 					<div className="mb-2 space-y-2">
 						<Label>Spreadsheet Name</Label>
 						<Input
-							placeholder="Enter spreadsheet name"
 							onChange={(e) =>
 								setSpreadsheetName((e.target as HTMLInputElement).value)
 							}
+							placeholder="Enter spreadsheet name"
 							required
 						/>
 					</div>
