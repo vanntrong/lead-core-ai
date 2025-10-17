@@ -2,7 +2,15 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
 import Stripe from "https://esm.sh/stripe@13.10.0?target=deno";
 
-const sourceTypes = ["etsy", "woocommerce", "shopify", "g2", "google_places", "npi_registry", "fmcsa"]
+const sourceTypes = [
+	"etsy",
+	"woocommerce",
+	"shopify",
+	"g2",
+	"google_places",
+	"npi_registry",
+	"fmcsa",
+];
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -330,6 +338,31 @@ async function createSubscription({
 		period_end,
 	});
 	return sub;
+}
+async function updateSubscription({
+	id,
+	period_start = null,
+	period_end = null,
+	usage_limit_id = null,
+	subscription_status,
+}) {
+	const { data, error } = await supabase
+		.from("subscriptions")
+		.update({
+			period_start,
+			period_end,
+			usage_limit_id,
+			subscription_status,
+			updated_at: new Date().toISOString(),
+		})
+		.eq("id", id)
+		.select()
+		.single();
+	if (error) {
+		console.error("Error updating subscription:", error);
+		return null;
+	}
+	return data;
 }
 export async function handleCheckoutSessionCompleted({ session }) {
 	try {

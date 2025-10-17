@@ -12,8 +12,7 @@ export class StripeService {
 			return canceled;
 		} catch (error) {
 			throw new Error(
-				`Failed to cancel subscription: ${
-					(error as Error).message || "Unknown error"
+				`Failed to cancel subscription: ${(error as Error).message || "Unknown error"
 				}`
 			);
 		}
