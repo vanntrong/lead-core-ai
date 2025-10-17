@@ -1,5 +1,21 @@
 "use client";
 
+import { useRouter } from "@bprogress/next/app";
+import {
+	ChevronDown,
+	ChevronLeft,
+	ChevronRight,
+	Crown,
+	Globe,
+	HeadphonesIcon,
+	Home,
+	LogOut,
+	ScrollText,
+	Server,
+	Truck,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,21 +25,6 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authService } from "@/services/auth.service";
-import { useRouter } from "@bprogress/next/app";
-import {
-	ChevronDown,
-	ChevronLeft,
-	ChevronRight,
-	Crown,
-	Globe,
-	Home,
-	LogOut,
-	ScrollText,
-	Server,
-	Truck,
-} from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 interface NavigationItem {
 	name: string;
@@ -64,6 +65,17 @@ const navigationSections: NavigationSection[] = [
 				href: "/dashboard/usage-invoices",
 				icon: Crown,
 				description: "Monitor usage and invoices",
+			},
+		],
+	},
+	{
+		title: "Support",
+		items: [
+			{
+				name: "Contact Support",
+				href: "/contact",
+				icon: HeadphonesIcon,
+				description: "Get help from our support team",
 			},
 		],
 	},
@@ -119,9 +131,8 @@ export function DashboardSidebar({
 
 	return (
 		<div
-			className={`flex h-screen flex-col border-gray-200 border-r bg-white transition-all duration-300 ${
-				isCollapsed ? "w-16" : "w-64"
-			}`}
+			className={`flex h-screen flex-col border-gray-200 border-r bg-white transition-all duration-300 ${isCollapsed ? "w-16" : "w-64"
+				}`}
 		>
 			{/* Header */}
 			<div className="flex h-16 items-center justify-between border-gray-200 border-b px-4">
@@ -184,11 +195,10 @@ export function DashboardSidebar({
 										return (
 											<li key={item.name}>
 												<Link
-													className={`group relative flex items-center rounded-xl px-3 py-2.5 font-medium text-sm transition-all hover:bg-gray-50 ${
-														isActive
-															? "bg-indigo-50 text-indigo-700"
-															: "text-gray-700 hover:text-gray-900"
-													} ${isCollapsed ? "justify-center" : ""}`}
+													className={`group relative flex items-center rounded-xl px-3 py-2.5 font-medium text-sm transition-all hover:bg-gray-50 ${isActive
+														? "bg-indigo-50 text-indigo-700"
+														: "text-gray-700 hover:text-gray-900"
+														} ${isCollapsed ? "justify-center" : ""}`}
 													href={item.href}
 													title={
 														isCollapsed
@@ -197,11 +207,10 @@ export function DashboardSidebar({
 													}
 												>
 													<item.icon
-														className={`h-5 w-5 flex-shrink-0 ${
-															isActive
-																? "text-indigo-600"
-																: "text-gray-400 group-hover:text-gray-500"
-														} ${isCollapsed ? "" : "mr-3"}`}
+														className={`h-5 w-5 flex-shrink-0 ${isActive
+															? "text-indigo-600"
+															: "text-gray-400 group-hover:text-gray-500"
+															} ${isCollapsed ? "" : "mr-3"}`}
 													/>
 													{!isCollapsed && (
 														<>

@@ -1,8 +1,4 @@
 import "@/app/globals.css";
-import Footer from "@/components/footer";
-import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/server";
-import { getAdminEmails } from "@/utils/helper";
 import {
 	ArrowRight,
 	CheckCircle,
@@ -13,10 +9,14 @@ import {
 	Star,
 	Zap,
 } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
-import PricingPlants from "@/components/pricing-plants";
+import Link from "next/link";
 import { DemoDialog } from "@/components/demo-dialog";
+import Footer from "@/components/footer";
+import PricingPlants from "@/components/pricing-plants";
+import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/server";
+import { getAdminEmails } from "@/utils/helper";
 
 export default async function Home() {
 	const supabase = await createClient();
@@ -37,7 +37,7 @@ export default async function Home() {
 							<div className="rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 p-2">
 								<Globe className="h-6 w-6 text-white" />
 							</div>
-							<Link href="/" className="font-bold text-gray-900 text-xl">
+							<Link className="font-bold text-gray-900 text-xl" href="/">
 								LeadCore AI
 							</Link>
 						</div>
@@ -47,6 +47,12 @@ export default async function Home() {
 								href="/pricing"
 							>
 								Pricing
+							</Link>
+							<Link
+								className="font-medium text-gray-600 transition-colors duration-200 hover:text-gray-900"
+								href="/contact"
+							>
+								Contact
 							</Link>
 							<div className="flex items-center gap-x-3">
 								{!user ? (
@@ -169,11 +175,11 @@ export default async function Home() {
 										</div>
 										<div className="relative aspect-16/8 w-full overflow-hidden">
 											<Image
-												src="/images/dashboard.png"
 												alt="LeadCore AI Dashboard showing the complete workflow from scrape to export"
-												fill
 												className="bg-white object-contain"
+												fill
 												priority
+												src="/images/dashboard.png"
 											/>
 										</div>
 									</div>
@@ -199,75 +205,75 @@ export default async function Home() {
 						<div className="mb-12 flex flex-wrap items-center justify-center gap-8">
 							{/* Placeholder logos - increased size */}
 							<div className="flex h-14 w-32 items-center justify-center rounded-lg bg-gray-100">
-								<svg width="80" height="32" viewBox="0 0 80 32" fill="none">
-									<rect width="80" height="32" rx="8" fill="#e5e7eb" />
+								<svg fill="none" height="32" viewBox="0 0 80 32" width="80">
+									<rect fill="#e5e7eb" height="32" rx="8" width="80" />
 									<text
+										dy=".3em"
+										fill="#9ca3af"
+										fontSize="16"
+										textAnchor="middle"
 										x="50%"
 										y="50%"
-										textAnchor="middle"
-										dy=".3em"
-										fontSize="16"
-										fill="#9ca3af"
 									>
 										Logo
 									</text>
 								</svg>
 							</div>
 							<div className="flex h-14 w-32 items-center justify-center rounded-lg bg-gray-100">
-								<svg width="80" height="32" viewBox="0 0 80 32" fill="none">
-									<rect width="80" height="32" rx="8" fill="#e5e7eb" />
+								<svg fill="none" height="32" viewBox="0 0 80 32" width="80">
+									<rect fill="#e5e7eb" height="32" rx="8" width="80" />
 									<text
+										dy=".3em"
+										fill="#9ca3af"
+										fontSize="16"
+										textAnchor="middle"
 										x="50%"
 										y="50%"
-										textAnchor="middle"
-										dy=".3em"
-										fontSize="16"
-										fill="#9ca3af"
 									>
 										Logo
 									</text>
 								</svg>
 							</div>
 							<div className="flex h-14 w-32 items-center justify-center rounded-lg bg-gray-100">
-								<svg width="80" height="32" viewBox="0 0 80 32" fill="none">
-									<rect width="80" height="32" rx="8" fill="#e5e7eb" />
+								<svg fill="none" height="32" viewBox="0 0 80 32" width="80">
+									<rect fill="#e5e7eb" height="32" rx="8" width="80" />
 									<text
+										dy=".3em"
+										fill="#9ca3af"
+										fontSize="16"
+										textAnchor="middle"
 										x="50%"
 										y="50%"
-										textAnchor="middle"
-										dy=".3em"
-										fontSize="16"
-										fill="#9ca3af"
 									>
 										Logo
 									</text>
 								</svg>
 							</div>
 							<div className="flex h-14 w-32 items-center justify-center rounded-lg bg-gray-100">
-								<svg width="80" height="32" viewBox="0 0 80 32" fill="none">
-									<rect width="80" height="32" rx="8" fill="#e5e7eb" />
+								<svg fill="none" height="32" viewBox="0 0 80 32" width="80">
+									<rect fill="#e5e7eb" height="32" rx="8" width="80" />
 									<text
+										dy=".3em"
+										fill="#9ca3af"
+										fontSize="16"
+										textAnchor="middle"
 										x="50%"
 										y="50%"
-										textAnchor="middle"
-										dy=".3em"
-										fontSize="16"
-										fill="#9ca3af"
 									>
 										Logo
 									</text>
 								</svg>
 							</div>
 							<div className="flex h-14 w-32 items-center justify-center rounded-lg bg-gray-100">
-								<svg width="80" height="32" viewBox="0 0 80 32" fill="none">
-									<rect width="80" height="32" rx="8" fill="#e5e7eb" />
+								<svg fill="none" height="32" viewBox="0 0 80 32" width="80">
+									<rect fill="#e5e7eb" height="32" rx="8" width="80" />
 									<text
+										dy=".3em"
+										fill="#9ca3af"
+										fontSize="16"
+										textAnchor="middle"
 										x="50%"
 										y="50%"
-										textAnchor="middle"
-										dy=".3em"
-										fontSize="16"
-										fill="#9ca3af"
 									>
 										Logo
 									</text>
@@ -420,11 +426,11 @@ export default async function Home() {
 									</div>
 									<div className="relative aspect-16/8 w-full overflow-hidden">
 										<Image
-											src="/images/lead-board.png"
 											alt="Lead Table Dashboard showing scraped and enriched leads"
-											fill
 											className="bg-white object-contain"
+											fill
 											priority
+											src="/images/lead-board.png"
 										/>
 									</div>
 								</div>
@@ -452,11 +458,11 @@ export default async function Home() {
 									</div>
 									<div className="relative aspect-16/8 w-full overflow-hidden">
 										<Image
-											src="/images/lead-dossier.png"
 											alt="Detailed lead dossier with AI-enriched contact information"
-											fill
 											className="bg-white object-contain"
+											fill
 											priority
+											src="/images/lead-dossier.png"
 										/>
 									</div>
 								</div>

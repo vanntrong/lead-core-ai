@@ -1,9 +1,9 @@
+import { Globe } from "lucide-react";
+import Link from "next/link";
 import Footer from "@/components/footer";
 import PricingPlants from "@/components/pricing-plants";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
-import { Globe } from "lucide-react";
-import Link from "next/link";
 
 export default async function PricingPage() {
 	const supabase = await createClient();
@@ -22,7 +22,7 @@ export default async function PricingPage() {
 							<div className="rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 p-2">
 								<Globe className="h-6 w-6 text-white" />
 							</div>
-							<Link href="/" className="font-bold text-gray-900 text-xl">
+							<Link className="font-bold text-gray-900 text-xl" href="/">
 								LeadCore AI
 							</Link>
 						</div>
@@ -38,6 +38,12 @@ export default async function PricingPage() {
 								href="/pricing"
 							>
 								Pricing
+							</Link>
+							<Link
+								className="font-medium text-gray-600 hover:text-gray-900"
+								href="/contact"
+							>
+								Contact
 							</Link>
 							<div className="flex items-center gap-x-3">
 								{!user ? (
