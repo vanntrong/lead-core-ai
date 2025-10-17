@@ -282,8 +282,8 @@ export type Database = {
           client_id: string
           code_challenge: string | null
           code_challenge_method:
-          | Database["auth"]["Enums"]["code_challenge_method"]
-          | null
+            | Database["auth"]["Enums"]["code_challenge_method"]
+            | null
           created_at: string
           expires_at: string
           id: string
@@ -302,8 +302,8 @@ export type Database = {
           client_id: string
           code_challenge?: string | null
           code_challenge_method?:
-          | Database["auth"]["Enums"]["code_challenge_method"]
-          | null
+            | Database["auth"]["Enums"]["code_challenge_method"]
+            | null
           created_at?: string
           expires_at?: string
           id: string
@@ -322,8 +322,8 @@ export type Database = {
           client_id?: string
           code_challenge?: string | null
           code_challenge_method?:
-          | Database["auth"]["Enums"]["code_challenge_method"]
-          | null
+            | Database["auth"]["Enums"]["code_challenge_method"]
+            | null
           created_at?: string
           expires_at?: string
           id?: string
@@ -887,12 +887,12 @@ export type Database = {
       oauth_registration_type: "dynamic" | "manual"
       oauth_response_type: "code"
       one_time_token_type:
-      | "confirmation_token"
-      | "reauthentication_token"
-      | "recovery_token"
-      | "email_change_token_new"
-      | "email_change_token_current"
-      | "phone_change_token"
+        | "confirmation_token"
+        | "reauthentication_token"
+        | "recovery_token"
+        | "email_change_token_new"
+        | "email_change_token_current"
+        | "phone_change_token"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -900,6 +900,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliate_referrals: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          joined_at: string | null
+          rewardful_affiliate_id: string | null
+          rewardful_link: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          joined_at?: string | null
+          rewardful_affiliate_id?: string | null
+          rewardful_link: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          joined_at?: string | null
+          rewardful_affiliate_id?: string | null
+          rewardful_link?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       fmcsa_companies: {
         Row: {
           carrier_operation: string | null
@@ -971,47 +1004,6 @@ export type Database = {
           zip_code?: string | null
         }
         Relationships: []
-      }
-      affiliate_referrals: {
-        Row: {
-          created_at: string
-          id: string
-          is_active: boolean
-          joined_at: string | null
-          rewardful_affiliate_id: string | null
-          rewardful_link: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          joined_at?: string | null
-          rewardful_affiliate_id?: string | null
-          rewardful_link: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          joined_at?: string | null
-          rewardful_affiliate_id?: string | null
-          rewardful_link?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "affiliate_referrals_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
       }
       invoices: {
         Row: {
@@ -1435,33 +1427,33 @@ export type Database = {
     Enums: {
       invoice_status: "draft" | "open" | "paid" | "uncollectible" | "void"
       lead_source:
-      | "shopify"
-      | "etsy"
-      | "g2"
-      | "woocommerce"
-      | "google_places"
-      | "npi_registry"
-      | "fmcsa"
+        | "shopify"
+        | "etsy"
+        | "g2"
+        | "woocommerce"
+        | "google_places"
+        | "npi_registry"
+        | "fmcsa"
       lead_status:
-      | "pending"
-      | "scraped"
-      | "enriching"
-      | "enriched"
-      | "failed"
-      | "scrap_failed"
+        | "pending"
+        | "scraped"
+        | "enriching"
+        | "enriched"
+        | "failed"
+        | "scrap_failed"
       plan_tier: "trial" | "basic" | "pro" | "unlimited"
       proxy_heal_check_log_status: "success" | "failed"
       proxy_log_status: "success" | "failed" | "banned" | "timeout"
       proxy_status: "active" | "inactive" | "error"
       scraper_status: "success" | "fail"
       source_type:
-      | "etsy"
-      | "woocommerce"
-      | "shopify"
-      | "g2"
-      | "google_places"
-      | "npi_registry"
-      | "fmcsa"
+        | "etsy"
+        | "woocommerce"
+        | "shopify"
+        | "g2"
+        | "google_places"
+        | "npi_registry"
+        | "fmcsa"
       stripe_customer_status: "active" | "inactive" | "canceled"
       subscription_status: "active" | "canceled" | "unpaid"
       verify_email_status: "pending" | "verified" | "failed" | "invalid"
@@ -1478,116 +1470,116 @@ type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-  | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-  : never = never,
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
-  ? R
-  : never
+    ? R
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-    DefaultSchema["Views"])
-  ? (DefaultSchema["Tables"] &
-    DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-      Row: infer R
-    }
-  ? R
-  : never
-  : never
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-  | keyof DefaultSchema["Tables"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Insert: infer I
-  }
-  ? I
-  : never
+      Insert: infer I
+    }
+    ? I
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-    Insert: infer I
-  }
-  ? I
-  : never
-  : never
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-  | keyof DefaultSchema["Tables"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Update: infer U
-  }
-  ? U
-  : never
+      Update: infer U
+    }
+    ? U
+    : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-    Update: infer U
-  }
-  ? U
-  : never
-  : never
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-  | keyof DefaultSchema["Enums"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-  ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-  : never
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-  | keyof DefaultSchema["CompositeTypes"]
-  | { schema: keyof DatabaseWithoutInternals },
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-  ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-  : never = never,
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-  ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-  : never
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
 
 export const Constants = {
   auth: {

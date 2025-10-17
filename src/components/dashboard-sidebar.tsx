@@ -13,6 +13,7 @@ import {
 	ScrollText,
 	Server,
 	Truck,
+	Users,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -65,6 +66,12 @@ const navigationSections: NavigationSection[] = [
 				href: "/dashboard/usage-invoices",
 				icon: Crown,
 				description: "Monitor usage and invoices",
+			},
+			{
+				name: "Affiliates",
+				href: "/dashboard/affiliates",
+				icon: Users,
+				description: "Earn by sharing LeadCore AI",
 			},
 		],
 	},

@@ -2,11 +2,14 @@ import "@/app/globals.css";
 import {
 	ArrowRight,
 	CheckCircle,
+	DollarSign,
 	Globe,
 	MessageSquare,
 	Play,
 	Shield,
 	Star,
+	TrendingUp,
+	Users,
 	Zap,
 } from "lucide-react";
 import Image from "next/image";
@@ -509,6 +512,104 @@ export default async function Home() {
 								Try it risk-free with our 30-day money-back guarantee.
 							</span>
 						</p>
+					</div>
+				</div>
+			</section>
+
+			{/* Affiliate Program Section */}
+			<section className="relative overflow-hidden bg-gradient-to-br from-purple-600 via-indigo-600 to-purple-700 py-20">
+				{/* Background decoration */}
+				<div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-30" />
+				<div className="-translate-y-1/2 absolute top-0 right-0 translate-x-1/2">
+					<div className="h-96 w-96 animate-pulse rounded-full bg-white opacity-10 blur-3xl" />
+				</div>
+
+				<div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+					<div className="mx-auto max-w-4xl text-center">
+						{/* Badge */}
+						<div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-2 font-medium text-sm text-white backdrop-blur-sm">
+							<Users className="h-4 w-4" />
+							Earn while helping others grow
+						</div>
+
+						{/* Heading */}
+						<h2 className="mb-6 font-bold text-3xl text-white sm:text-4xl">
+							Join Our Affiliate Program
+						</h2>
+						<p className="mb-10 text-indigo-100 text-lg leading-relaxed sm:text-xl">
+							Earn <span className="font-bold text-white">30% lifetime commissions</span> by sharing LeadCore AI with your network. Get paid every month your referrals stay subscribed.
+						</p>
+
+						{/* Benefits Grid */}
+						<div className="mb-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
+							<div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
+								<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/20">
+									<DollarSign className="h-6 w-6 text-white" />
+								</div>
+								<h3 className="mb-2 font-bold text-lg text-white">
+									30% Commission
+								</h3>
+								<p className="text-indigo-100 text-sm">
+									Recurring monthly for the lifetime of each referral
+								</p>
+							</div>
+
+							<div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
+								<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/20">
+									<TrendingUp className="h-6 w-6 text-white" />
+								</div>
+								<h3 className="mb-2 font-bold text-lg text-white">
+									Real-Time Tracking
+								</h3>
+								<p className="text-indigo-100 text-sm">
+									Monitor your referrals and earnings through Rewardful portal
+								</p>
+							</div>
+
+							<div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
+								<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/20">
+									<Users className="h-6 w-6 text-white" />
+								</div>
+								<h3 className="mb-2 font-bold text-lg text-white">
+									Marketing Resources
+								</h3>
+								<p className="text-indigo-100 text-sm">
+									Email templates, graphics, and guides to help you succeed
+								</p>
+							</div>
+						</div>
+
+						{/* CTA Buttons */}
+						<div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+							<Button
+								asChild
+								className="h-12 rounded-xl bg-white px-8 font-semibold text-indigo-600 text-lg shadow-lg transition-all duration-200 hover:scale-105 hover:bg-gray-50 hover:shadow-xl"
+								size="lg"
+							>
+								<Link href={user ? "/dashboard/affiliates" : "/signup"}>
+									{user ? "View Affiliate Dashboard" : "Join Affiliate Program"}
+									<ArrowRight className="ml-2 h-5 w-5" />
+								</Link>
+							</Button>
+						</div>
+
+						{/* Stats */}
+						<div className="mt-10 flex flex-wrap items-center justify-center gap-8 border-white/20 border-t pt-8">
+							<div className="text-center">
+								<div className="mb-1 font-bold text-2xl text-white">$10K+</div>
+								<div className="text-indigo-200 text-sm">Paid to affiliates</div>
+							</div>
+							<div className="h-12 w-px bg-white/20" />
+							<div className="text-center">
+								<div className="mb-1 font-bold text-2xl text-white">500+</div>
+								<div className="text-indigo-200 text-sm">Active affiliates</div>
+							</div>
+							<div className="h-12 w-px bg-white/20" />
+							<div className="text-center">
+								<div className="mb-1 font-bold text-2xl text-white">No Limits</div>
+								<div className="text-indigo-200 text-sm">Unlimited earnings</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</section>
