@@ -200,8 +200,8 @@ export default async function PricingPage() {
 									<Shield className="h-3 w-3" />
 									<span>
 										{plan.tier === "trial"
-											? "Get a taste of AI-powered lead gen. Upgrade anytime for more volume"
-											: "30-day money-back guarantee. Cancel anytime"}
+											? "One-time payment. Upgrade anytime for more volume"
+											: "Cancel anytime · No contracts"}
 									</span>
 								</div>
 							</div>

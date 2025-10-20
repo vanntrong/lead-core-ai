@@ -106,12 +106,54 @@ export default function Dashboard() {
 			<div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 				{/* Welcome Section */}
 				<div className="mb-8">
-					<h2 className="mb-2 font-bold text-3xl text-gray-900">
-						Good morning! 👋
-					</h2>
-					<p className="text-gray-600 text-lg">
-						AI-powered lead generation made simple.
-					</p>
+					<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+						<div>
+							<h2 className="mb-2 font-bold text-3xl text-gray-900">
+								Good morning! 👋
+							</h2>
+							<p className="text-gray-600 text-lg">
+								AI-powered lead generation made simple.
+							</p>
+						</div>
+
+						{/* Usage Meter */}
+						{_subscription?.usage_limits && (
+							<div className="rounded-xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-4 shadow-sm">
+								<div className="text-center">
+									<p className="mb-1 font-medium text-gray-600 text-sm">
+										Leads this month
+									</p>
+									<p className="font-bold text-2xl text-indigo-700">
+										{_subscription.usage_limits.current_leads ?? 0}
+										{_subscription.usage_limits.max_leads !== null && (
+											<span className="text-gray-500">
+												{" "}
+												/ {_subscription.usage_limits.max_leads}
+											</span>
+										)}
+										{_subscription.usage_limits.max_leads === null && (
+											<span className="text-gray-500"> / ∞</span>
+										)}
+									</p>
+									{_subscription.usage_limits.max_leads !== null && (
+										<div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-200">
+											<div
+												className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-300"
+												style={{
+													width: `${Math.min(
+														100,
+														(((_subscription.usage_limits.current_leads ?? 0) /
+															_subscription.usage_limits.max_leads) *
+															100)
+													)}%`,
+												}}
+											/>
+										</div>
+									)}
+								</div>
+							</div>
+						)}
+					</div>
 				</div>
 
 				{/* Premium Insights - Compact Top Section */}

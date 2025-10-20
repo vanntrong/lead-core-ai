@@ -6,7 +6,7 @@ const pricingPlans = [
         priceId: process.env.NEXT_PUBLIC_TRIAL_PLAN_ID,
         priceMonthly: 700,
         features: [
-            "Scrape & enrich up to 25 leads",
+            "25 verified leads (one-time)",
             "Choose Shopify, G2, Woo, or Etsy",
             "Real-time enrichment + verification",
             "CSV Export",
@@ -21,20 +21,20 @@ const pricingPlans = [
         },
     },
     {
-        name: "Basic Plan",
+        name: "Starter Plan",
         tier: "basic",
         priceId: process.env.NEXT_PUBLIC_BASIC_PLAN_ID,
         priceMonthly: 9700,
         features: [
+            "150 verified leads per month",
             "Choose Shopify, G2, Woo, or Etsy",
             "Real-time enrichment + verification",
             "CSV Export",
-            "Up to 100 qualified leads/month",
             "Basic support",
         ],
         limits: {
             sources: 1,
-            leads_per_month: 100,
+            leads_per_month: 150,
             csv_export: true,
             sheets_export: false,
             zapier_export: false,
@@ -46,10 +46,10 @@ const pricingPlans = [
         priceId: process.env.NEXT_PUBLIC_PRO_PLAN_ID,
         priceMonthly: 29_700,
         features: [
+            "500 verified leads per month",
             "Unlimited data sources",
             "Advanced lead enrichment",
             "Export to CSV + Sheets",
-            "Up to 500 qualified leads/month",
             "Advanced support",
         ],
         limits: {
@@ -66,9 +66,9 @@ const pricingPlans = [
         priceId: process.env.NEXT_PUBLIC_UNLIMITED_PLAN_ID,
         priceMonthly: 49_700,
         features: [
+            "Unlimited verified leads per month",
             "Unlimited data sources",
             "Advanced lead enrichment",
-            "Unlimited leads per month",
             "Zapier & Webhooks",
             "Priority support",
         ],

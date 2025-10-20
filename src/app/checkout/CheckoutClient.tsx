@@ -313,11 +313,7 @@ export default function CheckoutPageClient() {
 							</div>
 							<div className="flex items-center space-x-1">
 								<Shield className="h-4 w-4" />
-								{plan.tier === "trial" ? (
-									<span>Upgrade anytime</span>
-								) : (
-									<span>30-day Guarantee</span>
-								)}
+								<span>Cancel anytime</span>
 							</div>
 						</div>
 

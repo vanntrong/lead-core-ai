@@ -440,10 +440,10 @@ export default async function Home() {
 													<span className="font-semibold">$97</span>
 													<span className="text-gray-500 text-xs"> / mo</span>
 												</td>
-												<td className="px-6 py-4 text-gray-900 text-sm">100</td>
+												<td className="px-6 py-4 text-gray-900 text-sm">150</td>
 												<td className="px-6 py-4 text-gray-600 text-sm">
-													Access all connectors • AI enrichment • CSV + Sheets
-													export • Priority support
+													Access all connectors • AI enrichment • CSV export •
+													Priority support
 												</td>
 											</tr>
 											<tr className="transition-colors hover:bg-gray-50">
@@ -483,7 +483,7 @@ export default async function Home() {
 						</div>
 
 						<p className="mt-6 text-center text-gray-500 text-sm">
-							No refunds · Cancel anytime · No contracts
+							Cancel anytime · No contracts
 						</p>
 					</div>
 				</div>

@@ -42,7 +42,7 @@ export const pricingPlans = [
 		priceId: "price_1SGt7CRdJrlbSvYQTcHIljq9",
 		limits: {
 			sources: 1,
-			leads_per_month: 100,
+			leads_per_month: 150,
 			csv_export: true,
 			sheets_export: false,
 			zapier_export: false,
