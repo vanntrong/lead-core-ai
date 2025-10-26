@@ -389,32 +389,28 @@ const LeadRow = ({
 			{/* Quick Actions */}
 			<TableCell className="py-3 text-center align-middle">
 				<div className="flex items-center justify-center space-x-1">
-					{lead.verify_email_status !== "pending" && (
-						<>
-							<Button
-								aria-label="Quick View"
-								className="h-7 w-7 p-0 hover:bg-indigo-100 hover:text-indigo-700 focus:ring-2 focus:ring-indigo-500/20"
-								onClick={() => onLeadClick(lead)}
-								size="sm"
-								title="Quick View"
-								type="button"
-								variant="ghost"
-							>
-								<Eye aria-hidden="true" className="h-4 w-4" />
-							</Button>
-							<Button
-								aria-label="Go to Detail Page"
-								className="h-7 w-7 p-0 hover:bg-purple-100 hover:text-purple-700 focus:ring-2 focus:ring-purple-500/20"
-								onClick={() => router.push(`/dashboard/leads/${lead.id}`)}
-								size="sm"
-								title="Go to Detail Page"
-								type="button"
-								variant="ghost"
-							>
-								<ArrowUpRight aria-hidden="true" className="h-4 w-4" />
-							</Button>
-						</>
-					)}
+					<Button
+						aria-label="Quick View"
+						className="h-7 w-7 p-0 hover:bg-indigo-100 hover:text-indigo-700 focus:ring-2 focus:ring-indigo-500/20"
+						onClick={() => onLeadClick(lead)}
+						size="sm"
+						title="Quick View"
+						type="button"
+						variant="ghost"
+					>
+						<Eye aria-hidden="true" className="h-4 w-4" />
+					</Button>
+					<Button
+						aria-label="Go to Detail Page"
+						className="h-7 w-7 p-0 hover:bg-purple-100 hover:text-purple-700 focus:ring-2 focus:ring-purple-500/20"
+						onClick={() => router.push(`/dashboard/leads/${lead.id}`)}
+						size="sm"
+						title="Go to Detail Page"
+						type="button"
+						variant="ghost"
+					>
+						<ArrowUpRight aria-hidden="true" className="h-4 w-4" />
+					</Button>
 				</div>
 			</TableCell>
 		</TableRow>

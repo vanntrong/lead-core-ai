@@ -1,9 +1,8 @@
-import { Button } from "@/components/ui/button";
-import { useDeleteLeadAdmin } from "@/hooks/use-lead-admin";
-
 import { Loader2, XCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { useDeleteLeadAdmin } from "@/hooks/use-lead-admin";
 import {
 	Dialog,
 	DialogClose,
@@ -29,23 +28,23 @@ export function DeleteLeadButton({ leadId }: Readonly<{ leadId: string }>) {
 			console.error("Error deleting lead:", error);
 			toast.error(
 				error?.message ||
-					"Something went wrong. Please try again or contact support."
+				"Something went wrong. Please try again or contact support."
 			);
 		}
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
+		<Dialog onOpenChange={setOpen} open={open}>
 			<DialogTrigger asChild>
 				<Button
+					aria-label="Delete Lead"
 					className="h-7 w-7 p-0 hover:bg-red-100 hover:text-red-700 focus:ring-2 focus:ring-red-500/20"
 					size="sm"
 					title="Delete Lead"
-					variant="ghost"
-					aria-label="Delete Lead"
 					type="button"
+					variant="ghost"
 				>
-					<XCircle className="h-4 w-4 text-red-500" aria-hidden="true" />
+					<XCircle aria-hidden="true" className="h-4 w-4 text-red-500" />
 				</Button>
 			</DialogTrigger>
 			<DialogContent
@@ -65,10 +64,10 @@ export function DeleteLeadButton({ leadId }: Readonly<{ leadId: string }>) {
 					</DialogClose>
 					<Button
 						className="flex-1 border border-red-400 bg-white text-red-600 transition-colors duration-150 hover:border-red-500 hover:text-red-700"
-						variant="outline"
-						type="button"
 						disabled={isPending}
 						onClick={handleDelete}
+						type="button"
+						variant="outline"
 					>
 						{isPending ? (
 							<>

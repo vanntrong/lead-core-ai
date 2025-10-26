@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertCircle, Download, Loader2 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -23,18 +23,20 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import {
-    useGoogleAuth,
-    useGoogleCreateAndExportMultiple,
-    useGoogleExportMultiple,
-} from "@/hooks/use-google-api";
+// Google Sheets components - temporarily disabled
+// import {
+//     useGoogleAuth,
+//     useGoogleCreateAndExportMultiple,
+//     useGoogleExportMultiple,
+// } from "@/hooks/use-google-api";
 import { useUserActiveSubscription } from "@/hooks/use-subscription";
 import { getLeadsAction } from "@/lib/actions/lead.actions";
 import { leadExportService } from "@/services/lead-export.service";
 import type { Lead, LeadFilters } from "@/types/lead";
-import { GoogleLoginBtn } from "../google-login-btn";
+// import { GoogleLoginBtn } from "../google-login-btn";
 import { UpgradeButton } from "../upgrade-btn";
-import ExportGoogleSheetButton from "./export-google-sheet";
+
+// import ExportGoogleSheetButton from "./export-google-sheet";
 
 interface ExportLeadsData {
     format: "csv" | "google-sheets" | "zapier";
@@ -75,21 +77,23 @@ export function ExportLeadsDialog({
     const [isLoadingLeads, setIsLoadingLeads] = React.useState(false);
     const selectedFormat = watch("format");
     const { data: activeSubscription } = useUserActiveSubscription();
-    const {
-        login: handleGoogleLogin,
-        logout: handleGoogleLogout,
-        error: googleError,
-        isLoading: isGoogleLoading,
-        token: googleToken,
-        isConnected: isGoogleConnected,
-    } = useGoogleAuth();
-    const [googleSheetMode, setGoogleSheetMode] = useState<"select" | "create">(
-        "select"
-    );
-    const exportLeadsToSheet = useGoogleExportMultiple(googleToken ?? "");
-    const createNewAndExportLeadsToSheet = useGoogleCreateAndExportMultiple(
-        googleToken ?? ""
-    );
+
+    // Google Sheets integration - temporarily disabled
+    // const {
+    //     login: handleGoogleLogin,
+    //     logout: handleGoogleLogout,
+    //     error: googleError,
+    //     isLoading: isGoogleLoading,
+    //     token: googleToken,
+    //     isConnected: isGoogleConnected,
+    // } = useGoogleAuth();
+    // const [googleSheetMode, setGoogleSheetMode] = useState<"select" | "create">(
+    //     "select"
+    // );
+    // const exportLeadsToSheet = useGoogleExportMultiple(googleToken ?? "");
+    // const createNewAndExportLeadsToSheet = useGoogleCreateAndExportMultiple(
+    //     googleToken ?? ""
+    // );
 
     const handleClose = () => {
         onClose();
@@ -136,18 +140,19 @@ export function ExportLeadsDialog({
                     case "csv":
                         await exportToCSV();
                         break;
-                    case "google-sheets":
-                        if (!isGoogleConnected) {
-                            throw new Error("Please connect your Google account", {
-                                cause: "validation",
-                            });
-                        }
-                        if (googleSheetMode === "create") {
-                            await createAndExportToGoogleSheets(data.spreadsheetNew ?? "");
-                        } else {
-                            await exportToGoogleSheets(data.spreadsheetId ?? "");
-                        }
-                        break;
+                    // Google Sheets export - temporarily disabled
+                    // case "google-sheets":
+                    //     if (!isGoogleConnected) {
+                    //         throw new Error("Please connect your Google account", {
+                    //             cause: "validation",
+                    //         });
+                    //     }
+                    //     if (googleSheetMode === "create") {
+                    //         await createAndExportToGoogleSheets(data.spreadsheetNew ?? "");
+                    //     } else {
+                    //         await exportToGoogleSheets(data.spreadsheetId ?? "");
+                    //     }
+                    //     break;
                     case "zapier":
                         await exportToZapier(data.webhookUrl ?? "");
                         break;
@@ -219,47 +224,48 @@ export function ExportLeadsDialog({
         leadExportService.export({ format: "csv", leads: leadsData });
     };
 
-    const exportToGoogleSheets = async (spreadsheetId: string) => {
-        if (leadsData.length === 0) {
-            throw new Error("No leads to export", { cause: "validation" });
-        }
-        if (!spreadsheetId) {
-            throw new Error("Please select a Google Sheet", { cause: "validation" });
-        }
-        // Export multiple leads to Google Sheets
-        const result = await exportLeadsToSheet.mutateAsync({
-            leads: leadsData,
-            selectedSheet: spreadsheetId,
-        });
-        if (!result.success) {
-            throw new Error(
-                result.message || "Failed to export leads to Google Sheets"
-            );
-        }
-        return true;
-    };
+    // Google Sheets export functions - temporarily disabled
+    // const exportToGoogleSheets = async (spreadsheetId: string) => {
+    //     if (leadsData.length === 0) {
+    //         throw new Error("No leads to export", { cause: "validation" });
+    //     }
+    //     if (!spreadsheetId) {
+    //         throw new Error("Please select a Google Sheet", { cause: "validation" });
+    //     }
+    //     // Export multiple leads to Google Sheets
+    //     const result = await exportLeadsToSheet.mutateAsync({
+    //         leads: leadsData,
+    //         selectedSheet: spreadsheetId,
+    //     });
+    //     if (!result.success) {
+    //         throw new Error(
+    //             result.message || "Failed to export leads to Google Sheets"
+    //         );
+    //     }
+    //     return true;
+    // };
 
-    const createAndExportToGoogleSheets = async (spreadsheetNew: string) => {
-        if (leadsData.length === 0) {
-            throw new Error("No leads to export", { cause: "validation" });
-        }
-        if (!spreadsheetNew) {
-            throw new Error("Please enter a name for the new Google Sheet", {
-                cause: "validation",
-            });
-        }
-        // Create new sheet and export multiple leads
-        const result = await createNewAndExportLeadsToSheet.mutateAsync({
-            leads: leadsData,
-            spreadsheetName: spreadsheetNew,
-        });
-        if (!result.success) {
-            throw new Error(
-                result.message || "Failed to create and export leads to Google Sheets"
-            );
-        }
-        return true;
-    };
+    // const createAndExportToGoogleSheets = async (spreadsheetNew: string) => {
+    //     if (leadsData.length === 0) {
+    //         throw new Error("No leads to export", { cause: "validation" });
+    //     }
+    //     if (!spreadsheetNew) {
+    //         throw new Error("Please enter a name for the new Google Sheet", {
+    //             cause: "validation",
+    //         });
+    //     }
+    //     // Create new sheet and export multiple leads
+    //     const result = await createNewAndExportLeadsToSheet.mutateAsync({
+    //         leads: leadsData,
+    //         spreadsheetName: spreadsheetNew,
+    //     });
+    //     if (!result.success) {
+    //         throw new Error(
+    //             result.message || "Failed to create and export leads to Google Sheets"
+    //         );
+    //     }
+    //     return true;
+    // };
 
     const exportToZapier = async (webhookUrl: string) => {
         if (!webhookUrl) {
@@ -335,7 +341,8 @@ export function ExportLeadsDialog({
                         </div>
                     )}
 
-                    {googleError && (
+                    {/* Google Sheets error - temporarily disabled */}
+                    {/* {googleError && (
                         <div className="mb-4">
                             <Alert variant="destructive">
                                 <AlertCircle className="h-4 w-4" />
@@ -343,7 +350,7 @@ export function ExportLeadsDialog({
                                 <AlertDescription>{googleError}</AlertDescription>
                             </Alert>
                         </div>
-                    )}
+                    )} */}
 
                     {/* Retry Progress Display */}
                     {retryAttempts.length > 1 && (
@@ -444,7 +451,8 @@ export function ExportLeadsDialog({
                                                 </div>
                                             </div>
                                         </SelectItem>
-                                        <SelectItem value="google-sheets">
+                                        {/* Google Sheets export - temporarily disabled */}
+                                        {/* <SelectItem value="google-sheets">
                                             <div className="flex items-center space-x-2">
                                                 <span>📋</span>
                                                 <div>
@@ -454,7 +462,7 @@ export function ExportLeadsDialog({
                                                     </div>
                                                 </div>
                                             </div>
-                                        </SelectItem>
+                                        </SelectItem> */}
                                         <SelectItem value="zapier">
                                             <div className="flex items-center space-x-2">
                                                 <span>⚡</span>
@@ -490,16 +498,14 @@ export function ExportLeadsDialog({
                                         placeholder="https://hooks.zapier.com/..."
                                         type="text"
                                         {...register("webhookUrl")}
-                                        disabled={
-                                            !activeSubscription?.usage_limits?.zapier_export
-                                        }
+                                        disabled={!activeSubscription?.usage_limits?.zapier_export}
                                         required
                                     />
                                 </div>
                             )}
 
-                            {/* Google Sheets export button */}
-                            {selectedFormat === "google-sheets" && (
+                            {/* Google Sheets export components - temporarily disabled */}
+                            {/* {selectedFormat === "google-sheets" && (
                                 <>
                                     <GoogleLoginBtn
                                         disabled={
@@ -520,7 +526,7 @@ export function ExportLeadsDialog({
                                         setSpreadsheetName={setValue.bind(null, "spreadsheetNew")}
                                     />
                                 </>
-                            )}
+                            )} */}
 
                             {/* Format-specific info */}
                             {selectedFormat && (
@@ -528,7 +534,8 @@ export function ExportLeadsDialog({
                                     <p className="text-gray-600 text-sm">
                                         {selectedFormat === "csv" &&
                                             `Your ${leadsData.length} lead${leadsData.length !== 1 ? "s" : ""} will be downloaded as a CSV file that you can open in Excel or Google Sheets.`}
-                                        {selectedFormat === "google-sheets" &&
+                                        {/* Google Sheets info - temporarily disabled */}
+                                        {/* {selectedFormat === "google-sheets" &&
                                             (isGoogleConnected ? (
                                                 googleSheetMode === "create" ? (
                                                     <span>
@@ -558,7 +565,7 @@ export function ExportLeadsDialog({
                                                 )
                                             ) : (
                                                 "Please connect your Google account to export to Google Sheets."
-                                            ))}
+                                            ))} */}
                                         {selectedFormat === "zapier" &&
                                             `Your ${leadsData.length} lead${leadsData.length !== 1 ? "s" : ""} will be sent to your configured Zapier webhook for further automation.`}
                                     </p>
