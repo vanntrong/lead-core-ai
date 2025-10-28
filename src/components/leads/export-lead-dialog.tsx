@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertCircle, Download, Loader2 } from "lucide-react";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -36,9 +36,10 @@ import type { Lead } from "@/types/lead";
 import { UpgradeButton } from "../upgrade-btn";
 
 // import ExportGoogleSheetButton from "./export-google-sheet";
+import { TownSendApiKeyDialog } from "./townsend-api-key-dialog";
 
 interface ExportLeadData {
-	format: "csv" | "google-sheets" | "zapier";
+	format: "csv" | "google-sheets" | "zapier" | "townsend";
 }
 
 interface ExportLeadDialogProps {
@@ -48,7 +49,7 @@ interface ExportLeadDialogProps {
 }
 
 const ExportLeadSchema = z.object({
-	format: z.enum(["csv", "google-sheets", "zapier"]),
+	format: z.enum(["csv", "google-sheets", "zapier", "townsend"]),
 	webhookUrl: z.string().optional(),
 	spreadsheetId: z.string().optional(),
 	spreadsheetNew: z.string().optional(),
@@ -92,6 +93,10 @@ export function ExportLeadDialog({
 	// 	googleToken ?? ""
 	// );
 
+	const [isTownSendApiKeyDialogOpen, setIsTownSendApiKeyDialogOpen] =
+		useState(false);
+	const [hasTownSendApiKey, setHasTownSendApiKey] = useState(false);
+
 	const handleClose = () => {
 		onClose();
 	};
@@ -133,6 +138,9 @@ export function ExportLeadDialog({
 					// 	break;
 					case "zapier":
 						await exportToZapier(data.webhookUrl ?? "");
+						break;
+					case "townsend":
+						await exportToTownSend();
 						break;
 					default:
 						throw new Error("Please select an export format");
@@ -273,11 +281,40 @@ export function ExportLeadDialog({
 		return true;
 	};
 
+	const exportToTownSend = async () => {
+		if (!leadData) {
+			throw new Error("No lead data to export", { cause: "validation" });
+		}
+		if (!hasTownSendApiKey) {
+			throw new Error("Please configure your TownSend API key first", {
+				cause: "validation",
+			});
+		}
+		// Export to TownSend
+		await leadExportService.export({
+			format: "townsend",
+			leads: [leadData],
+		});
+		return true;
+	};
+
 	useEffect(() => {
 		if (isOpen) {
 			reset();
 			setSubmitError(null);
 			setRetryAttempts([]);
+
+			// Check if user has TownSend API key
+			fetch("/api/townsend/api-key")
+				.then((res) => res.json())
+				.then((data) => {
+					if (data.success && data.hasApiKey) {
+						setHasTownSendApiKey(true);
+					}
+				})
+				.catch((error) => {
+					console.error("Failed to check TownSend API key:", error);
+				});
 		}
 	}, [isOpen, reset]);
 
@@ -440,6 +477,17 @@ export function ExportLeadDialog({
 											</div>
 										</div>
 									</SelectItem>
+									<SelectItem value="townsend">
+										<div className="flex items-center space-x-2">
+											<span>🎯</span>
+											<div>
+												<div className="font-medium">TownSend</div>
+												<div className="text-gray-500 text-sm">
+													Export to TownSend audience
+												</div>
+											</div>
+										</div>
+									</SelectItem>
 								</SelectContent>
 							</Select>
 							{errors.format && (
@@ -467,6 +515,38 @@ export function ExportLeadDialog({
 									disabled={!activeSubscription?.usage_limits?.zapier_export}
 									required
 								/>
+							</div>
+						)}
+
+						{/* TownSend configuration */}
+						{selectedFormat === "townsend" && (
+							<div className="space-y-4">
+								{!hasTownSendApiKey ? (
+									<div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+										<p className="mb-3 text-sm text-yellow-800">
+											You need to configure your TownSend API key first.
+										</p>
+										<Button
+											className="w-full"
+											onClick={() => setIsTownSendApiKeyDialogOpen(true)}
+											type="button"
+											variant="outline"
+										>
+											Configure TownSend API Key
+										</Button>
+									</div>
+								) : (
+									<Button
+										className="w-full"
+										onClick={() => setIsTownSendApiKeyDialogOpen(true)}
+										size="sm"
+										type="button"
+										variant="outline"
+									>
+										Update TownSend API Key
+									</Button>
+								)}
+
 							</div>
 						)}
 
@@ -532,6 +612,10 @@ export function ExportLeadDialog({
 										))} */}
 									{selectedFormat === "zapier" &&
 										"Your lead data will be sent to your configured Zapier webhook for further automation."}
+									{selectedFormat === "townsend" &&
+										(hasTownSendApiKey
+											? "Your lead data will be exported to TownSend. Only leads with emails will be included."
+											: "Configure your TownSend API key to enable exports. Only leads with emails will be included.")}
 								</p>
 							</div>
 						)}
@@ -582,6 +666,15 @@ export function ExportLeadDialog({
 						</div>
 					</form>
 				</div>
+
+				<TownSendApiKeyDialog
+					isOpen={isTownSendApiKeyDialogOpen}
+					onClose={() => setIsTownSendApiKeyDialogOpen(false)}
+					onSaved={() => {
+						setHasTownSendApiKey(true);
+						toast.success("TownSend API key configured successfully");
+					}}
+				/>
 			</DialogContent>
 		</Dialog>
 	);
