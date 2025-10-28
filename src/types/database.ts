@@ -631,7 +631,7 @@ export type Database = {
           created_at: string | null
           factor_id: string | null
           id: string
-          ip: unknown | null
+          ip: unknown
           not_after: string | null
           oauth_client_id: string | null
           refreshed_at: string | null
@@ -645,7 +645,7 @@ export type Database = {
           created_at?: string | null
           factor_id?: string | null
           id: string
-          ip?: unknown | null
+          ip?: unknown
           not_after?: string | null
           oauth_client_id?: string | null
           refreshed_at?: string | null
@@ -659,7 +659,7 @@ export type Database = {
           created_at?: string | null
           factor_id?: string | null
           id?: string
-          ip?: unknown | null
+          ip?: unknown
           not_after?: string | null
           oauth_client_id?: string | null
           refreshed_at?: string | null
@@ -860,22 +860,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      email: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      jwt: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      uid: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      email: { Args: never; Returns: string }
+      jwt: { Args: never; Returns: Json }
+      role: { Args: never; Returns: string }
+      uid: { Args: never; Returns: string }
     }
     Enums: {
       aal_level: "aal1" | "aal2" | "aal3"
@@ -1412,13 +1400,40 @@ export type Database = {
         }
         Relationships: []
       }
+      user_api_keys: {
+        Row: {
+          api_key: string
+          created_at: string
+          id: string
+          service_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          api_key: string
+          created_at?: string
+          id?: string
+          service_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          api_key?: string
+          created_at?: string
+          id?: string
+          service_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       get_users_with_available_enrich_jobs: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           user_id: string
         }[]

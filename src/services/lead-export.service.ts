@@ -1,7 +1,7 @@
 import { leadScoringService } from "@/services/lead-scoring.service";
 import type { Lead } from "../types/lead";
 
-export type LeadExportFormat = "csv" | "google_sheets" | "zapier" | "ghl";
+export type LeadExportFormat = "csv" | "google_sheets" | "zapier" | "ghl" | "townsend";
 
 export interface LeadExportOptions {
 	format: LeadExportFormat;
@@ -115,6 +115,34 @@ export class LeadExportService {
 		}
 	}
 
+	// Export leads to TownSend
+	async exportToTownSend(leads: Lead[]): Promise<any> {
+		try {
+			const response = await fetch("/api/townsend/export", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ leads }),
+			});
+
+			const data = await response.json();
+
+			if (!response.ok) {
+				throw new Error(data.message || "Failed to export to TownSend");
+			}
+
+			if (!data.success) {
+				throw new Error(data.message || "Failed to export to TownSend");
+			}
+
+			return { success: true, message: data.message };
+		} catch (error) {
+			console.error("Error exporting to TownSend:", error);
+			throw error;
+		}
+	}
+
 	// Main export function
 	export(options: LeadExportOptions): Promise<any> | undefined {
 		const { format, leads, webhookUrl } = options;
@@ -127,6 +155,9 @@ export class LeadExportService {
 				throw new Error("Missing webhook URL");
 			}
 			return this.exportToWebhook(leads, webhookUrl);
+		}
+		if (format === "townsend") {
+			return this.exportToTownSend(leads);
 		}
 		throw new Error("Unsupported export format");
 	}
