@@ -2,6 +2,7 @@ import "@/app/globals.css";
 import {
 	BarChart3,
 	Check,
+	ChevronDown,
 	Globe,
 	Mail,
 	Shield,
@@ -12,6 +13,13 @@ import {
 import Link from "next/link";
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { EcosystemLinks } from "@/constants/links";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminEmails } from "@/utils/helper";
 
@@ -42,17 +50,47 @@ export default async function TownSendPage() {
 							</Link>
 						</div>
 						<div className="hidden items-center space-x-8 md:flex">
+							<DropdownMenu>
+								<DropdownMenuTrigger className="flex items-center gap-1 font-medium text-muted-foreground text-sm transition-colors hover:text-foreground">
+									Ecosystem
+									<ChevronDown className="h-4 w-4" />
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="start" className="w-64">
+									{EcosystemLinks.map((link) => (
+										<DropdownMenuItem asChild key={link.name}>
+											<Link
+												className="cursor-pointer"
+												href={link.href}
+												rel="noopener noreferrer"
+												target={link.target}
+											>
+												<div className="flex items-center gap-3">
+													<div className="rounded-md bg-indigo-600 p-2">
+														{link.icon}
+													</div>
+													<div>
+														<p className="font-semibold">{link.name}</p>
+														<p className="text-muted-foreground text-sm">
+															{link.description}
+														</p>
+													</div>
+												</div>
+											</Link>
+										</DropdownMenuItem>
+									))}
+								</DropdownMenuContent>
+							</DropdownMenu>
 							<Link
-								className="font-medium text-gray-600 transition-colors duration-200 hover:text-gray-900"
-								href="/"
-							>
-								LeadCore AI
-							</Link>
-							<Link
-								className="font-medium text-gray-600 transition-colors duration-200 hover:text-gray-900"
+								className="font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
 								href="/pricing"
 							>
 								Pricing
+							</Link>
+							<Link
+								className="font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
+								href="/contact"
+							>
+								Contact
 							</Link>
 							<div className="flex items-center gap-x-3">
 								{!user ? (
@@ -342,43 +380,47 @@ export default async function TownSendPage() {
 
 			{/* Pricing Section */}
 			<section className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-24">
-				<div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+				<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 					<div className="mb-10 text-center">
 						<h2 className="mb-4 font-bold text-3xl text-gray-900">
-							Simple, transparent pricing
+							Simple, Transparent Pricing
 						</h2>
 						<p className="mx-auto max-w-2xl text-gray-600 text-lg">
-							Pay for what you use. No hidden fees, no surprises.
+							Choose the plan that fits your sending needs. All plans include
+							bonus credits on signup.
 						</p>
 					</div>
 
-					<div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+					<div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
 						{/* Starter Plan */}
-						<div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all duration-300 hover:shadow-lg">
+						<div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg">
 							<h3 className="mb-2 font-bold text-gray-900 text-xl">Starter</h3>
+							<p className="mb-4 text-gray-600 text-sm">
+								Perfect for 25/day warm-up users
+							</p>
 							<div className="mb-6">
-								<span className="font-bold text-4xl text-gray-900">$29</span>
-								<span className="text-gray-600 text-sm"> / month</span>
+								<span className="font-bold text-4xl text-gray-900">$97</span>
+								<span className="text-gray-600 text-sm">/month</span>
 							</div>
 							<ul className="mb-8 space-y-3">
 								<li className="flex items-start">
 									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
+									<span className="text-gray-700 text-sm">1 Domain</span>
+								</li>
+								<li className="flex items-start">
+									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
+									<span className="text-gray-700 text-sm">3 Audiences</span>
+								</li>
+								<li className="flex items-start">
+									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
 									<span className="text-gray-700 text-sm">
-										Up to 10,000 emails/month
+										Up to 25 emails/day
 									</span>
 								</li>
 								<li className="flex items-start">
 									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
-									<span className="text-gray-700 text-sm">Basic analytics</span>
-								</li>
-								<li className="flex items-start">
-									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
-									<span className="text-gray-700 text-sm">Email support</span>
-								</li>
-								<li className="flex items-start">
-									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
 									<span className="text-gray-700 text-sm">
-										LeadCore integration
+										150 bonus credits on signup
 									</span>
 								</li>
 							</ul>
@@ -394,45 +436,41 @@ export default async function TownSendPage() {
 						</div>
 
 						{/* Pro Plan */}
-						<div className="relative rounded-2xl border-2 border-indigo-600 bg-white p-8 shadow-lg">
+						<div className="relative rounded-2xl border-2 border-indigo-600 bg-white p-6 shadow-lg">
 							<div className="-top-4 -translate-x-1/2 absolute left-1/2 transform">
 								<span className="rounded-full bg-indigo-600 px-4 py-1 font-semibold text-sm text-white">
-									Popular
+									Most Popular
 								</span>
 							</div>
 							<h3 className="mb-2 font-bold text-gray-900 text-xl">Pro</h3>
+							<p className="mb-4 text-gray-600 text-sm">
+								Perfect for small businesses getting started with email
+								marketing
+							</p>
 							<div className="mb-6">
-								<span className="font-bold text-4xl text-gray-900">$99</span>
-								<span className="text-gray-600 text-sm"> / month</span>
+								<span className="font-bold text-4xl text-gray-900">$197</span>
+								<span className="text-gray-600 text-sm">/month</span>
 							</div>
 							<ul className="mb-8 space-y-3">
 								<li className="flex items-start">
 									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
 									<span className="text-gray-700 text-sm">
-										Up to 100,000 emails/month
+										Everything in Starter, plus:
 									</span>
+								</li>
+								<li className="flex items-start">
+									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
+									<span className="text-gray-700 text-sm">2 Domains</span>
+								</li>
+								<li className="flex items-start">
+									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
+									<span className="text-gray-700 text-sm">10 Audiences</span>
 								</li>
 								<li className="flex items-start">
 									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
 									<span className="text-gray-700 text-sm">
-										Advanced analytics
+										Up to 100 emails/day
 									</span>
-								</li>
-								<li className="flex items-start">
-									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
-									<span className="text-gray-700 text-sm">
-										Priority support
-									</span>
-								</li>
-								<li className="flex items-start">
-									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
-									<span className="text-gray-700 text-sm">
-										Advanced segmentation
-									</span>
-								</li>
-								<li className="flex items-start">
-									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
-									<span className="text-gray-700 text-sm">API access</span>
 								</li>
 							</ul>
 							<Button
@@ -449,51 +487,104 @@ export default async function TownSendPage() {
 							</Button>
 						</div>
 
-						{/* Enterprise Plan */}
-						<div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all duration-300 hover:shadow-lg">
-							<h3 className="mb-2 font-bold text-gray-900 text-xl">
-								Enterprise
-							</h3>
+						{/* Elite Plan */}
+						<div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg">
+							<h3 className="mb-2 font-bold text-gray-900 text-xl">Elite</h3>
+							<p className="mb-4 text-gray-600 text-sm">
+								For growing companies with higher sending volumes
+							</p>
 							<div className="mb-6">
-								<span className="font-bold text-4xl text-gray-900">Custom</span>
+								<span className="font-bold text-4xl text-gray-900">$297</span>
+								<span className="text-gray-600 text-sm">/month</span>
 							</div>
 							<ul className="mb-8 space-y-3">
 								<li className="flex items-start">
 									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
 									<span className="text-gray-700 text-sm">
-										Unlimited emails
+										Everything in Pro, plus:
+									</span>
+								</li>
+								<li className="flex items-start">
+									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
+									<span className="text-gray-700 text-sm">3 Domains</span>
+								</li>
+								<li className="flex items-start">
+									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
+									<span className="text-gray-700 text-sm">
+										Unlimited Audiences
 									</span>
 								</li>
 								<li className="flex items-start">
 									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
 									<span className="text-gray-700 text-sm">
-										Custom analytics
-									</span>
-								</li>
-								<li className="flex items-start">
-									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
-									<span className="text-gray-700 text-sm">
-										Dedicated support
-									</span>
-								</li>
-								<li className="flex items-start">
-									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
-									<span className="text-gray-700 text-sm">
-										White-label options
-									</span>
-								</li>
-								<li className="flex items-start">
-									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
-									<span className="text-gray-700 text-sm">
-										Custom integrations
+										Up to 150 emails/day
 									</span>
 								</li>
 							</ul>
 							<Button asChild className="w-full rounded-lg" variant="outline">
-								<Link href="/contact">Contact Sales</Link>
+								<a
+									href="https://www.mailtown.io"
+									rel="noopener noreferrer"
+									target="_blank"
+								>
+									Get Started
+								</a>
+							</Button>
+						</div>
+
+						{/* Agency White-Label Plan */}
+						<div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg">
+							<h3 className="mb-2 font-bold text-gray-900 text-xl">
+								Agency White-Label
+							</h3>
+							<p className="mb-4 text-gray-600 text-sm">
+								Tenant-level control; per-client cap 1–2 recommended
+							</p>
+							<div className="mb-6">
+								<span className="font-bold text-4xl text-gray-900">$997</span>
+								<span className="text-gray-600 text-sm">/month</span>
+							</div>
+							<ul className="mb-8 space-y-3">
+								<li className="flex items-start">
+									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
+									<span className="text-gray-700 text-sm">
+										Everything in Elite, plus:
+									</span>
+								</li>
+								<li className="flex items-start">
+									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
+									<span className="text-gray-700 text-sm">
+										Unlimited Domains
+									</span>
+								</li>
+								<li className="flex items-start">
+									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
+									<span className="text-gray-700 text-sm">
+										Unlimited Audiences
+									</span>
+								</li>
+								<li className="flex items-start">
+									<Check className="mt-0.5 mr-2 h-5 w-5 shrink-0 text-green-600" />
+									<span className="text-gray-700 text-sm">
+										Tenant-level control
+									</span>
+								</li>
+							</ul>
+							<Button asChild className="w-full rounded-lg" variant="outline">
+								<a
+									href="https://www.mailtown.io"
+									rel="noopener noreferrer"
+									target="_blank"
+								>
+									Get Started
+								</a>
 							</Button>
 						</div>
 					</div>
+
+					<p className="mt-8 text-center text-gray-600 text-sm">
+						All plans include bonus credits on signup that never expire
+					</p>
 				</div>
 			</section>
 

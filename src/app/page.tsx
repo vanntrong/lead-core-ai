@@ -1,5 +1,6 @@
 import "@/app/globals.css";
 import {
+	ChevronDown,
 	DollarSign,
 	Globe,
 	MessageSquare,
@@ -13,13 +14,12 @@ import { DemoDialog } from "@/components/demo-dialog";
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import {
-	NavigationMenu,
-	NavigationMenuContent,
-	NavigationMenuItem,
-	NavigationMenuLink,
-	NavigationMenuList,
-	NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { EcosystemLinks } from "@/constants/links";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminEmails } from "@/utils/helper";
 
@@ -47,63 +47,44 @@ export default async function Home() {
 							</Link>
 						</div>
 						<div className="hidden items-center space-x-8 md:flex">
-							<NavigationMenu>
-								<NavigationMenuList>
-									<NavigationMenuItem>
-										<NavigationMenuTrigger className="h-auto bg-transparent px-0 font-medium text-gray-600 hover:bg-transparent hover:text-gray-900 data-[state=open]:bg-transparent">
-											Ecosystem
-										</NavigationMenuTrigger>
-										<NavigationMenuContent>
-											<div className="w-48 p-2">
-												<NavigationMenuLink asChild>
-													<Link
-														className="block rounded-md px-3 py-2 text-sm hover:bg-gray-100"
-														href="/"
-													>
-														LeadCore AI
-													</Link>
-												</NavigationMenuLink>
-												<NavigationMenuLink asChild>
-													<Link
-														className="block rounded-md px-3 py-2 text-sm hover:bg-gray-100"
-														href="/townsend"
-													>
-														TownSend
-													</Link>
-												</NavigationMenuLink>
-												<NavigationMenuLink asChild>
-													<a
-														className="block rounded-md px-3 py-2 text-sm hover:bg-gray-100"
-														href="https://townecho.com"
-														rel="noopener noreferrer"
-														target="_blank"
-													>
-														TownEcho
-													</a>
-												</NavigationMenuLink>
-												<NavigationMenuLink asChild>
-													<a
-														className="block rounded-md px-3 py-2 text-sm hover:bg-gray-100"
-														href="https://townpay.com"
-														rel="noopener noreferrer"
-														target="_blank"
-													>
-														TownPay
-													</a>
-												</NavigationMenuLink>
-											</div>
-										</NavigationMenuContent>
-									</NavigationMenuItem>
-								</NavigationMenuList>
-							</NavigationMenu>
+							<DropdownMenu>
+								<DropdownMenuTrigger className="flex items-center gap-1 font-medium text-muted-foreground text-sm transition-colors hover:text-foreground">
+									Ecosystem
+									<ChevronDown className="h-4 w-4" />
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="start" className="w-64">
+									{EcosystemLinks.map((link) => (
+										<DropdownMenuItem asChild key={link.name}>
+											<Link
+												className="cursor-pointer"
+												href={link.href}
+												rel="noopener noreferrer"
+												target={link.target}
+											>
+												<div className="flex items-center gap-3">
+													<div className="rounded-md bg-indigo-600 p-2">
+														{link.icon}
+													</div>
+													<div>
+														<p className="font-semibold">{link.name}</p>
+														<p className="text-muted-foreground text-sm">
+															{link.description}
+														</p>
+													</div>
+												</div>
+											</Link>
+										</DropdownMenuItem>
+									))}
+								</DropdownMenuContent>
+							</DropdownMenu>
 							<Link
-								className="font-medium text-gray-600 transition-colors duration-200 hover:text-gray-900"
+								className="font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
 								href="/pricing"
 							>
 								Pricing
 							</Link>
 							<Link
-								className="font-medium text-gray-600 transition-colors duration-200 hover:text-gray-900"
+								className="font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground"
 								href="/contact"
 							>
 								Contact
