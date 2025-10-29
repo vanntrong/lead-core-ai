@@ -12,6 +12,14 @@ import Link from "next/link";
 import { DemoDialog } from "@/components/demo-dialog";
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
+import {
+	NavigationMenu,
+	NavigationMenuContent,
+	NavigationMenuItem,
+	NavigationMenuLink,
+	NavigationMenuList,
+	NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminEmails } from "@/utils/helper";
 
@@ -39,6 +47,55 @@ export default async function Home() {
 							</Link>
 						</div>
 						<div className="hidden items-center space-x-8 md:flex">
+							<NavigationMenu>
+								<NavigationMenuList>
+									<NavigationMenuItem>
+										<NavigationMenuTrigger className="h-auto bg-transparent px-0 font-medium text-gray-600 hover:bg-transparent hover:text-gray-900 data-[state=open]:bg-transparent">
+											Ecosystem
+										</NavigationMenuTrigger>
+										<NavigationMenuContent>
+											<div className="w-48 p-2">
+												<NavigationMenuLink asChild>
+													<Link
+														className="block rounded-md px-3 py-2 text-sm hover:bg-gray-100"
+														href="/"
+													>
+														LeadCore AI
+													</Link>
+												</NavigationMenuLink>
+												<NavigationMenuLink asChild>
+													<Link
+														className="block rounded-md px-3 py-2 text-sm hover:bg-gray-100"
+														href="/townsend"
+													>
+														TownSend
+													</Link>
+												</NavigationMenuLink>
+												<NavigationMenuLink asChild>
+													<a
+														className="block rounded-md px-3 py-2 text-sm hover:bg-gray-100"
+														href="https://townecho.com"
+														rel="noopener noreferrer"
+														target="_blank"
+													>
+														TownEcho
+													</a>
+												</NavigationMenuLink>
+												<NavigationMenuLink asChild>
+													<a
+														className="block rounded-md px-3 py-2 text-sm hover:bg-gray-100"
+														href="https://townpay.com"
+														rel="noopener noreferrer"
+														target="_blank"
+													>
+														TownPay
+													</a>
+												</NavigationMenuLink>
+											</div>
+										</NavigationMenuContent>
+									</NavigationMenuItem>
+								</NavigationMenuList>
+							</NavigationMenu>
 							<Link
 								className="font-medium text-gray-600 transition-colors duration-200 hover:text-gray-900"
 								href="/pricing"
