@@ -6,7 +6,15 @@ export default function Footer() {
 			<div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 				<div className="text-center">
 					<p className="text-gray-500 text-sm">
-						© {new Date().getFullYear()} LeadCore AI — Powered by $TOWN
+						© {new Date().getFullYear()} • Powered by{" "}
+						<a
+							className="text-indigo-600 transition-colors hover:text-indigo-700"
+							href="https://www.emailtown.io"
+							rel="noopener noreferrer"
+							target="_blank"
+						>
+							$Town
+						</a>
 					</p>
 					<div className="mt-3 flex flex-wrap items-center justify-center gap-4">
 						<Link
