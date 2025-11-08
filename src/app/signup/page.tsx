@@ -1,6 +1,23 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+	AlertCircle,
+	ArrowLeft,
+	CheckCircle,
+	Eye,
+	EyeOff,
+	Globe,
+	Loader2,
+	Shield,
+	Star,
+	Users,
+	Zap,
+} from "lucide-react";
+import Link from "next/link";
 import React from "react";
+import { useForm } from "react-hook-form";
+import z from "zod";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,23 +31,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MIN_PASSWORD_LENGTH } from "@/constants";
 import { useSignUp } from "@/hooks/use-auth";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-	AlertCircle,
-	ArrowLeft,
-	CheckCircle,
-	Globe,
-	Loader2,
-	Shield,
-	Star,
-	Users,
-	Zap,
-	Eye,
-	EyeOff,
-} from "lucide-react";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
-import z from "zod";
 
 const signUpSchema = z.object({
 	email: z.email("Valid email is required"),
@@ -81,7 +81,7 @@ export default function Signup() {
 							<div className="rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 p-2">
 								<Globe className="h-6 w-6 text-white" />
 							</div>
-							<Link href="/" className="font-bold text-gray-900 text-xl">
+							<Link className="font-bold text-gray-900 text-xl" href="/">
 								LeadCore AI
 							</Link>
 						</div>
@@ -92,7 +92,7 @@ export default function Signup() {
 								size="sm"
 								variant="outline"
 							>
-								<a href="/login" className="flex items-center gap-2">
+								<a className="flex items-center gap-2" href="/login">
 									<ArrowLeft className="h-4 w-4" />
 									Back to Sign In
 								</a>
@@ -218,14 +218,14 @@ export default function Signup() {
 									) : (
 										<>
 											{error?.message && (
-												<Alert variant="destructive" className="mb-4">
+												<Alert className="mb-4" variant="destructive">
 													<AlertCircle className="h-4 w-4" />
 													<AlertTitle>Signup Error</AlertTitle>
 													<AlertDescription>{error?.message}</AlertDescription>
 												</Alert>
 											)}
 											{isEmailAlreadyRegistered && (
-												<Alert variant="destructive" className="mb-4">
+												<Alert className="mb-4" variant="destructive">
 													<AlertCircle className="h-4 w-4" />
 													<AlertTitle>Account Already Exists</AlertTitle>
 													<AlertDescription>
@@ -242,8 +242,8 @@ export default function Signup() {
 												<div className="grid grid-cols-2 gap-4">
 													<div className="space-y-2">
 														<Label
-															htmlFor="firstName"
 															className="font-medium text-gray-700 text-sm"
+															htmlFor="firstName"
 														>
 															First Name
 														</Label>
@@ -258,8 +258,8 @@ export default function Signup() {
 													</div>
 													<div className="space-y-2">
 														<Label
-															htmlFor="lastName"
 															className="font-medium text-gray-700 text-sm"
+															htmlFor="lastName"
 														>
 															Last Name
 														</Label>
@@ -276,8 +276,8 @@ export default function Signup() {
 
 												<div className="space-y-2">
 													<Label
-														htmlFor="email"
 														className="font-medium text-gray-700 text-sm"
+														htmlFor="email"
 													>
 														Work Email
 													</Label>
@@ -293,8 +293,8 @@ export default function Signup() {
 
 												<div className="space-y-2">
 													<Label
-														htmlFor="password"
 														className="font-medium text-gray-700 text-sm"
+														htmlFor="password"
 													>
 														Password
 													</Label>
@@ -308,14 +308,14 @@ export default function Signup() {
 															errorMessage={errors.password?.message}
 														/>
 														<button
-															type="button"
 															aria-label={
 																showPassword ? "Hide password" : "Show password"
 															}
+															className="-translate-y-1/2 absolute top-1/2 right-3 text-gray-500 hover:text-indigo-600 focus:outline-none"
 															onClick={() =>
 																setShowPassword((prev: boolean) => !prev)
 															}
-															className="-translate-y-1/2 absolute top-1/2 right-3 text-gray-500 hover:text-indigo-600 focus:outline-none"
+															type="button"
 														>
 															{showPassword ? (
 																<EyeOff className="h-5 w-5" />
@@ -360,15 +360,15 @@ export default function Signup() {
 													<p className="text-center text-gray-500 text-xs leading-relaxed">
 														By creating an account, you agree to our{" "}
 														<Link
-															href="/terms"
 															className="text-indigo-600 hover:underline"
+															href="/terms"
 														>
 															Terms of Service
 														</Link>{" "}
 														and{" "}
 														<Link
-															href="/privacy"
 															className="text-indigo-600 hover:underline"
+															href="/privacy"
 														>
 															Privacy Policy
 														</Link>

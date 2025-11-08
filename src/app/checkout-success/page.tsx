@@ -1,10 +1,10 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Crown, CheckCircle } from "lucide-react";
+import { CheckCircle, Crown } from "lucide-react";
 import Link from "next/link";
-
 import { useEffect, useState } from "react";
+import RewardfulScript from "@/components/rewardfull-script";
+import { Button } from "@/components/ui/button";
 
 export default function CheckoutSuccessPage() {
 	const [countdown, setCountdown] = useState(3);
@@ -15,11 +15,12 @@ export default function CheckoutSuccessPage() {
 			const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
 			return () => clearTimeout(timer);
 		}
-			setEnabled(true);
+		setEnabled(true);
 	}, [countdown]);
 
 	return (
 		<div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50">
+			<RewardfulScript />
 			<div className="w-full max-w-md rounded-xl border border-indigo-100 bg-white p-8 text-center shadow-lg">
 				<div className="flex flex-col items-center space-y-4">
 					<CheckCircle className="mb-2 h-12 w-12 text-green-500" />
@@ -51,15 +52,15 @@ export default function CheckoutSuccessPage() {
 												className="opacity-25"
 												cx="12"
 												cy="12"
+												fill="none"
 												r="10"
 												stroke="currentColor"
 												strokeWidth="4"
-												fill="none"
 											/>
 											<path
 												className="opacity-75"
-												fill="currentColor"
 												d="M4 12a8 8 0 018-8v2a6 6 0 00-6 6H4z"
+												fill="currentColor"
 											/>
 										</svg>
 										{countdown}s

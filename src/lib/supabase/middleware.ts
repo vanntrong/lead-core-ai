@@ -49,6 +49,7 @@ export async function updateSession(request: NextRequest) {
 		new Minimatch("/videos/**"),
 		new Minimatch("/contact"),
 		new Minimatch("/townsend"),
+		new Minimatch("/send")
 	];
 	const authRoutes = [
 		new Minimatch("/login"),

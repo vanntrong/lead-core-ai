@@ -317,7 +317,7 @@ export function AffiliateDashboard({
                         size="lg"
                     >
                         <a
-                            href="https://leadcoreai.getrewardful.com/affiliates/sign_in"
+                            href="https://bug-hutch-media.getrewardful.com/login?campaign=leadcoreai"
                             rel="noopener noreferrer"
                             target="_blank"
                         >

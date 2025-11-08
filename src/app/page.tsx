@@ -89,6 +89,12 @@ export default async function Home() {
 							>
 								Contact
 							</Link>
+							<Link
+								className="font-medium text-indigo-600 transition-colors duration-200 hover:text-indigo-700"
+								href="/send"
+							>
+								Send 150 Cold Emails
+							</Link>
 							<div className="flex items-center gap-x-3">
 								{!user ? (
 									<>
@@ -150,18 +156,18 @@ export default async function Home() {
 							{/* Content Section */}
 							<div className="animate-fade-in-up text-left">
 								<h1 className="font-bold text-4xl text-gray-900 leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-									AI-powered lead generation for{" "}
 									<span className="animate-gradient bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-										every kind of business.
-									</span>
+										Live B2B lead generation
+									</span>{" "}
+									made simple.
 								</h1>
 								<p
 									className="mt-6 animate-fade-in-up text-gray-600 text-lg leading-8"
 									style={{ animationDelay: "0.2s" }}
 								>
-									Find, enrich, and verify high-quality leads — from B2B
-									companies and agencies to SaaS startups and Shopify stores —
-									all in one platform.
+									Pull fresh, verified contacts from Google Places, NPI
+									(healthcare), FMCSA (trucking), G2, Capterra, and more.
+									B2B-first data enrichment built for real outreach.
 								</p>
 								<div
 									className="mt-8 flex animate-fade-in-up flex-col gap-4 sm:flex-row"
@@ -176,7 +182,7 @@ export default async function Home() {
 											className="flex items-center justify-center"
 											href="/signup"
 										>
-											Try 25 Leads for $7&nbsp;&rarr;
+											Start for $97&nbsp;&rarr;
 										</Link>
 									</Button>
 									<DemoDialog>
@@ -325,10 +331,12 @@ export default async function Home() {
 								</div>
 								<div>
 									<h3 className="mb-2 font-semibold text-gray-900 text-lg">
-										All-industry reach
+										B2B-first data sources
 									</h3>
 									<p className="text-gray-600 text-sm leading-relaxed">
-										B2B, SaaS, local service, or e-commerce—scrape them all.
+										From healthcare providers (NPI) to trucking companies
+										(FMCSA), Google Places, G2, and Capterra—access every major
+										B2B database.
 									</p>
 								</div>
 							</div>
@@ -342,11 +350,11 @@ export default async function Home() {
 								</div>
 								<div>
 									<h3 className="mb-2 font-semibold text-gray-900 text-lg">
-										AI enrichment
+										AI-powered B2B enrichment
 									</h3>
 									<p className="text-gray-600 text-sm leading-relaxed">
-										Claude-powered enrichment turns cold data into
-										ready-to-contact leads.
+										Automatically enrich leads with decision-maker contacts, job
+										titles, company tech stack, and ICP fit scores.
 									</p>
 								</div>
 							</div>
@@ -465,9 +473,8 @@ export default async function Home() {
 												</td>
 												<td className="px-6 py-4 text-gray-900 text-sm">25</td>
 												<td className="px-6 py-4 text-gray-600 text-sm">
-													Scrape & enrich from any source — Google, Shopify, G2,
-													Woo, Etsy, Yelp, NPI, FMCSA • Real-time verification •
-													CSV export • Preview every industry
+													1 source (incl. Places / NPI / FMCSA) • 25 leads • CSV
+													export
 												</td>
 											</tr>
 											<tr className="transition-colors hover:bg-gray-50">
@@ -478,10 +485,9 @@ export default async function Home() {
 													<span className="font-semibold">$97</span>
 													<span className="text-gray-500 text-xs"> / mo</span>
 												</td>
-												<td className="px-6 py-4 text-gray-900 text-sm">150</td>
+												<td className="px-6 py-4 text-gray-900 text-sm">100</td>
 												<td className="px-6 py-4 text-gray-600 text-sm">
-													Access all connectors • AI enrichment • CSV export •
-													Priority support
+													1 active source / 100 leads/mo • CSV
 												</td>
 											</tr>
 											<tr className="transition-colors hover:bg-gray-50">
@@ -494,8 +500,7 @@ export default async function Home() {
 												</td>
 												<td className="px-6 py-4 text-gray-900 text-sm">500</td>
 												<td className="px-6 py-4 text-gray-600 text-sm">
-													Bulk scraping • Advanced enrichment (ICP, contacts,
-													stack) • Zapier + multi-user access
+													All sources / 500 leads/mo • CSV + Sheets
 												</td>
 											</tr>
 											<tr className="transition-colors hover:bg-gray-50">
@@ -510,8 +515,8 @@ export default async function Home() {
 													Unlimited
 												</td>
 												<td className="px-6 py-4 text-gray-600 text-sm">
-													All sources + webhooks + CRM integrations + dedicated
-													support
+													All sources / unlimited • CSV + Sheets +
+													Zapier/Webhooks • Priority support
 												</td>
 											</tr>
 										</tbody>

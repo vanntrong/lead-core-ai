@@ -1,7 +1,8 @@
-import { Toaster } from "@/components/ui/sonner";
-import { ReactQueryProvider } from "@/lib/react-query";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { CookieBanner } from "@/components/ui/cookie-banner";
+import { Toaster } from "@/components/ui/sonner";
+import { ReactQueryProvider } from "@/lib/react-query";
 import "./globals.css";
 import Providers from "./providers";
 
@@ -27,7 +28,7 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en" className="mdl-js">
+		<html className="mdl-js" lang="en">
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 			>
@@ -35,6 +36,7 @@ export default function RootLayout({
 					<Providers>{children}</Providers>
 				</ReactQueryProvider>
 				<Toaster />
+				<CookieBanner />
 			</body>
 		</html>
 	);
