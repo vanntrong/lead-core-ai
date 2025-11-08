@@ -1,3 +1,4 @@
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { redirect } from "next/navigation";
 import type { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
@@ -44,6 +45,9 @@ export async function GET(request: NextRequest) {
 		return redirect(next);
 	} catch (err) {
 		console.error("Unexpected error during OAuth callback:", err);
+		if (isRedirectError(err)) {
+			throw err;
+		}
 		return redirect("/login?error=oauth_failed");
 	}
 }
