@@ -56,6 +56,7 @@ export async function updateSession(request: NextRequest) {
 		new Minimatch("/signup"),
 		new Minimatch("/auth"),
 		new Minimatch("/auth/confirm"),
+		new Minimatch("/auth/callback"),
 		new Minimatch("/forgot-password"),
 		new Minimatch("/reset-password"),
 	];
