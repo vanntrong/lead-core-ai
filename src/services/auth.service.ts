@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase";
 
 export class AuthService {
 	private readonly supabase = createClient();
@@ -37,7 +37,9 @@ export class AuthService {
 						: undefined,
 			},
 		});
-		if (error) { throw error; }
+		if (error) {
+			throw error;
+		}
 		return data;
 	}
 
@@ -67,7 +69,9 @@ export class AuthService {
 					? `${window.location.origin}/reset-password`
 					: undefined,
 		});
-		if (error) { throw error; }
+		if (error) {
+			throw error;
+		}
 		return true;
 	}
 
@@ -75,8 +79,31 @@ export class AuthService {
 		const { error } = await this.supabase.auth.updateUser({
 			password: newPassword,
 		});
-		if (error) { throw error; }
+		if (error) {
+			throw error;
+		}
 		return true;
+	}
+
+	async signInWithGoogle() {
+		const { data, error } = await this.supabase.auth.signInWithOAuth({
+			provider: "google",
+			options: {
+				redirectTo:
+					typeof window !== "undefined"
+						? `${window.location.origin}/auth/callback`
+						: undefined,
+				queryParams: {
+					access_type: "offline",
+					prompt: "select_account",
+				},
+			},
+		});
+
+		if (error) {
+			throw error;
+		}
+		return data;
 	}
 }
 

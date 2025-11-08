@@ -1,8 +1,9 @@
-/** biome-ignore-all lint/style/noMagicNumbers: <explanation> */
+/** biome-ignore-all lint/style/noMagicNumbers: magic numbers used for time durations */
+
+import { useRouter } from "@bprogress/next/app";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authService } from "@/services/auth.service";
 import { getAdminEmails } from "@/utils/helper";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "@bprogress/next/app";
 
 export const useCurrentUser = () => {
 	return useQuery({
@@ -88,5 +89,11 @@ export const useResetPassword = () => {
 			queryClient.invalidateQueries({ queryKey: ["auth"] });
 			router.push("/login");
 		},
+	});
+};
+
+export const useGoogleOAuth = () => {
+	return useMutation({
+		mutationFn: () => authService.signInWithGoogle(),
 	});
 };
